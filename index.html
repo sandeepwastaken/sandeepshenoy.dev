@@ -2,33 +2,64 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <title>the lab</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
         rel="stylesheet">
-    <meta charset="UTF-8">
-    <title>My Basic Page</title>
     <style>
         body {
-            font-family: Nunito, sans-serif;
+            font-family: 'Nunito', sans-serif;
             text-align: center;
-            margin-top: 100px;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #111, #333);
+            color: white;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1em 0;
+            top: 0;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1.5em;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #00ffff;
         }
 
         h1 {
             font-size: 5em;
             font-weight: bolder;
             margin-bottom: 0.2em;
+            margin-top: 2em;
         }
 
         h2 {
             font-size: 1.5em;
-            color: gray;
+            color: #ccc;
         }
     </style>
 </head>
 
 <body>
+    <nav>
+        <a href="/projects">Projects</a>
+        <a href="/gallery">Gallery</a>
+        <a href="/more">More</a>
+    </nav>
     <h1>sandeep shenoy</h1>
     <h2>web portfolio</h2>
 </body>
