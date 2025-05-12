@@ -7,6 +7,10 @@
 .portfolio-title {
       margin-top: 50px; 
     }
+.logo {
+  width: 150px;
+  height: auto;
+}
 body {
   background-color: #111;
   color: white;
