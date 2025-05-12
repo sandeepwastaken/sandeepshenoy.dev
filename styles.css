@@ -4,6 +4,10 @@
   padding: 0;
   font-family: 'Nunito';
 }
+.container {
+  margin-left: 50px;
+  margin-right: 50px;
+}
 .portfolio-title {
   margin-top: 25px; 
 }
@@ -12,6 +16,13 @@
   width: 150px;
   height: 150px;
 }
+.divider {
+  margin-top: 50px; 
+  margin-bottom: 50px; 
+  width: 1000px;
+  height: 30px;
+  opacity: 20%;
+}
 body {
   background-color: #111;
   color: white;
@@ -19,6 +30,9 @@ body {
   flex-direction: column;
   align-items: center;
   padding-top: 100px;
+  padding-left: 50px;
+  padding-right: 50px;
+  box-sizing: border-box;
 }
 nav {
   position: fixed;
@@ -48,4 +62,9 @@ h1 {
 h2 {
   font-size: 1.5rem;
   color: #aaa;
+}
+h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px; 
+  color: #898989;
 }
