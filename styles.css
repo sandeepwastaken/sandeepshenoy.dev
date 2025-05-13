@@ -2,12 +2,12 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Nunito';
+  font-family: 'Nunito', sans-serif;
 }
 
 body {
-  background-color: #111;
-  color: white;
+  background: linear-gradient(to bottom right, #0e1a2b, #040d1a);
+  color: #e0e6f0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,7 +30,7 @@ body {
   background-image: url('images/bg.svg');
   background-repeat: repeat;
   background-size: 200px 200px;
-  opacity: 2%;
+  opacity: 1.5%;
   pointer-events: none;
   animation: scroll-bg 20s linear infinite;
 }
@@ -40,7 +40,7 @@ body {
     background-position: 0 0;
   }
   to {
-    background-position: 2000px 1000px; /* adjust speed/direction */
+    background-position: 2000px 1000px;
   }
 }
 
@@ -48,17 +48,17 @@ nav {
   position: fixed;
   top: 0;
   width: 100%;
-  background: #1a1a1a;
+  background: #15253a;
   display: flex;
   justify-content: center;
   gap: 40px;
   padding: 20px 0;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #22364f;
   z-index: 2;
 }
 
 nav a {
-  color: white;
+  color: #e0e6f0;
   text-decoration: none;
   padding-bottom: 5px;
   border-bottom: 2px solid transparent;
@@ -67,7 +67,7 @@ nav a {
 
 nav a:hover,
 nav a.active {
-  border-bottom: 2px solid #00d1ff;
+  border-bottom: 2px solid #4da8d4;
 }
 
 .logo {
@@ -84,11 +84,12 @@ nav a.active {
   margin-bottom: 0.5rem;
   position: relative;
   z-index: 2;
+  color: #d6e0f0;
 }
 
 h2 {
   font-size: 1.5rem;
-  color: #aaa;
+  color: #a4b3c6;
   position: relative;
   z-index: 2;
 }
@@ -96,7 +97,7 @@ h2 {
 h3 {
   font-size: 1.2rem;
   margin-bottom: 10px;
-  color: #898989;
+  color: #8ca1b9;
   position: relative;
   z-index: 2;
 }
@@ -109,4 +110,10 @@ h3 {
   opacity: 20%;
   position: relative;
   z-index: 2;
+}
+.spacer {
+  height: 150px; /* adjust to desired space */
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
 }
