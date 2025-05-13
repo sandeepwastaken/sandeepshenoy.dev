@@ -4,25 +4,7 @@
   padding: 0;
   font-family: 'Nunito';
 }
-.container {
-  margin-left: 50px;
-  margin-right: 50px;
-}
-.portfolio-title {
-  margin-top: 25px; 
-}
-.logo {
-  margin-top: 25px; 
-  width: 150px;
-  height: 150px;
-}
-.divider {
-  margin-top: 50px; 
-  margin-bottom: 50px; 
-  width: 1000px;
-  height: 30px;
-  opacity: 20%;
-}
+
 body {
   background-color: #111;
   color: white;
@@ -33,7 +15,35 @@ body {
   padding-left: 50px;
   padding-right: 50px;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
+
+.background {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 170%;
+  height: 170%;
+  z-index: 0;
+  transform: rotate(20deg);
+  background-image: url('images/bg.svg');
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 2%;
+  pointer-events: none;
+  animation: scroll-bg 20s linear infinite;
+}
+
+@keyframes scroll-bg {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 2000px 1000px; /* adjust speed/direction */
+  }
+}
+
 nav {
   position: fixed;
   top: 0;
@@ -44,7 +54,9 @@ nav {
   gap: 40px;
   padding: 20px 0;
   border-bottom: 1px solid #333;
+  z-index: 2;
 }
+
 nav a {
   color: white;
   text-decoration: none;
@@ -52,19 +64,49 @@ nav a {
   border-bottom: 2px solid transparent;
   transition: border-bottom 0.2s;
 }
-nav a:hover, nav a.active {
+
+nav a:hover,
+nav a.active {
   border-bottom: 2px solid #00d1ff;
 }
-h1 {
+
+.logo {
+  margin-top: 25px;
+  width: 150px;
+  height: 150px;
+  position: relative;
+  z-index: 2;
+}
+
+.portfolio-title {
+  margin-top: 25px;
   font-size: 3rem;
   margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
 }
+
 h2 {
   font-size: 1.5rem;
   color: #aaa;
+  position: relative;
+  z-index: 2;
 }
+
 h3 {
   font-size: 1.2rem;
-  margin-bottom: 10px; 
+  margin-bottom: 10px;
   color: #898989;
+  position: relative;
+  z-index: 2;
+}
+
+.divider {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  width: 1000px;
+  height: 30px;
+  opacity: 20%;
+  position: relative;
+  z-index: 2;
 }
