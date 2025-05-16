@@ -89,10 +89,24 @@ nav a {
   transition: border-bottom 0.2s;
 }
 
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  display: inline-block;
+  vertical-align: middle;
+  filter: invert(66%) sepia(13%) saturate(1177%) hue-rotate(181deg) brightness(93%) contrast(91%);
+}
+
 nav a:hover,
 nav a.active {
   color: #e0e6f0;
   border-bottom: 2px solid rgb(35, 68, 109)
+}
+
+nav a:hover .nav-icon,
+nav a.active .nav-icon {
+  filter: invert(100%);
 }
 
 .logo {
