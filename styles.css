@@ -5,11 +5,12 @@
   font-family: 'Nunito', sans-serif;
 }
 
-html, body {
-  background: transparent !important;
+html {
+  background-color: #0e1a2b;
 }
 
 body {
+  background: linear-gradient(to bottom right, #0e1a2b, #040d1a);
   color: #e0e6f0;
   display: flex;
   flex-direction: column;
@@ -37,18 +38,16 @@ body {
 
 .background {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  transform: none;
-  background:
-    linear-gradient(to bottom right, #0e1a2b, #040d1a),
-    url('images/bg.svg');
-  background-repeat: no-repeat, repeat;
-  background-size: cover, 200px 200px;
-  opacity: 1;
+  top: -50%;
+  left: -50%;
+  width: 170%;
+  height: 170%;
+  z-index: 3;
+  transform: rotate(25deg);
+  background-image: url('images/bg.svg');
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 1.5%;
   pointer-events: none;
   animation: scroll-bg 3.5s linear infinite;
 }
