@@ -5,12 +5,18 @@
   font-family: 'Nunito', sans-serif;
 }
 
-html {
-  background-color: #0e1a2b;
+.gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  background: linear-gradient(to bottom right, #0e1a2b, #040d1a);
+  pointer-events: none;
 }
 
 body {
-  background: linear-gradient(to bottom right, #0e1a2b, #040d1a);
   color: #e0e6f0;
   display: flex;
   flex-direction: column;
