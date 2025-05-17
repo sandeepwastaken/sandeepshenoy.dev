@@ -165,9 +165,14 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: -70px;
+  margin-bottom: 50px;
   justify-content: center;
+  z-index: 4;
+}
+
+.bottom-heavy {
+  margin-bottom: 100px;
 }
 
 .image-box {
@@ -177,6 +182,7 @@ h3 {
   text-align: center;
   text-decoration: none;
   color: inherit;
+  z-index: 4;
 }
 
 .image-box img {
@@ -184,7 +190,8 @@ h3 {
   height: auto;
   display: block;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 5px 5px rgba(4, 13, 26, 0.5);
+  z-index: 4;
 }
 
 .project-info {
