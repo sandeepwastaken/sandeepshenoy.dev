@@ -160,3 +160,42 @@ h3 {
   position: relative;
   z-index: 2;
 }
+
+.project-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.image-box {
+  flex: 1 1 calc(33.333% - 20px);
+  max-width: 300px;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.image-box img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.project-info {
+  margin-top: 10px;
+}
+
+.project-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.project-caption {
+  font-size: 0.9rem;
+  color: #80a1cb;
+}
