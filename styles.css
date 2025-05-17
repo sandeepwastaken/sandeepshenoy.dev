@@ -5,6 +5,10 @@
   font-family: 'Nunito', sans-serif;
 }
 
+html {
+  background-color: #091423;
+}
+
 .gradient {
   position: fixed;
   top: 0;
