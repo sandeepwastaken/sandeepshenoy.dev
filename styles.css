@@ -6,11 +6,10 @@
 }
 
 html {
-  background-color: #0e1a2b;
+  background-color: linear-gradient(to bottom right, #0e1a2b, #040d1a);
 }
 
 body {
-  background: linear-gradient(to bottom right, #0e1a2b, #040d1a);
   color: #e0e6f0;
   display: flex;
   flex-direction: column;
