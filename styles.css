@@ -6,7 +6,7 @@
 }
 
 html {
-  background-color: linear-gradient(to bottom right, #0e1a2b, #040d1a);
+  background: linear-gradient(to bottom right, #0e1a2b, #040d1a);
 }
 
 body {
