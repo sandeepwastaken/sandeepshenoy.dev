@@ -45,7 +45,7 @@ body {
   background-size: 200px 200px;
   opacity: 1.5%;
   pointer-events: none;
-  animation: scroll-bg 10s linear infinite;
+  animation: scroll-bg 3.5s linear infinite;
 }
 
 @keyframes scroll-bg {
