@@ -5,6 +5,10 @@
   font-family: 'Nunito', sans-serif;
 }
 
+html {
+  background-color: #0e1a2b;
+}
+
 body {
   background: linear-gradient(to bottom right, #0e1a2b, #040d1a);
   color: #e0e6f0;
