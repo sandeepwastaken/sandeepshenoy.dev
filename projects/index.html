@@ -21,10 +21,20 @@
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/styles.css?v=' + Math.random();
+    link.onload = () => {
+      document.getElementById('preload-overlay').style.display = 'none';
+    };
+    document.head.appendChild(link);
+  </script>
+  <script>
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/styles.css?v=' + Math.random();
     document.head.appendChild(link);
   </script>
 </head>
 <body>
+  <div id="preload-overlay"></div>
   <div class="background"></div>
   <div class="gradient"></div>
   <div class="overlay"></div>
