@@ -111,9 +111,15 @@
       const phoneURL = `${baseURL}?room=${ROOM_ID}&port=${i}#phone`;
       const container = document.createElement("div");
       container.className = "port";
-      container.innerHTML = `<div><strong>Port ${i + 1}</strong></div><div id="qr-${i}"></div>`;
+      const canvas = document.createElement("canvas");
+      canvas.id = `qr-${i}`;
+      container.innerHTML = `<div><strong>Port ${i + 1}</strong></div>`;
+      container.appendChild(canvas);
       qrDiv.appendChild(container);
-      QRCode.toCanvas(document.getElementById(`qr-${i}`), phoneURL);
+      QRCode.toCanvas(canvas, phoneURL).catch(err => {
+      console.error("QR generation failed for:", phoneURL, err);
+    });
+
     }
 
     // Phone controller
