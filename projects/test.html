@@ -131,7 +131,7 @@
       const url = `${baseURL}?room=${ROOM_ID}&port=${i}#phone`;
       const portEl = document.createElement("div");
       portEl.className = "port";
-      portEl.innerHTML = `<div><strong>Port ${i + 1}</strong></div><div id="qr-${portId}"></div>`;
+      portEl.innerHTML = `<div><strong>Port ${i + 1}</strong></div><canvas id="qr-${portId}"></canvas>`;
       qrDiv.appendChild(portEl);
       QRCode.toCanvas(document.getElementById(`qr-${portId}`), url);
     }
