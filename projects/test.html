@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phone Consoles</title>
   <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -14,7 +15,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: start;
+      justify-content: flex-start;
       height: 100vh;
       overflow: hidden;
     }
@@ -35,9 +36,24 @@
       border-radius: 8px;
       border: 1px solid #444;
     }
-    .port img {
-      display: block;
-      margin: 0 auto;
+    .port canvas.claimed {
+      filter: blur(4px) grayscale(1);
+    }
+    .controller {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn {
+      width: 60px;
+      height: 60px;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: white;
     }
   </style>
 </head>
@@ -46,13 +62,10 @@
   <div class="qr-container" id="qr-ports"></div>
   <canvas id="game" width="600" height="400"></canvas>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
     const ROOM_ID = new URLSearchParams(location.search).get("room") || (Math.floor(Math.random() * 1000000)).toString();
-    const baseURL = location.origin + location.pathname;
     const PORTS = 3;
-    const PORTS_STATE = Array(PORTS).fill(null);
-
+    const CLAIMED_PORTS = new Set();
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const players = {};
@@ -100,54 +113,77 @@
       encrypted: true
     });
     const channel = pusher.subscribe(`room-${ROOM_ID}`);
+
     channel.bind("input", data => {
       updatePlayer(data.id, data.key);
     });
 
-    // QR Codes
+    channel.bind("connect", data => {
+      const canvas = document.getElementById(`qr-${data.port}`);
+      if (canvas) canvas.classList.add("claimed");
+    });
+
+    // Generate QR codes
     const qrDiv = document.getElementById("qr-ports");
     for (let i = 0; i < PORTS; i++) {
       const portId = `${ROOM_ID}-port-${i}`;
-      const phoneURL = `${baseURL}?room=${ROOM_ID}&port=${i}#phone`;
+      const phoneURL = `${location.origin + location.pathname}?room=${ROOM_ID}&port=${i}#phone`;
       const container = document.createElement("div");
       container.className = "port";
+      container.innerHTML = `<div><strong>Port ${i + 1}</strong></div>`;
+
       const canvas = document.createElement("canvas");
       canvas.id = `qr-${i}`;
-      container.innerHTML = `<div><strong>Port ${i + 1}</strong></div>`;
       container.appendChild(canvas);
       qrDiv.appendChild(container);
-      QRCode.toCanvas(canvas, phoneURL).catch(err => {
-      console.error("QR generation failed for:", phoneURL, err);
-    });
 
+      QRCode.toCanvas(canvas, phoneURL).catch(console.error);
     }
 
-    // Phone controller
+    // Phone controller page
     if (location.hash === "#phone") {
-      document.body.innerHTML = `<h2>Phone Controller</h2><div id="status">Connected.</div>`;
-      const id = `port-${new URLSearchParams(location.search).get("port")}`;
-      const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " ", "a", "b"];
-      window.addEventListener("keydown", e => {
-        if (!keys.includes(e.key.toLowerCase()) && !keys.includes(e.key)) return;
-        const kmap = {
-          ArrowLeft: "left",
-          ArrowRight: "right",
-          ArrowUp: "up",
-          ArrowDown: "down",
-          " ": "space",
-          a: "a",
-          b: "b"
-        };
-        fetch(`https://cors-anywhere.herokuapp.com/https://sandbox.pusher.com/publish`, {
+      const port = new URLSearchParams(location.search).get("port") || "0";
+      const id = `port-${port}`;
+
+      document.body.innerHTML = `
+        <h2>Phone Controller</h2>
+        <div id="status">Connected as ${id}</div>
+        <div class="controller">
+          <button class="btn" data-key="left">←</button>
+          <button class="btn" data-key="up">↑</button>
+          <button class="btn" data-key="down">↓</button>
+          <button class="btn" data-key="right">→</button>
+          <button class="btn" data-key="space">⭘</button>
+          <button class="btn" data-key="a">A</button>
+          <button class="btn" data-key="b">B</button>
+        </div>`;
+
+      const send = key => {
+        fetch("https://cors-anywhere.herokuapp.com/https://sandbox.pusher.com/publish", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             channel: `room-${ROOM_ID}`,
             name: "input",
-            data: { id, key: kmap[e.key] || kmap[e.key.toLowerCase()] }
+            data: { id, key }
           })
+        });
+      };
+
+      fetch("https://cors-anywhere.herokuapp.com/https://sandbox.pusher.com/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: `room-${ROOM_ID}`,
+          name: "connect",
+          data: { id, port }
+        })
+      });
+
+      document.querySelectorAll(".btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.key;
+          send(key);
         });
       });
     }
