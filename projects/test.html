@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phone Console Room</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; background: #111; color: white; }
+    #lobby, #game, #controller { display: none; padding: 1rem; }
+    canvas { background: #222; display: block; margin: auto; }
+    .qr-wrapper { display: flex; gap: 1rem; margin-top: 1rem; }
+    .qr-wrapper canvas { background: white; padding: 5px; }
+    .player { position: absolute; text-align: center; font-weight: bold; }
+    .controls button { width: 50px; height: 50px; font-size: 20px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <div id="lobby">
+    <h1>Room <span id="room-id"></span></h1>
+    <p>Scan a port QR to connect with your phone:</p>
+    <div class="qr-wrapper" id="qr-codes"></div>
+    <h2>Connected Ports:</h2>
+    <ul id="connected-ports"></ul>
+    <canvas id="game-canvas" width="600" height="400"></canvas>
+  </div>
+
+  <div id="controller">
+    <h1>Port <span id="port-id"></span></h1>
+    <div class="controls">
+      <div>
+        <button onclick="send('up')">⬆️</button>
+      </div>
+      <div>
+        <button onclick="send('left')">⬅️</button>
+        <button onclick="send('down')">⬇️</button>
+        <button onclick="send('right')">➡️</button>
+      </div>
+      <div>
+        <button onclick="send('space')">⎵</button>
+        <button onclick="send('a')">A</button>
+        <button onclick="send('b')">B</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+  <script>
+    const url = new URL(window.location.href);
+    const room = url.searchParams.get("room") || Math.floor(Math.random() * 1e6).toString();
+    const port = url.searchParams.get("port");
+    const roomIdEl = document.getElementById("room-id");
+    const portIdEl = document.getElementById("port-id");
+
+    const players = {}; // key = port id
+    const portColors = {};
+
+    const colors = ["red", "lime", "deepskyblue", "orange", "violet", "yellow", "pink"];
+
+    const bc = new BroadcastChannel("room-" + room);
+
+    if (port) {
+      // Phone controller
+      document.getElementById("controller").style.display = "block";
+      portIdEl.textContent = port;
+      bc.postMessage({ join: port });
+
+      window.send = function (key) {
+        bc.postMessage({ port, key });
+      };
+    } else {
+      // Main room screen
+      document.getElementById("lobby").style.display = "block";
+      document.getElementById("room-id").textContent = room;
+
+      const qrContainer = document.getElementById("qr-codes");
+      const connectedPorts = document.getElementById("connected-ports");
+
+      for (let i = 1; i <= 3; i++) {
+        const canvas = document.createElement("canvas");
+        const qr = new QRious({
+          element: canvas,
+          value: `${location.origin}${location.pathname}?room=${room}&port=${i}`,
+          size: 128
+        });
+        canvas.dataset.port = i;
+        qrContainer.appendChild(canvas);
+      }
+
+      const canvas = document.getElementById("game-canvas");
+      const ctx = canvas.getContext("2d");
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const id in players) {
+          const p = players[id];
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, 40, 40);
+          ctx.fillStyle = "black";
+          ctx.font = "bold 24px sans-serif";
+          ctx.fillText(p.mode, p.x + 10, p.y + 28);
+        }
+        requestAnimationFrame(render);
+      }
+      render();
+
+      bc.onmessage = (e) => {
+        const msg = e.data;
+        if (msg.join) {
+          const portNum = msg.join;
+          if (!players[portNum]) {
+            players[portNum] = {
+              x: Math.random() * 560,
+              y: Math.random() * 360,
+              color: colors.shift() || "gray",
+              mode: ""
+            };
+            document.querySelectorAll("canvas[data-port]").forEach(c => {
+              if (c.dataset.port == portNum) c.style.display = "none";
+            });
+            const li = document.createElement("li");
+            li.textContent = `Port ${portNum} connected.`;
+            connectedPorts.appendChild(li);
+          }
+        }
+        if (msg.port && players[msg.port]) {
+          const p = players[msg.port];
+          switch (msg.key) {
+            case "up": p.y -= 10; break;
+            case "down": p.y += 10; break;
+            case "left": p.x -= 10; break;
+            case "right": p.x += 10; break;
+            case "a": p.mode = "A"; break;
+            case "b": p.mode = "B"; break;
+            case "space":
+              p.color = '#' + Math.floor(Math.random()*16777215).toString(16);
+              break;
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>
