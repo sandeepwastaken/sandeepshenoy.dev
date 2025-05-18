@@ -11,18 +11,10 @@
       margin: 0;
       font-family: sans-serif;
       background: #111;
-      color: #fff;
+      color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      overflow: hidden;
-    }
-    canvas {
-      background: #222;
-      border: 2px solid #333;
-      margin-top: 1em;
     }
     .qr-container {
       display: flex;
@@ -30,30 +22,40 @@
       margin: 1em;
     }
     .port {
-      text-align: center;
       background: #222;
       padding: 1em;
       border-radius: 8px;
       border: 1px solid #444;
+      text-align: center;
+      filter: none;
+      transition: 0.3s;
     }
-    .port canvas.claimed {
-      filter: blur(4px) grayscale(1);
+    .port.claimed {
+      filter: blur(4px);
     }
-    .controller {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+    canvas {
+      background: #222;
+      margin: 1em 0;
+      border: 2px solid #333;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 2em;
+      justify-content: center;
     }
     .btn {
-      width: 60px;
-      height: 60px;
-      font-size: 20px;
-      border: none;
-      border-radius: 8px;
-      background: #333;
+      background: #444;
       color: white;
+      padding: 1em;
+      text-align: center;
+      border-radius: 8px;
+      font-size: 1em;
+      user-select: none;
+    }
+    .btn:active {
+      background: #888;
     }
   </style>
 </head>
@@ -63,12 +65,19 @@
   <canvas id="game" width="600" height="400"></canvas>
 
   <script>
-    const ROOM_ID = new URLSearchParams(location.search).get("room") || (Math.floor(Math.random() * 1000000)).toString();
+    const ROOM_ID = new URLSearchParams(location.search).get("room") || Math.floor(Math.random() * 1000000).toString();
+    const baseURL = location.origin + location.pathname;
     const PORTS = 3;
-    const CLAIMED_PORTS = new Set();
+    const players = {};
+
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
-    const players = {};
+
+    const pusher = new Pusher("03ce99c8313e1f6fee98", {
+      cluster: "mt1"
+    });
+
+    const channel = pusher.subscribe(`room-${ROOM_ID}`);
 
     function randomColor() {
       return `hsl(${Math.floor(Math.random() * 360)}, 80%, 60%)`;
@@ -106,86 +115,73 @@
       drawPlayers();
     }
 
-    // Pusher setup
-    Pusher.logToConsole = false;
-    const pusher = new Pusher("03ce99c8313e1f6fee98", {
-      cluster: "mt1",
-      encrypted: true
+    channel.bind("connect", data => {
+      const el = document.getElementById(`qr-${data.id}`);
+      if (el) el.parentElement.classList.add("claimed");
     });
-    const channel = pusher.subscribe(`room-${ROOM_ID}`);
 
     channel.bind("input", data => {
       updatePlayer(data.id, data.key);
     });
 
-    channel.bind("connect", data => {
-      const canvas = document.getElementById(`qr-${data.port}`);
-      if (canvas) canvas.classList.add("claimed");
-    });
-
-    // Generate QR codes
+    // QR Generation
     const qrDiv = document.getElementById("qr-ports");
     for (let i = 0; i < PORTS; i++) {
-      const portId = `${ROOM_ID}-port-${i}`;
-      const phoneURL = `${location.origin + location.pathname}?room=${ROOM_ID}&port=${i}#phone`;
-      const container = document.createElement("div");
-      container.className = "port";
-      container.innerHTML = `<div><strong>Port ${i + 1}</strong></div>`;
-
-      const canvas = document.createElement("canvas");
-      canvas.id = `qr-${i}`;
-      container.appendChild(canvas);
-      qrDiv.appendChild(container);
-
-      QRCode.toCanvas(canvas, phoneURL).catch(console.error);
+      const portId = `port-${i}`;
+      const url = `${baseURL}?room=${ROOM_ID}&port=${i}#phone`;
+      const portEl = document.createElement("div");
+      portEl.className = "port";
+      portEl.innerHTML = `<div><strong>Port ${i + 1}</strong></div><div id="qr-${portId}"></div>`;
+      qrDiv.appendChild(portEl);
+      QRCode.toCanvas(document.getElementById(`qr-${portId}`), url);
     }
 
-    // Phone controller page
+    // If phone controller
     if (location.hash === "#phone") {
-      const port = new URLSearchParams(location.search).get("port") || "0";
+      const port = new URLSearchParams(location.search).get("port");
       const id = `port-${port}`;
 
-      document.body.innerHTML = `
-        <h2>Phone Controller</h2>
-        <div id="status">Connected as ${id}</div>
-        <div class="controller">
-          <button class="btn" data-key="left">←</button>
-          <button class="btn" data-key="up">↑</button>
-          <button class="btn" data-key="down">↓</button>
-          <button class="btn" data-key="right">→</button>
-          <button class="btn" data-key="space">⭘</button>
-          <button class="btn" data-key="a">A</button>
-          <button class="btn" data-key="b">B</button>
-        </div>`;
-
-      const send = key => {
-        fetch("https://cors-anywhere.herokuapp.com/https://sandbox.pusher.com/publish", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            channel: `room-${ROOM_ID}`,
-            name: "input",
-            data: { id, key }
-          })
-        });
-      };
-
-      fetch("https://cors-anywhere.herokuapp.com/https://sandbox.pusher.com/publish", {
+      // Send "connect" event
+      fetch("https://sandbox.pusher.com/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           channel: `room-${ROOM_ID}`,
           name: "connect",
-          data: { id, port }
+          data: { id }
         })
       });
 
-      document.querySelectorAll(".btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const key = btn.dataset.key;
-          send(key);
-        });
-      });
+      document.body.innerHTML = `<h2>Phone Controller</h2><div class="controls" id="buttons"></div>`;
+
+      const buttonMap = {
+        "←": "left",
+        "→": "right",
+        "↑": "up",
+        "↓": "down",
+        "A": "a",
+        "B": "b",
+        "␣": "space"
+      };
+
+      const buttons = document.getElementById("buttons");
+      for (const [label, key] of Object.entries(buttonMap)) {
+        const btn = document.createElement("div");
+        btn.className = "btn";
+        btn.textContent = label;
+        btn.onclick = () => {
+          fetch("https://sandbox.pusher.com/publish", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              channel: `room-${ROOM_ID}`,
+              name: "input",
+              data: { id, key }
+            })
+          });
+        };
+        buttons.appendChild(btn);
+      }
     }
   </script>
 </body>
