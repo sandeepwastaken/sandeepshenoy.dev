@@ -19,27 +19,38 @@
       font-family: 'Nunito', sans-serif;
       background-color: #dedee4;
     }
+
     .switch {
       width: 100px;
       height: 175px;
       cursor: pointer;
       user-select: none;
-      background-size: cover;
+      background-size: contain;
+      background-repeat: no-repeat;
       background-position: center;
       background-image: url('/images/off.png');
+      transition: background-image 0.25s ease-in-out, opacity 0.25s ease-in-out;
     }
+
+    .switch.fade {
+      opacity: 0.5;
+    }
+
     .counter {
       margin-bottom: 20px;
       font-size: 1.2rem;
     }
+
     .mod {
       margin-bottom: 20px;
       font-size: 1.2rem;
     }
+
     .explanation {
       margin-top: 20px;
       font-size: 1.2rem;
     }
+
     .math {
       margin-top: 20px;
       font-size: 1.2rem;
@@ -71,11 +82,14 @@
       modDisplay.textContent = `Counter MOD 2: ${mod}`;
       mathExplanation.textContent = `The modulus, or remainder, is the amount left over after division. ${counter} / 2 = ${Math.floor(counter / 2)}, remainder ${mod}.`;
 
-      if (mod === 1) {
-        switchElement.style.backgroundImage = "url('/images/on.png')";
-      } else {
-        switchElement.style.backgroundImage = "url('/images/off.png')";
-      }
+      switchElement.classList.add('fade');
+
+      setTimeout(() => {
+        switchElement.style.backgroundImage = mod === 1
+          ? "url('/images/on.png')"
+          : "url('/images/off.png')";
+        switchElement.classList.remove('fade');
+      }, 125);
     });
   </script>
 </body>
