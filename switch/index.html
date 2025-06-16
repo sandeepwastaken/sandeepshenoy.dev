@@ -21,38 +21,42 @@
     }
 
     .switch {
+      position: relative;
       width: 100px;
       height: 175px;
       cursor: pointer;
       user-select: none;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-image: url('/images/off.png');
-      transition: background-image 0.25s ease-in-out, opacity 0.25s ease-in-out;
     }
 
-    .switch.fade {
-      opacity: 0.5;
+    .switch img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: opacity 0.25s ease-in-out;
+      pointer-events: none;
     }
 
-    .counter {
-      margin-bottom: 20px;
-      font-size: 1.2rem;
+    .switch img.off {
+      opacity: 1;
     }
 
-    .mod {
-      margin-bottom: 20px;
-      font-size: 1.2rem;
+    .switch img.on {
+      opacity: 0;
     }
 
-    .explanation {
-      margin-top: 20px;
-      font-size: 1.2rem;
+    .switch.on img.off {
+      opacity: 0;
     }
 
-    .math {
-      margin-top: 20px;
+    .switch.on img.on {
+      opacity: 1;
+    }
+
+    .counter, .mod, .explanation, .math {
+      margin: 10px 0;
       font-size: 1.2rem;
     }
   </style>
@@ -60,7 +64,10 @@
 <body>
   <div class="counter">Counter: 0</div>
   <div class="mod">Counter MOD 2: 0</div>
-  <div class="switch" style="background-image: url('/images/off.png');"></div>
+  <div class="switch">
+    <img src="/images/off.png" class="off">
+    <img src="/images/on.png" class="on">
+  </div>
   <div class="explanation">This switch works by taking the counter value and checking if it's odd or even using the MOD operator.</div>
   <div class="math">The modulus, or remainder, is the amount left over after division. 0 / 2 = 0, remainder 0.</div>
 
@@ -82,14 +89,7 @@
       modDisplay.textContent = `Counter MOD 2: ${mod}`;
       mathExplanation.textContent = `The modulus, or remainder, is the amount left over after division. ${counter} / 2 = ${Math.floor(counter / 2)}, remainder ${mod}.`;
 
-      switchElement.classList.add('fade');
-
-      setTimeout(() => {
-        switchElement.style.backgroundImage = mod === 1
-          ? "url('/images/on.png')"
-          : "url('/images/off.png')";
-        switchElement.classList.remove('fade');
-      }, 125);
+      switchElement.classList.toggle('on', mod === 1);
     });
   </script>
 </body>
