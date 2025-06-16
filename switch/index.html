@@ -40,12 +40,14 @@
 </head>
 <body>
   <div class="counter">Counter: 0</div>
+  <div class="mod">Counter MOD 2: 0</div>
   <div class="switch">Off</div>
 
   <script>
     let counter = 0;
 
     const counterDisplay = document.querySelector('.counter');
+    const modDisplay = document.querySelector('.mod');
     const switchElement = document.querySelector('.switch');
 
     switchElement.addEventListener('click', () => {
@@ -54,6 +56,7 @@
 
       // Update counter display
       counterDisplay.textContent = `Counter: ${counter}`;
+      modDisplay.textContent = `Counter MOD 2: ${mod}`;
 
       // Update switch state
       if (mod === 1) {
