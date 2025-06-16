@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MOD Switch</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
     body {
       display: flex;
       flex-direction: column;
@@ -14,25 +16,16 @@
       margin: 0;
       padding-left: 50px;
       padding-right: 50px;
-      font-family: Arial, sans-serif;
+      font-family: 'Nunito', sans-serif;
       background-color: #dedee4;
     }
     .switch {
-      display: flex;
-      align-items: center;
-      justify-content: center;
       width: 100px;
       height: 100px;
-      border-radius: 50%;
-      background-color: gray;
-      color: white;
-      font-size: 1.5rem;
       cursor: pointer;
       user-select: none;
-    }
-    .switch.on {
-      background-color: yellow;
-      color: black;
+      background-size: cover;
+      background-position: center;
     }
     .counter {
       margin-bottom: 20px;
@@ -55,7 +48,7 @@
 <body>
   <div class="counter">Counter: 0</div>
   <div class="mod">Counter MOD 2: 0</div>
-  <div class="switch">Off</div>
+  <div class="switch" style="background-image: url('/images/off.png');"></div>
   <div class="explanation">This switch works by taking the counter value and checking if it's odd or even using the MOD operator.</div>
   <div class="math">The modulus, or remainder, is the amount left over after division. 0 / 2 = 0, remainder 0.</div>
 
@@ -78,11 +71,9 @@
 
       // Update switch state
       if (mod === 1) {
-        switchElement.textContent = 'On';
-        switchElement.classList.add('on');
+        switchElement.style.backgroundImage = "url('/images/on.png')";
       } else {
-        switchElement.textContent = 'Off';
-        switchElement.classList.remove('on');
+        switchElement.style.backgroundImage = "url('/images/off.png')";
       }
     });
   </script>
