@@ -64,13 +64,13 @@
     switchElement.addEventListener('click', () => {
       counter++;
       const mod = counter % 2;
+      const clickSound = new Audio('/switch/click.mp3');
+      clickSound.play();
 
-      // Update counter display
       counterDisplay.textContent = `Counter: ${counter}`;
       modDisplay.textContent = `Counter MOD 2: ${mod}`;
       mathExplanation.textContent = `The modulus, or remainder, is the amount left over after division. ${counter} / 2 = ${Math.floor(counter / 2)}, remainder ${mod}.`;
 
-      // Update switch state
       if (mod === 1) {
         switchElement.style.backgroundImage = "url('/images/on.png')";
       } else {
