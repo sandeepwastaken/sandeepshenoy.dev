@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EQx</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>Playlists</h2>
+      <ul id="playlist-list">
+        <li>My Tracks</li>
+        <li>Chill Vibes</li>
+        <li>Workout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <img src="sandeepshenoy.dev/eqx/eqx.svg" alt="EQx Logo" class="logo"/>
+        <input type="file" id="file-upload" accept="audio/*" multiple hidden />
+        <button id="upload-btn">Upload Media</button>
+      </header>
+
+      <div class="player">
+        <button id="shuffle">🔀</button>
+        <button id="play-pause">⏸️</button>
+        <button id="skip">⏭️</button>
+      </div>
+
+      <ul id="track-list"></ul>
+    </main>
+
+    <div class="settings">
+      <button id="settings-toggle">⚙️</button>
+      <div id="settings-panel">
+        <h3>Theme</h3>
+        <label>Background: <input type="color" id="bg-color"/></label>
+        <label>Primary: <input type="color" id="primary-color"/></label>
+        <label>Accent: <input type="color" id="accent-color"/></label>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
