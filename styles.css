@@ -188,6 +188,7 @@ h3 {
 
 .image-box img {
   width: 100%;
+  position: relative;
   height: auto;
   display: block;
   border-radius: 8px;
