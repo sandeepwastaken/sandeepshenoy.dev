@@ -191,7 +191,7 @@ h3 {
   display: block;
   border-radius: 8px;
   box-shadow: 5px 5px rgba(4, 13, 26, 0.5);
-  z-index: 4;
+  z-index: 2;
 }
 
 .project-info {
