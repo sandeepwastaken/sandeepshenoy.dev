@@ -179,6 +179,7 @@ h3 {
   flex: 1 1 calc(33.333% - 20px);
   max-width: 300px;
   box-sizing: border-box;
+  position: relative;
   text-align: center;
   text-decoration: none;
   color: inherit;
