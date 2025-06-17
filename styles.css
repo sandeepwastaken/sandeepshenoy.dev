@@ -40,6 +40,7 @@ body {
   z-index: 5;
   background: #0e1a2bd9;
   pointer-events: none;
+  backdrop-filter: blur(3.5px);
 }
 
 .background {
