@@ -12,6 +12,19 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  font-family: 'DIN Alternate', Arial, sans-serif;
+}
+
+button {
+  font-family: 'DIN Alternate', Arial, sans-serif;
+  font-weight: bold;
+  color: var(--text-color);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 1em;
+  padding-left: 2em;
+  padding-right: 2em;
 }
 
 .background {
@@ -19,7 +32,7 @@ body {
   top: 0; left: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url('https://static.vecteezy.com/system/resources/previews/001/849/553/non_2x/modern-gold-background-free-vector.jpg');
+  background-image: url('https://i.imgur.com/ckEw0Jn.png');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -70,14 +83,18 @@ body {
   top: 17.5vh;
   left: 0;
   width: 100vw;
-  height: 70vh;
+  height: 65vh;
 }
 
 .right-bar {
   top: 20vh;
   left: 75vw;
-  width: 35vw;
+  width: 30vw;
   height: 60vh;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .bottom-bar {
@@ -105,11 +122,10 @@ body {
 }
 
 .modal-content {
-  background: white;
   padding: 2em;
+  padding-top: 1em;
   border-radius: 10px;
   text-align: center;
-  color: black;
 }
 
 .modal.hidden {

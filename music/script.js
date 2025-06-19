@@ -50,7 +50,6 @@ confirmBtn.addEventListener('click', () => {
     });
 });
 
-// Load saved background
 window.addEventListener('DOMContentLoaded', () => {
   const cookies = document.cookie.split('; ').reduce((acc, c) => {
     const [key, val] = c.split('=');
