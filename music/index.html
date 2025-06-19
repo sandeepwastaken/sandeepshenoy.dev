@@ -3,13 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Basic HTML Page</title>
-  <link rel="stylesheet" href="./styles.css">
+  <title>EQx</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <h1>Hello!</h1>
+  <div class="background"></div>
 
-  <script src="./script.js"></script>
+  <div class="panel top-bar"></div>
+  <div class="panel left-bar"></div>
+  <div class="panel center-panel"></div>
+  <div class="panel right-bar"></div>
+  <div class="panel bottom-bar"></div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <p>Set this image as the background?</p>
+      <button id="confirm-btn">Yes</button>
+      <button id="cancel-btn">No</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>

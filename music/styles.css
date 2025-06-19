@@ -1,0 +1,95 @@
+:root {
+  --bg-color: #000;
+  --text-color: #fff;
+  --primary-color: #fff;
+  --accent-color: #ffd700;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.background {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('https://static.vecteezy.com/system/resources/previews/001/849/553/non_2x/modern-gold-background-free-vector.jpg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  z-index: -1;
+}
+
+/* Panels */
+.panel {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.5);
+  z-index: 1;
+}
+
+.top-bar {
+  top: 0;
+  left: 0;
+  height: 20vh;
+  width: 100%;
+}
+
+.left-bar {
+  top: 20vh;
+  left: 0;
+  width: 25vw;
+  height: 60vh;
+}
+
+.center-panel {
+  top: 20vh;
+  left: 25vw;
+  width: 50vw;
+  height: 60vh;
+}
+
+.right-bar {
+  top: 20vh;
+  left: 75vw;
+  width: 25vw;
+  height: 60vh;
+}
+
+.bottom-bar {
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 20vh;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-content {
+  background: white;
+  padding: 2em;
+  border-radius: 10px;
+  text-align: center;
+  color: black;
+}
+
+.modal.hidden {
+  display: none;
+}
