@@ -3,28 +3,67 @@ const confirmBtn = document.getElementById('confirm-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const background = document.querySelector('.background');
 const fileEl = document.querySelector('.file');
-let prevX = 0, prevY = 0;
-let rotation = 0;
-var fileHover = false;
-fileEl.style.opacity = '0';
-fileEl.style.filter = 'blur(50px)';
-fileEl.style.position = 'fixed';
-fileEl.style.pointerEvents = 'none';
 
 let droppedImageFile = null;
+let fileHover = false;
+let lastX = 0, lastY = 0;
+let prevX = 0;
+let rotation = 0;
+let floatXOffset = 0;
+let floatYOffset = 0;
+let animating = false;
 
-window.addEventListener('dragover', e => {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'copy';
+fileEl.style.cssText = `
+  opacity: 0;
+  filter: blur(50px);
+  position: fixed;
+  pointer-events: none;
+  transition: left 0.2s ease-out, top 0.2s ease-out, opacity 0.4s, filter 0.4s;
+`;
+
+window.addEventListener('DOMContentLoaded', () => {
+  const cookies = Object.fromEntries(document.cookie.split('; ').map(c => {
+    const [k, v] = c.split('=');
+    return [k, decodeURIComponent(v)];
+  }));
+  if (cookies.backgroundUrl) {
+    background.style.backgroundImage = `url('${cookies.backgroundUrl}')`;
+  }
 });
 
-window.addEventListener('drop', e => {
+window.addEventListener('dragover', (e) => {
   e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+  fileHover = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+
+  fileEl.style.opacity = '1';
+  fileEl.style.filter = 'blur(0px)';
+
+  if (!animating) {
+    animating = true;
+    requestAnimationFrame(updateFileEl);
+  }
+});
+
+window.addEventListener('drop', (e) => {
+  e.preventDefault();
+  fileHover = false;
+  fileEl.style.opacity = '0';
+  fileEl.style.filter = 'blur(50px)';
+
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) {
     droppedImageFile = file;
     modal.classList.remove('hidden');
   }
+});
+
+document.addEventListener('dragleave', () => {
+  fileHover = false;
+  fileEl.style.opacity = '0';
+  fileEl.style.filter = 'blur(50px)';
 });
 
 cancelBtn.addEventListener('click', () => {
@@ -40,9 +79,7 @@ confirmBtn.addEventListener('click', () => {
 
   fetch('https://api.imgur.com/3/image', {
     method: 'POST',
-    headers: {
-      Authorization: 'Client-ID 714470964a0a179'
-    },
+    headers: { Authorization: 'Client-ID 714470964a0a179' },
     body: formData
   })
     .then(res => res.json())
@@ -58,78 +95,27 @@ confirmBtn.addEventListener('click', () => {
     });
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-  const cookies = document.cookie.split('; ').reduce((acc, c) => {
-    const [key, val] = c.split('=');
-    acc[key] = decodeURIComponent(val);
-    return acc;
-  }, {});
-  if (cookies.backgroundUrl) {
-    background.style.backgroundImage = `url('${cookies.backgroundUrl}')`;
-  }
-});
-
-if (fileEl) {
-  let lastX = 0, lastY = 0, animating = false;
-
-  fileEl.style.transition = 'left 0.2s ease-out, top 0.2s ease-out, opacity 0.4s, filter 0.4s';
-  fileEl.style.opacity = '0';
-  fileEl.style.filter = 'blur(50px)';
-
-  document.addEventListener('dragover', (e) => {
-    fileHover = true;
-    lastX = e.clientX;
-    lastY = e.clientY;
-    fileEl.style.position = 'fixed';
-    fileEl.style.pointerEvents = 'none';
-
-    if (!animating) {
-      animating = true;
-      requestAnimationFrame(moveFileEl);
-    }
-
-    fileEl.style.opacity = '1';
-    fileEl.style.filter = 'blur(0px)';
-  });
-
-  function moveFileEl() {
+function updateFileEl() {
   const dx = lastX - prevX;
-
-  let swingTarget = 0;
-  if (Math.abs(dx) > 1) {
-    swingTarget = Math.max(-30, Math.min(30, -dx * 1.2)); 
-  } else if (fileHover) {
-    swingTarget = 0;
-  } else {
-    swingTarget = 0;
-  }
-
+  const swingTarget = Math.abs(dx) > 1 ? Math.max(-30, Math.min(30, -dx * 1.2)) : 0;
   rotation += (swingTarget - rotation) * 0.12;
+    const now = performance.now();
+    floatXOffset = Math.sin(now / 200) * 10;
+    floatYOffset = Math.cos(now / 200) * 10;
 
   fileEl.style.left = `${lastX}px`;
   fileEl.style.top = `${lastY}px`;
-  fileEl.style.transform = `rotate(${rotation}deg)`;
+  fileEl.style.transform = `rotate(${rotation}deg) translateX(${floatXOffset}px) translateY(${floatYOffset}px)`;
 
   prevX = lastX;
 
   if (fileHover || Math.abs(rotation) > 0.1) {
-    requestAnimationFrame(moveFileEl);
+    requestAnimationFrame(updateFileEl);
   } else {
     rotation = 0;
-    fileEl.style.transform = `rotate(0deg)`;
+    floatXOffset = 0;
+    floatYOffset = 0;
+    fileEl.style.transform = 'rotate(0deg) translateY(0px)';
     animating = false;
   }
-}
-
-  document.addEventListener('dragleave', (e) => {
-    fileHover = false;
-    fileEl.style.opacity = '0';
-    fileEl.style.filter = 'blur(50px)';
-  });
-
-  document.addEventListener('drop', (e) => {
-    fileHover = false;
-    fileEl.style.opacity = '0';
-    fileEl.style.filter = 'blur(50px)';
-  });
 }
