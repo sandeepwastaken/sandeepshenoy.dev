@@ -40,6 +40,20 @@ button {
   z-index: -1;
 }
 
+.file {
+  position: fixed;
+  top: 120vh; left: 50vw;
+  width: 5em;
+  height: auto;
+  aspect-ratio: 971/1212;
+  object-fit: cover;
+  background-image: url(./file.png);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 100;
+}
+
 .panel {
   position: absolute;
   z-index: 1;

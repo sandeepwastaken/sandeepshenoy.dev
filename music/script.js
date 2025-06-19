@@ -2,6 +2,14 @@ const modal = document.getElementById('modal');
 const confirmBtn = document.getElementById('confirm-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const background = document.querySelector('.background');
+const fileEl = document.querySelector('.file');
+let prevX = 0, prevY = 0;
+let rotation = 0;
+var fileHover = false;
+fileEl.style.opacity = '0';
+fileEl.style.filter = 'blur(50px)';
+fileEl.style.position = 'fixed';
+fileEl.style.pointerEvents = 'none';
 
 let droppedImageFile = null;
 
@@ -60,3 +68,68 @@ window.addEventListener('DOMContentLoaded', () => {
     background.style.backgroundImage = `url('${cookies.backgroundUrl}')`;
   }
 });
+
+if (fileEl) {
+  let lastX = 0, lastY = 0, animating = false;
+
+  fileEl.style.transition = 'left 0.2s ease-out, top 0.2s ease-out, opacity 0.4s, filter 0.4s';
+  fileEl.style.opacity = '0';
+  fileEl.style.filter = 'blur(50px)';
+
+  document.addEventListener('dragover', (e) => {
+    fileHover = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    fileEl.style.position = 'fixed';
+    fileEl.style.pointerEvents = 'none';
+
+    if (!animating) {
+      animating = true;
+      requestAnimationFrame(moveFileEl);
+    }
+
+    fileEl.style.opacity = '1';
+    fileEl.style.filter = 'blur(0px)';
+  });
+
+  function moveFileEl() {
+  const dx = lastX - prevX;
+
+  let swingTarget = 0;
+  if (Math.abs(dx) > 1) {
+    swingTarget = Math.max(-30, Math.min(30, -dx * 1.2)); 
+  } else if (fileHover) {
+    swingTarget = 0;
+  } else {
+    swingTarget = 0;
+  }
+
+  rotation += (swingTarget - rotation) * 0.12;
+
+  fileEl.style.left = `${lastX}px`;
+  fileEl.style.top = `${lastY}px`;
+  fileEl.style.transform = `rotate(${rotation}deg)`;
+
+  prevX = lastX;
+
+  if (fileHover || Math.abs(rotation) > 0.1) {
+    requestAnimationFrame(moveFileEl);
+  } else {
+    rotation = 0;
+    fileEl.style.transform = `rotate(0deg)`;
+    animating = false;
+  }
+}
+
+  document.addEventListener('dragleave', (e) => {
+    fileHover = false;
+    fileEl.style.opacity = '0';
+    fileEl.style.filter = 'blur(50px)';
+  });
+
+  document.addEventListener('drop', (e) => {
+    fileHover = false;
+    fileEl.style.opacity = '0';
+    fileEl.style.filter = 'blur(50px)';
+  });
+}
