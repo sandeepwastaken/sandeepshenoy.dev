@@ -53,6 +53,20 @@ button {
   background-repeat: no-repeat;
   z-index: 100;
 }
+.logo {
+  position: fixed;
+  top: 20vh; left: 20vw;
+  width: 10em;
+  height: auto;
+  aspect-ratio: 1/0.47582522400298816;
+  object-fit: cover;
+  background-image: url(./eqx.svg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 100;
+  filter: invert()
+}
 
 .panel {
   position: absolute;
@@ -109,6 +123,8 @@ button {
   border-bottom-left-radius: 20px;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+  overflow: hidden;
+  will-change: transform;
 }
 
 .bottom-bar {
