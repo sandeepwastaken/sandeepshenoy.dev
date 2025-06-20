@@ -3,6 +3,7 @@ const confirmBtn = document.getElementById('confirm-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const background = document.querySelector('.background');
 const fileEl = document.querySelector('.file');
+const backgroundEl = document.querySelector('.background');
 
 let droppedImageFile = null;
 let fileHover = false;
@@ -58,6 +59,21 @@ window.addEventListener('drop', (e) => {
     droppedImageFile = file;
     modal.classList.remove('hidden');
   }
+});
+
+window.addEventListener('mousemove', (e) => {
+  backgroundEl.style.opacity = '1';
+  backgroundEl.style.filter = 'blur(0px)';
+  backgroundEl.style.position = 'fixed';
+  if (!backgroundEl._pos) {
+    backgroundEl._pos = { x: (e.clientX * 0.01) + 45, y: (e.clientY * 0.01) + 45 };
+  }
+  const targetX = (e.clientX * 0.01) + 45;
+  const targetY = (e.clientY * 0.01) + 45;
+  backgroundEl._pos.x += (targetX - backgroundEl._pos.x) * 0.1;
+  backgroundEl._pos.y += (targetY - backgroundEl._pos.y) * 0.1;
+  backgroundEl.style.left = `${backgroundEl._pos.x}vw`;
+  backgroundEl.style.top = `${backgroundEl._pos.y}vh`;
 });
 
 document.addEventListener('dragleave', () => {
@@ -118,4 +134,3 @@ function updateFileEl() {
     fileEl.style.transform = 'rotate(0deg) translateY(0px)';
     animating = false;
   }
-}

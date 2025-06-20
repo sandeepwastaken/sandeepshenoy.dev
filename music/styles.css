@@ -29,9 +29,10 @@ button {
 
 .background {
   position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
+  transform: translate(-50%, -50%);
+  left: 45vw; top: 45vh;
+  width: 130vw;
+  height: 130vh;
   background-image: url('https://i.imgur.com/ckEw0Jn.png');
   background-position: center;
   background-size: cover;
@@ -53,6 +54,7 @@ button {
   background-repeat: no-repeat;
   z-index: 100;
 }
+
 .logo {
   position: fixed;
   top: 3vh; left: 3vh;
@@ -66,6 +68,21 @@ button {
   background-repeat: no-repeat;
   z-index: 100;
   filter: invert() drop-shadow(0 4px 6px rgb(0, 0, 0));
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-text {
+  font-size: 10vh;
+  color: white;
+  z-index: 100;
+  position: fixed;
+  top: 2vh; left: 27.5vh;
+  filter: drop-shadow(0 4px 6px rgb(0, 0, 0));
 }
 
 .panel {
