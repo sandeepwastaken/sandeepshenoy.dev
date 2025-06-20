@@ -55,9 +55,9 @@ button {
 }
 .logo {
   position: fixed;
-  top: 20vh; left: 20vw;
-  width: 10em;
-  height: auto;
+  top: 3vh; left: 3vh;
+  width: auto;
+  height: 10vh;
   aspect-ratio: 1/0.47582522400298816;
   object-fit: cover;
   background-image: url(./eqx.svg);
@@ -65,7 +65,7 @@ button {
   background-position: center;
   background-repeat: no-repeat;
   z-index: 100;
-  filter: invert()
+  filter: invert() drop-shadow(0 4px 6px rgb(0, 0, 0));
 }
 
 .panel {
