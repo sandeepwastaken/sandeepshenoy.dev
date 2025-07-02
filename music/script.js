@@ -134,3 +134,4 @@ function updateFileEl() {
     fileEl.style.transform = 'rotate(0deg) translateY(0px)';
     animating = false;
   }
+}
