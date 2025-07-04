@@ -1,8 +1,9 @@
 RewriteEngine On
 
-# Explicit rule for gallery
+# Fix /gallery issue
 RewriteRule ^gallery/?$ gallery/index.html [L]
 
+# Redirect non-file, non-dir single paths to have a trailing slash
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([^/]+)$ /$1/ [R=301,L]
