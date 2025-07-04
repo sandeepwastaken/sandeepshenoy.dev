@@ -9,4 +9,3 @@ RewriteRule ^([^/]+)/?$ /$1/ [R=301,L]
 DirectoryIndex index.html
 
 # Friendly 404 page
-ErrorDocument 404 /404
