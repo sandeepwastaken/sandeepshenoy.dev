@@ -180,6 +180,19 @@
   color: white;
   z-index: 10;
 }
+@media screen and (max-width: 600px) {
+  .modal-content.mobile {
+    flex-direction: column;
+  }
+
+  .modal-image-container img {
+    border-radius: 10px 10px 0 0; /* top-rounded corners for stacked image */
+  }
+
+  .modal-text {
+    padding: 1.5rem;
+  }
+}
 </style>
 <script>
 document.querySelectorAll('.gallery-item').forEach(item => {
@@ -206,6 +219,18 @@ document.getElementById('gallery-modal').onclick = function (e) {
     this.classList.remove('show');
   }
 };
+
+function adjustModalLayout() {
+  const modalContent = document.querySelector('.modal-content');
+  if (window.innerWidth <= 600) {
+    modalContent.classList.add('mobile');
+  } else {
+    modalContent.classList.remove('mobile');
+  }
+}
+
+window.addEventListener('load', adjustModalLayout);
+window.addEventListener('resize', adjustModalLayout);
 </script>
 </body>
 </html>
