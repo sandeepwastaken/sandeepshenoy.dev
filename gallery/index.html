@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>projects</title>
+  <link rel="icon" type="image/x-icon" href="/images/logo.svg">
+  <style>
+    #preload-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+      z-index: 9999;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+  <script>
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/styles.css?v=' + Math.random();
+    link.onload = () => {
+      document.getElementById('preload-overlay').style.display = 'none';
+    };
+    document.head.appendChild(link);
+  </script>
+</head>
+<body>
+  <div id="preload-overlay"></div>
+  <div class="background"></div>
+  <div class="gradient"></div>
+  <div class="overlay"></div>
+  <div class="main-content">
+    <img src="/images/logo.svg" alt="Logo" class="logo" />
+    <h1 class="title">projects</h1>
+    <h2>a collection of all my web projects</h2>
+    <img src="/images/div.svg" alt="Divider" class="divider" />
+  </div>
+  <nav>
+  <a href="/">
+    <img src="/images/home.svg" alt="Home Icon" class="nav-icon" />
+    <span>Home</span>
+  </a>
+  <a href="/projects/">
+    <img src="/images/projects.svg" alt="Projects Icon" class="nav-icon" />
+    <span>Projects</span>
+  </a>
+  <a href="/gallery/" class="active">
+    <img src="/images/gallery.svg" alt="Gallery Icon" class="nav-icon" />
+    <span>Gallery</span>
+  </a>
+  <a href="/more/">
+    <img src="/images/more.svg" alt="More Icon" class="nav-icon" />
+    <span>More</span>
+  </a>
+  <a href="/contact/">
+    <img src="/images/contact.svg" alt="Contact Icon" class="nav-icon" />
+    <span>Contact</span>
+  </a>
+</nav>
+</body>
+</html>
