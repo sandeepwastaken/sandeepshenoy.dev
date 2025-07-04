@@ -127,15 +127,6 @@ document.querySelector('.close').onclick = function() {
 document.getElementById('gallery-modal').onclick = function(e) {
   if (e.target === this) this.style.display = 'none';
 };
-document.getElementById('modal-image').onclick = function() {
-  if (this.style.transform === 'scale(2)') {
-    this.style.transform = 'scale(1)';
-    this.style.cursor = 'zoom-in';
-  } else {
-    this.style.transform = 'scale(2)';
-    this.style.cursor = 'zoom-out';
-  }
-};
 </script>
 </body>
 </html>
