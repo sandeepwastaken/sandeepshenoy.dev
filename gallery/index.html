@@ -46,13 +46,17 @@
       <img src="/gallery/pieces/image.png" alt="Forest" />
     </div>
   </div> 
-  <div id="gallery-modal" class="modal" style="display:none;">
+  <div id="gallery-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <h2 id="modal-title"></h2>
-      <img id="modal-image" src="" alt="" style="max-width:100%;" />
-      <p id="modal-description"></p>
-      <p><strong>Materials:</strong> <span id="modal-materials"></span></p>
+      <div class="modal-image-container">
+        <img id="modal-image" src="" alt="">
+      </div>
+      <div class="modal-text">
+        <h2 id="modal-title">Title</h2>
+        <p id="modal-description">Description</p>
+        <p><strong>Materials:</strong> <span id="modal-materials"></span></p>
+      </div>
     </div>
   </div>
   <nav>
@@ -94,39 +98,99 @@
 .gallery-item img:hover {
   transform: scale(1.05);
 }
+
 .modal {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.255); display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.255); display: flex;
+  align-items: center; justify-content: center;
   z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
+.modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .modal-content {
-  background: #40414711; padding: 2rem; border-radius: 10px; max-width: 90vw; max-height: 90vh; overflow: auto;
+  display: flex;
+  background: #40414711;
+  border-radius: 10px;
+  max-width: 90vw;
+  max-height: 90vh;
   backdrop-filter: blur(10px);
   position: relative;
-  text-align: center;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
 }
+.modal.show .modal-content {
+  transform: scale(1);
+}
+
+.modal-image-container {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.modal-image-container img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 10px 0 0 10px;
+  object-fit: contain;
+}
+
+.modal-text {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  max-height: 90vh;
+  text-align: left;
+  color: white;
+}
+
+.modal-text h2 {
+  margin-top: 0;
+}
+
 .close {
-  position: absolute; top: 1rem; right: 1rem; font-size: 2rem; cursor: pointer;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2rem;
+  cursor: pointer;
+  color: white;
+  z-index: 10;
 }
 </style>
 <script>
 document.querySelectorAll('.gallery-item').forEach(item => {
-  item.addEventListener('click', function() {
+  item.addEventListener('click', function () {
     document.getElementById('modal-title').textContent = this.dataset.title;
     document.getElementById('modal-description').textContent = this.dataset.description;
     document.getElementById('modal-materials').textContent = this.dataset.materials;
     const modalImg = document.getElementById('modal-image');
     modalImg.src = this.dataset.image;
     modalImg.alt = this.dataset.title;
-    modalImg.style.transform = 'scale(1)';
-    document.getElementById('gallery-modal').style.display = 'flex';
+    
+    const modal = document.getElementById('gallery-modal');
+    modal.classList.add('show');
   });
 });
-document.querySelector('.close').onclick = function() {
-  document.getElementById('gallery-modal').style.display = 'none';
+
+document.querySelector('.close').onclick = function () {
+  const modal = document.getElementById('gallery-modal');
+  modal.classList.remove('show');
 };
-document.getElementById('gallery-modal').onclick = function(e) {
-  if (e.target === this) this.style.display = 'none';
+
+document.getElementById('gallery-modal').onclick = function (e) {
+  if (e.target === this) {
+    this.classList.remove('show');
+  }
 };
 </script>
 </body>
