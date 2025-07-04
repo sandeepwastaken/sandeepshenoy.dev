@@ -179,6 +179,11 @@ h3 {
   z-index: 2;
 }
 
+.adjusted {
+  margin-top: 35px;
+  margin-bottom: 10px;
+}
+
 .project-list {
   display: flex;
   flex-wrap: wrap;
