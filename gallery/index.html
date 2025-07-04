@@ -38,6 +38,23 @@
     <h2>a collection of my art projects</h2>
     <img src="/images/div.svg" alt="Divider" class="divider" />
   </div>
+    <div class="gallery-grid">
+    <div class="gallery-item" data-title="Sunset" data-description="Acrylic on canvas, 2023" data-materials="Acrylic, Canvas" data-image="/images/art1.jpg">
+      <img src="/images/art1_thumb.jpg" alt="Sunset" />
+    </div>
+    <div class="gallery-item" data-title="Forest" data-description="Oil on board, 2022" data-materials="Oil, Board" data-image="/images/art2.jpg">
+      <img src="/images/art2_thumb.jpg" alt="Forest" />
+    </div>
+  </div> 
+  <div id="gallery-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="modal-title"></h2>
+      <img id="modal-image" src="" alt="" style="max-width:100%; cursor: zoom-in;" />
+      <p id="modal-description"></p>
+      <p><strong>Materials:</strong> <span id="modal-materials"></span></p>
+    </div>
+  </div>
   <nav>
   <a href="/">
     <img src="/images/home.svg" alt="Home Icon" class="nav-icon" />
@@ -60,5 +77,64 @@
     <span>Contact</span>
   </a>
 </nav>
+<style>
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 2rem;
+}
+.gallery-item img {
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.gallery-item img:hover {
+  transform: scale(1.05);
+}
+.modal {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+  z-index: 10000;
+}
+.modal-content {
+  background: #fff; padding: 2rem; border-radius: 10px; max-width: 90vw; max-height: 90vh; overflow: auto;
+  position: relative;
+  text-align: center;
+}
+.close {
+  position: absolute; top: 1rem; right: 1rem; font-size: 2rem; cursor: pointer;
+}
+</style>
+<script>
+document.querySelectorAll('.gallery-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.getElementById('modal-title').textContent = this.dataset.title;
+    document.getElementById('modal-description').textContent = this.dataset.description;
+    document.getElementById('modal-materials').textContent = this.dataset.materials;
+    const modalImg = document.getElementById('modal-image');
+    modalImg.src = this.dataset.image;
+    modalImg.alt = this.dataset.title;
+    modalImg.style.transform = 'scale(1)';
+    document.getElementById('gallery-modal').style.display = 'flex';
+  });
+});
+document.querySelector('.close').onclick = function() {
+  document.getElementById('gallery-modal').style.display = 'none';
+};
+document.getElementById('gallery-modal').onclick = function(e) {
+  if (e.target === this) this.style.display = 'none';
+};
+document.getElementById('modal-image').onclick = function() {
+  if (this.style.transform === 'scale(2)') {
+    this.style.transform = 'scale(1)';
+    this.style.cursor = 'zoom-in';
+  } else {
+    this.style.transform = 'scale(2)';
+    this.style.cursor = 'zoom-out';
+  }
+};
+</script>
 </body>
 </html>
