@@ -247,4 +247,10 @@ h3 {
   h3 {
     font-size: 4.2vw;
   }
+
+  .divider {
+    width: 90vw;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+  }
 }
