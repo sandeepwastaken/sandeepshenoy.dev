@@ -83,6 +83,10 @@ body {
   z-index: 1;
 }
 
+.modified {
+  margin-bottom: 20px;
+}
+
 nav {
   position: fixed;
   top: 0;
