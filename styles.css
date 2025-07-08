@@ -160,6 +160,8 @@ h2 {
 h3 {
   font-size: 1.2rem;
   margin-bottom: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
   color: #8ca1b9;
   position: relative;
   z-index: 2;
@@ -240,9 +242,5 @@ h3 {
 
   .title {
     font-size: 8vw;
-  }
-  
-  .h3 {
-    font-size: 5vw;
   }
 }
