@@ -160,6 +160,12 @@ nav a.active .nav-icon {
   color: #d6e0f0;
 }
 
+@media (max-width: 600px) {
+  .title {
+    font-size: 70vw;
+  }
+}
+
 h2 {
   font-size: 1.5rem;
   color: #a4b3c6;
