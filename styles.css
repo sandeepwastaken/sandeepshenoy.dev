@@ -113,16 +113,6 @@ nav a {
   transition: border-bottom 0.2s;
 }
 
-@media (max-width: 600px) {
-  nav a {
-    gap: 0;
-  }
-
-  nav a span {
-    display: none;
-  }
-}
-
 .nav-icon {
   width: 20px;
   height: 20px;
@@ -158,12 +148,6 @@ nav a.active .nav-icon {
   position: relative;
   z-index: 2;
   color: #d6e0f0;
-}
-
-@media (max-width: 600px) {
-  .title {
-    font-size: 70vw;
-  }
 }
 
 h2 {
@@ -243,4 +227,18 @@ h3 {
 .project-caption {
   font-size: 0.9rem;
   color: #80a1cb;
+}
+
+@media (max-width: 600px) {
+  nav a {
+    gap: 0;
+  }
+
+  nav a span {
+    display: none;
+  }
+
+  .title {
+    font-size: 8vw;
+  }
 }
