@@ -241,4 +241,8 @@ h3 {
   .title {
     font-size: 8vw;
   }
+  
+  .h3 {
+    font-size: 5vw;
+  }
 }
