@@ -249,10 +249,10 @@ h3 {
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
   .divider {
     width: 90vw;
     margin-top: 2vh;
-    margin-bottom: 2vh;
+    margin-bottom: -1vh;
   }
 }
