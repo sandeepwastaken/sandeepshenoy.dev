@@ -86,7 +86,7 @@ body {
 }
 
 .modified {
-  margin-bottom: 10px;
+  margin-bottom: -40px;
 }
 
 nav {
@@ -247,7 +247,9 @@ h3 {
   h3 {
     font-size: 4.2vw;
   }
+}
 
+@media (max-width: 700px) {
   .divider {
     width: 90vw;
     margin-top: 2vh;
