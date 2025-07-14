@@ -231,6 +231,12 @@ h3 {
   color: #80a1cb;
 }
 
+.subtitle {
+  font-size: 2rem;
+  margin-top: 10px;
+  margin-bottom: -10px;
+}
+
 @media (max-width: 600px) {
   nav a {
     gap: 0;
