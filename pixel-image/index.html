@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Piximage Viewer</title>
+  <style>
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(16, 20px);
+      grid-template-rows: repeat(16, 20px);
+      gap: 2px;
+    }
+    .pixel {
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid" id="grid"></div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const data = params.get("data")?.split(\".\");
+    const grid = document.getElementById(\"grid\");
+
+    if (data?.length === 256) {
+      data.forEach(hex => {
+        const pixel = document.createElement(\"div\");
+        pixel.className = \"pixel\";
+        pixel.style.backgroundColor = `#${hex}`;
+        grid.appendChild(pixel);
+      });
+    } else {
+      grid.innerHTML = \"<p style='color:white;'>Invalid or missing image data.</p>\";
+    }
+  </script>
+</body>
+</html>

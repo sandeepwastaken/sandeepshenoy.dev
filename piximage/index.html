@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Piximage</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #1e1e1e;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(16, 20px);
+      grid-template-rows: repeat(16, 20px);
+      gap: 2px;
+      margin-bottom: 1rem;
+    }
+    .pixel {
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .palette {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .color {
+      width: 25px;
+      height: 25px;
+      border-radius: 4px;
+      border: 2px solid #000;
+      cursor: pointer;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    input[type="color"] {
+      width: 60px;
+      height: 30px;
+      border: none;
+    }
+    input[type="text"] {
+      width: 90%;
+      max-width: 500px;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: none;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Piximage</h1>
+  <div class="grid" id="grid"></div>
+  <div class="palette" id="palette"></div>
+  <div class="controls">
+    <label>Custom Color: <input type="color" id="colorPicker"></label>
+    <input type="text" id="linkOutput" readonly placeholder="Your image link will appear here...">
+    <button onclick="generateLink()">Generate Link</button>
+  </div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    const palette = document.getElementById("palette");
+    const colorPicker = document.getElementById("colorPicker");
+    const linkOutput = document.getElementById("linkOutput");
+
+    const paletteColors = [
+      "#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF",
+      "#FFFF00", "#00FFFF", "#FF00FF", "#808080", "#800000",
+      "#808000", "#008000", "#800080", "#008080", "#000080"
+    ];
+
+    let selectedColor = "#000000";
+
+    paletteColors.forEach(hex => {
+      const c = document.createElement("div");
+      c.className = "color";
+      c.style.backgroundColor = hex;
+      c.onclick = () => selectedColor = hex;
+      palette.appendChild(c);
+    });
+
+    colorPicker.oninput = (e) => selectedColor = e.target.value;
+
+    const pixels = [];
+    for (let i = 0; i < 256; i++) {
+      const pixel = document.createElement("div");
+      pixel.className = "pixel";
+      pixel.style.backgroundColor = "#FFFFFF";
+      pixel.onclick = () => {
+        pixel.style.backgroundColor = selectedColor;
+      };
+      grid.appendChild(pixel);
+      pixels.push(pixel);
+    }
+
+    function toHex(color) {
+      const ctx = document.createElement("canvas").getContext("2d");
+      ctx.fillStyle = color;
+      return ctx.fillStyle.substring(1).toUpperCase();
+    }
+
+    function generateLink() {
+      const hexData = pixels.map(p => toHex(p.style.backgroundColor)).join(".");
+      linkOutput.value = `https://sandeepshenoy.dev/pixel-image?data=${hexData}`;
+    }
+  </script>
+</body>
+</html>
