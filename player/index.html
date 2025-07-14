@@ -3,10 +3,22 @@
   Your browser does not support the video tag.
 </video>
 
-<video id="player" controls autoplay>
-  <source src="" id="videoSource">
-  Your browser does not support the video tag.
-</video>
+<style>
+  body {
+    margin: 0;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  video {
+    height: 100vh;
+    width: auto;
+    max-width: 100%;
+  }
+</style>
 
 <script>
   const urlParams = new URLSearchParams(window.location.search);
