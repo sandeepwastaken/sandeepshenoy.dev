@@ -3,11 +3,21 @@
   Your browser does not support the video tag.
 </video>
 
+<video id="player" controls autoplay>
+  <source src="" id="videoSource">
+  Your browser does not support the video tag.
+</video>
+
 <script>
   const urlParams = new URLSearchParams(window.location.search);
   const src = urlParams.get('src');
+
   if (src) {
-    document.getElementById('videoSource').src = src;
-    document.getElementById('player').load();
+    const fullURL = new URL(src, window.location.origin).href;
+    const source = document.getElementById('videoSource');
+    source.src = fullURL;
+
+    const video = document.getElementById('player');
+    video.load();
   }
 </script>
