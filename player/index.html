@@ -1,0 +1,13 @@
+<video id="player" controls autoplay>
+  <source src="" id="videoSource">
+  Your browser does not support the video tag.
+</video>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const src = urlParams.get('src');
+  if (src) {
+    document.getElementById('videoSource').src = src;
+    document.getElementById('player').load();
+  }
+</script>
