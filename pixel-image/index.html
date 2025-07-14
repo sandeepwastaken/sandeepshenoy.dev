@@ -8,9 +8,10 @@
     body {
       background: #111;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       background-image: 
         linear-gradient(45deg, #333 25%, transparent 25%),
@@ -27,6 +28,24 @@
       border: 2px solid #555;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     }
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 5px;
+      color: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+    }
+    .info a {
+      color: #4CAF50;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .info a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -34,6 +53,7 @@
   <script>
     const params = new URLSearchParams(location.search);
     const data = params.get("data")?.split(".");
+    const format = params.get("format") || "html";
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
@@ -71,6 +91,16 @@
       scaledCtx.imageSmoothingEnabled = false;
       scaledCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
       
+      // Check if we should return as image data
+      if (format === "png" || format === "image") {
+        // Convert canvas to blob and redirect
+        scaledCanvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          window.location.replace(url);
+        }, 'image/png');
+        return;
+      }
+      
       document.body.replaceChild(scaledCanvas, canvas);
       
       const meta = document.createElement('meta');
@@ -87,6 +117,18 @@
       twitterImage.name = 'twitter:image';
       twitterImage.content = scaledCanvas.toDataURL();
       document.head.appendChild(twitterImage);
+      
+      // Add info section with direct image link
+      const info = document.createElement('div');
+      info.className = 'info';
+      const currentUrl = new URL(window.location);
+      const imageUrl = currentUrl.origin + currentUrl.pathname.replace('index.html', 'image.php') + currentUrl.search;
+      info.innerHTML = `
+        <p><strong>Direct Image URL:</strong></p>
+        <p><a href="${imageUrl}" target="_blank">${imageUrl}</a></p>
+        <p>Use this URL in &lt;img&gt; tags or for embedding</p>
+      `;
+      document.body.appendChild(info);
       
     } else {
       document.body.innerHTML = "<p style='color:white; text-align:center;'>Invalid or missing image data.</p>";
