@@ -70,7 +70,7 @@
           imageData.data[pixelIndex + 2] = 0;
           imageData.data[pixelIndex + 3] = 0;
         } else if (hex.length === 8) {
-          // RGBA format
+          // RRGGBBAA format
           const r = parseInt(hex.slice(0, 2), 16);
           const g = parseInt(hex.slice(2, 4), 16);
           const b = parseInt(hex.slice(4, 6), 16);
@@ -80,8 +80,8 @@
           imageData.data[pixelIndex + 1] = g;
           imageData.data[pixelIndex + 2] = b;
           imageData.data[pixelIndex + 3] = a;
-        } else {
-          // RGB format
+        } else if (hex.length === 6) {
+          // RRGGBB format (full opacity)
           const r = parseInt(hex.slice(0, 2), 16);
           const g = parseInt(hex.slice(2, 4), 16);
           const b = parseInt(hex.slice(4, 6), 16);
@@ -89,7 +89,13 @@
           imageData.data[pixelIndex + 0] = r;
           imageData.data[pixelIndex + 1] = g;
           imageData.data[pixelIndex + 2] = b;
-          imageData.data[pixelIndex + 3] = 255; 
+          imageData.data[pixelIndex + 3] = 255;
+        } else {
+          // Invalid format, default to white
+          imageData.data[pixelIndex + 0] = 255;
+          imageData.data[pixelIndex + 1] = 255;
+          imageData.data[pixelIndex + 2] = 255;
+          imageData.data[pixelIndex + 3] = 255;
         }
       }
       
@@ -101,6 +107,12 @@
       scaledCanvas.height = canvas.height * scale;
       const scaledCtx = scaledCanvas.getContext('2d');
       scaledCtx.imageSmoothingEnabled = false;
+      
+      // Fill with white background for PNG export
+      scaledCtx.fillStyle = '#ffffff';
+      scaledCtx.fillRect(0, 0, scaledCanvas.width, scaledCanvas.height);
+      
+      // Draw the pixel art on top
       scaledCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
       
       // Check if we should return as image data
