@@ -10,3 +10,10 @@ DirectoryIndex index.html
 
 # Friendly 404 page
 ErrorDocument 404 /404/
+
+AddType video/mp4 .mp4
+AddType video/quicktime .mov
+
+<FilesMatch "\.(mp4|mov)$">
+  Header set Content-Disposition inline
+</FilesMatch>
