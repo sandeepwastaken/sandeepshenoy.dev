@@ -12,9 +12,20 @@
       align-items: center;
       height: 100vh;
       margin: 0;
+      background-image: 
+        linear-gradient(45deg, #333 25%, transparent 25%),
+        linear-gradient(-45deg, #333 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #333 75%),
+        linear-gradient(-45deg, transparent 75%, #333 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
     }
     canvas {
       image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+      border: 2px solid #555;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     }
   </style>
 </head>
@@ -28,17 +39,30 @@
 
     if (data?.length === 256) {
       const imageData = ctx.createImageData(16, 16);
+      
       for (let i = 0; i < 256; i++) {
         const hex = data[i];
-        const r = parseInt(hex.slice(0, 2), 16);
-        const g = parseInt(hex.slice(2, 4), 16);
-        const b = parseInt(hex.slice(4, 6), 16);
-        imageData.data[i * 4 + 0] = r;
-        imageData.data[i * 4 + 1] = g;
-        imageData.data[i * 4 + 2] = b;
-        imageData.data[i * 4 + 3] = 255;
+        const pixelIndex = i * 4;
+        
+        if (hex === "TRANSPARENT") {
+          imageData.data[pixelIndex + 0] = 0;
+          imageData.data[pixelIndex + 1] = 0;
+          imageData.data[pixelIndex + 2] = 0;
+          imageData.data[pixelIndex + 3] = 0;
+        } else {
+          const r = parseInt(hex.slice(0, 2), 16);
+          const g = parseInt(hex.slice(2, 4), 16);
+          const b = parseInt(hex.slice(4, 6), 16);
+          
+          imageData.data[pixelIndex + 0] = r;
+          imageData.data[pixelIndex + 1] = g;
+          imageData.data[pixelIndex + 2] = b;
+          imageData.data[pixelIndex + 3] = 255; 
+        }
       }
+      
       ctx.putImageData(imageData, 0, 0);
+      
       const scale = 20;
       const scaledCanvas = document.createElement('canvas');
       scaledCanvas.width = canvas.width * scale;
@@ -46,9 +70,26 @@
       const scaledCtx = scaledCanvas.getContext('2d');
       scaledCtx.imageSmoothingEnabled = false;
       scaledCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+      
       document.body.replaceChild(scaledCanvas, canvas);
+      
+      const meta = document.createElement('meta');
+      meta.property = 'og:image';
+      meta.content = scaledCanvas.toDataURL();
+      document.head.appendChild(meta);
+      
+      const twitterCard = document.createElement('meta');
+      twitterCard.name = 'twitter:card';
+      twitterCard.content = 'summary_large_image';
+      document.head.appendChild(twitterCard);
+      
+      const twitterImage = document.createElement('meta');
+      twitterImage.name = 'twitter:image';
+      twitterImage.content = scaledCanvas.toDataURL();
+      document.head.appendChild(twitterImage);
+      
     } else {
-      document.body.innerHTML = "<p style='color:white;'>Invalid or missing image data.</p>";
+      document.body.innerHTML = "<p style='color:white; text-align:center;'>Invalid or missing image data.</p>";
     }
   </script>
 </body>
