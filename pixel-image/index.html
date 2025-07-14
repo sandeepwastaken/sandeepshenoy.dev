@@ -122,37 +122,36 @@
           const url = URL.createObjectURL(blob);
           window.location.replace(url);
         }, 'image/png');
-        return;
+      } else {
+        document.body.replaceChild(scaledCanvas, canvas);
+        
+        const meta = document.createElement('meta');
+        meta.property = 'og:image';
+        meta.content = scaledCanvas.toDataURL();
+        document.head.appendChild(meta);
+        
+        const twitterCard = document.createElement('meta');
+        twitterCard.name = 'twitter:card';
+        twitterCard.content = 'summary_large_image';
+        document.head.appendChild(twitterCard);
+        
+        const twitterImage = document.createElement('meta');
+        twitterImage.name = 'twitter:image';
+        twitterImage.content = scaledCanvas.toDataURL();
+        document.head.appendChild(twitterImage);
+        
+        // Add info section with direct image link
+        const info = document.createElement('div');
+        info.className = 'info';
+        const currentUrl = new URL(window.location);
+        const imageUrl = currentUrl.origin + currentUrl.pathname.replace('index.html', 'image.php') + currentUrl.search;
+        info.innerHTML = `
+          <p><strong>Direct Image URL:</strong></p>
+          <p><a href="${imageUrl}" target="_blank">${imageUrl}</a></p>
+          <p>Use this URL in &lt;img&gt; tags or for embedding</p>
+        `;
+        document.body.appendChild(info);
       }
-      
-      document.body.replaceChild(scaledCanvas, canvas);
-      
-      const meta = document.createElement('meta');
-      meta.property = 'og:image';
-      meta.content = scaledCanvas.toDataURL();
-      document.head.appendChild(meta);
-      
-      const twitterCard = document.createElement('meta');
-      twitterCard.name = 'twitter:card';
-      twitterCard.content = 'summary_large_image';
-      document.head.appendChild(twitterCard);
-      
-      const twitterImage = document.createElement('meta');
-      twitterImage.name = 'twitter:image';
-      twitterImage.content = scaledCanvas.toDataURL();
-      document.head.appendChild(twitterImage);
-      
-      // Add info section with direct image link
-      const info = document.createElement('div');
-      info.className = 'info';
-      const currentUrl = new URL(window.location);
-      const imageUrl = currentUrl.origin + currentUrl.pathname.replace('index.html', 'image.php') + currentUrl.search;
-      info.innerHTML = `
-        <p><strong>Direct Image URL:</strong></p>
-        <p><a href="${imageUrl}" target="_blank">${imageUrl}</a></p>
-        <p>Use this URL in &lt;img&gt; tags or for embedding</p>
-      `;
-      document.body.appendChild(info);
       
     } else {
       document.body.innerHTML = "<p style='color:white; text-align:center;'>Invalid or missing image data.</p>";
