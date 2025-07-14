@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Piximage Viewer</title>
   <style>
     body {
@@ -13,34 +13,43 @@
       height: 100vh;
       margin: 0;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(16, 20px);
-      grid-template-rows: repeat(16, 20px);
-      gap: 2px;
-    }
-    .pixel {
-      width: 20px;
-      height: 20px;
+    canvas {
+      image-rendering: pixelated;
+      border: 2px solid white;
     }
   </style>
 </head>
 <body>
-  <div class="grid" id="grid"></div>
+  <canvas id="canvas" width="16" height="16"></canvas>
   <script>
     const params = new URLSearchParams(location.search);
-    const data = params.get("data")?.split(\".\");
-    const grid = document.getElementById(\"grid\");
+    const data = params.get("data")?.split(".");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
 
     if (data?.length === 256) {
-      data.forEach(hex => {
-        const pixel = document.createElement(\"div\");
-        pixel.className = \"pixel\";
-        pixel.style.backgroundColor = `#${hex}`;
-        grid.appendChild(pixel);
-      });
+      const imageData = ctx.createImageData(16, 16);
+      for (let i = 0; i < 256; i++) {
+        const hex = data[i];
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        imageData.data[i * 4 + 0] = r;
+        imageData.data[i * 4 + 1] = g;
+        imageData.data[i * 4 + 2] = b;
+        imageData.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      const scale = 20;
+      const scaledCanvas = document.createElement('canvas');
+      scaledCanvas.width = canvas.width * scale;
+      scaledCanvas.height = canvas.height * scale;
+      const scaledCtx = scaledCanvas.getContext('2d');
+      scaledCtx.imageSmoothingEnabled = false;
+      scaledCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+      document.body.replaceChild(scaledCanvas, canvas);
     } else {
-      grid.innerHTML = \"<p style='color:white;'>Invalid or missing image data.</p>\";
+      document.body.innerHTML = "<p style='color:white;'>Invalid or missing image data.</p>";
     }
   </script>
 </body>
