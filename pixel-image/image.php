@@ -33,12 +33,26 @@ for ($i = 0; $i < 256; $i++) {
         // Skip transparent pixels (already filled with transparent background)
         continue;
     } else {
-        // Convert hex to RGB
-        $r = hexdec(substr($hex, 0, 2));
-        $g = hexdec(substr($hex, 2, 2));
-        $b = hexdec(substr($hex, 4, 2));
+        // Check if hex includes alpha channel (8 characters instead of 6)
+        if (strlen($hex) === 8) {
+            // Extract RGBA values
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+            $a = hexdec(substr($hex, 6, 2));
+            
+            // Convert alpha from 0-255 to 0-127 (GD format)
+            $alpha = intval((255 - $a) / 2);
+            $color = imagecolorallocatealpha($img, $r, $g, $b, $alpha);
+        } else {
+            // Standard RGB (6 characters)
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+            
+            $color = imagecolorallocate($img, $r, $g, $b);
+        }
         
-        $color = imagecolorallocate($img, $r, $g, $b);
         imagesetpixel($img, $x, $y, $color);
     }
 }

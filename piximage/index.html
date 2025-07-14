@@ -37,18 +37,8 @@
       margin-bottom: 2rem;
       font-size: 2.5rem;
       font-weight: 700;
+      color: #ffffff;
       text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
-      background-size: 400% 400%;
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: gradientShift 3s ease infinite;
-    }
-
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
     }
 
     .editor-section {
@@ -164,10 +154,16 @@
     input[type="color"] {
       width: 40px;
       height: 40px;
-      border: none;
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 8px;
       cursor: pointer;
       background: transparent;
+      transition: all 0.2s ease;
+    }
+
+    input[type="color"]:hover {
+      border-color: rgba(255, 255, 255, 0.8);
+      transform: scale(1.05);
     }
 
     .file-upload {
@@ -233,6 +229,185 @@
       margin-top: 0.5rem;
     }
 
+    .transparency-control {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .transparency-control label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .transparency-slider {
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+      outline: none;
+      cursor: pointer;
+    }
+
+    .transparency-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #4ecdc4;
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .transparency-slider::-moz-range-thumb {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #4ecdc4;
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .tool-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .tool-btn {
+      padding: 0.5rem 1rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .tool-btn:hover {
+      border-color: rgba(255, 255, 255, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .tool-btn.active {
+      background: #4ecdc4;
+      border-color: #4ecdc4;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 2rem;
+      border-radius: 15px;
+      text-align: center;
+      color: #333;
+      max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .modal-btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .modal-btn.confirm {
+      background: #4ecdc4;
+      color: white;
+    }
+
+    .modal-btn.confirm:hover {
+      background: #45b7d1;
+    }
+
+    .modal-btn.cancel {
+      background: #ff6b6b;
+      color: white;
+    }
+
+    .modal-btn.cancel:hover {
+      background: #e55656;
+    }
+
+    .link-output {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-family: monospace;
+      resize: none;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .link-output:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .copy-feedback {
+      color: #4ecdc4;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .copy-feedback.show {
+      opacity: 1;
+    }
+
+    .drop-zone {
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      transition: all 0.2s ease;
+      margin-bottom: 1rem;
+    }
+
+    .drop-zone.drag-over {
+      border-color: #4ecdc4;
+      background: rgba(78, 205, 196, 0.1);
+      color: #4ecdc4;
+    }
+
     @media (max-width: 768px) {
       .editor-section {
         flex-direction: column;
@@ -254,13 +429,27 @@
   <div class="container">
     <h1>Piximage</h1>
     
+    <div class="tool-section">
+      <h3>Generated Link</h3>
+      <textarea id="linkOutput" class="link-output" readonly placeholder="Your pixel art link will appear here automatically..." title="Click to copy"></textarea>
+      <div id="copyFeedback" class="copy-feedback">Link copied to clipboard!</div>
+    </div>
+    
     <div class="editor-section">
       <div class="grid-container">
         <div class="grid" id="grid"></div>
-        <div class="brush-info">Click and drag to paint • Right-click for transparency</div>
+        <div class="brush-info">Click and drag to paint • Right-click and hold for transparency • Use eyedropper to pick colors</div>
       </div>
       
       <div class="tools">
+        <div class="tool-section">
+          <h3>Tools</h3>
+          <div class="tool-buttons">
+            <button class="tool-btn active" id="brushTool">Brush</button>
+            <button class="tool-btn" id="eyedropperTool">Eyedropper</button>
+          </div>
+        </div>
+        
         <div class="tool-section">
           <h3>Color Palette</h3>
           <div class="palette" id="palette"></div>
@@ -268,12 +457,18 @@
             <label for="colorPicker">Custom:</label>
             <input type="color" id="colorPicker" value="#ff6b6b">
           </div>
+          <div class="transparency-control">
+            <label for="transparencySlider">Transparency:</label>
+            <input type="range" id="transparencySlider" class="transparency-slider" min="0" max="255" value="255">
+          </div>
         </div>
         
         <div class="tool-section">
           <h3>Upload Image</h3>
+          <div class="drop-zone" id="dropZone">
+            Drag and drop an image here or click to browse
+          </div>
           <div class="file-upload">
-            <label>Upload 16x16 PNG/JPG:</label>
             <label for="fileInput" class="file-upload-btn">Choose File</label>
             <input type="file" id="fileInput" accept="image/*">
             <div id="errorMessage" class="error-message"></div>
@@ -281,10 +476,16 @@
         </div>
       </div>
     </div>
-    
-    <div class="tool-section">
-      <h3>Generated Link</h3>
-      <textarea id="linkOutput" class="link-output" readonly placeholder="Your pixel art link will appear here automatically..."></textarea>
+  </div>
+
+  <div class="modal" id="uploadModal">
+    <div class="modal-content">
+      <h3>Upload Image</h3>
+      <p>This will replace your current pixel art. Are you sure you want to continue?</p>
+      <div class="modal-buttons">
+        <button class="modal-btn confirm" id="confirmUpload">Yes, Upload</button>
+        <button class="modal-btn cancel" id="cancelUpload">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -295,6 +496,14 @@
     const linkOutput = document.getElementById("linkOutput");
     const fileInput = document.getElementById("fileInput");
     const errorMessage = document.getElementById("errorMessage");
+    const transparencySlider = document.getElementById("transparencySlider");
+    const brushTool = document.getElementById("brushTool");
+    const eyedropperTool = document.getElementById("eyedropperTool");
+    const dropZone = document.getElementById("dropZone");
+    const uploadModal = document.getElementById("uploadModal");
+    const confirmUpload = document.getElementById("confirmUpload");
+    const cancelUpload = document.getElementById("cancelUpload");
+    const copyFeedback = document.getElementById("copyFeedback");
 
     const paletteColors = [
       "transparent",
@@ -305,9 +514,14 @@
     ];
 
     let selectedColor = "#ff6b6b";
+    let currentTool = "brush";
+    let transparency = 255;
     let isDrawing = false;
+    let rightClickTimer = null;
     let pixels = [];
+    let pendingFile = null;
 
+    // Initialize palette
     paletteColors.forEach(color => {
       const c = document.createElement("div");
       c.className = "color";
@@ -323,6 +537,21 @@
       };
       palette.appendChild(c);
     });
+
+    // Tool selection
+    brushTool.onclick = () => {
+      currentTool = "brush";
+      brushTool.classList.add("active");
+      eyedropperTool.classList.remove("active");
+      grid.style.cursor = "crosshair";
+    };
+
+    eyedropperTool.onclick = () => {
+      currentTool = "eyedropper";
+      eyedropperTool.classList.add("active");
+      brushTool.classList.remove("active");
+      grid.style.cursor = "copy";
+    };
 
     // Update selected color indicator
     function updateSelectedColor() {
@@ -341,30 +570,74 @@
       generateLink();
     };
 
+    // Transparency slider
+    transparencySlider.oninput = (e) => {
+      transparency = parseInt(e.target.value);
+    };
+
+    // Link output click to copy
+    linkOutput.onclick = () => {
+      navigator.clipboard.writeText(linkOutput.value).then(() => {
+        copyFeedback.classList.add("show");
+        setTimeout(() => {
+          copyFeedback.classList.remove("show");
+        }, 2000);
+      });
+    };
+
+    // Create grid pixels
     for (let i = 0; i < 256; i++) {
       const pixel = document.createElement("div");
       pixel.className = "pixel";
       pixel.style.backgroundColor = "#ffffff";
+      pixel.dataset.index = i;
       
       pixel.onmousedown = (e) => {
         e.preventDefault();
+        
+        if (currentTool === "eyedropper") {
+          const color = getPixelColor(pixel);
+          if (color !== "transparent") {
+            selectedColor = color;
+            colorPicker.value = color;
+            updateSelectedColor();
+            currentTool = "brush";
+            brushTool.classList.add("active");
+            eyedropperTool.classList.remove("active");
+            grid.style.cursor = "crosshair";
+          }
+          return;
+        }
+        
         isDrawing = true;
+        
         if (e.button === 2) {
-          paintPixel(pixel, "transparent");
+          // Right click - start timer for transparency control
+          rightClickTimer = setTimeout(() => {
+            // Show transparency control context (already visible)
+            paintPixel(pixel, selectedColor, transparency);
+          }, 1000);
         } else {
-          paintPixel(pixel, selectedColor);
+          paintPixel(pixel, selectedColor, transparency);
+        }
+      };
+      
+      pixel.onmouseup = (e) => {
+        if (e.button === 2 && rightClickTimer) {
+          clearTimeout(rightClickTimer);
+          // Quick right-click makes transparent
+          paintPixel(pixel, "transparent", 0);
         }
       };
       
       pixel.onmouseenter = () => {
-        if (isDrawing) {
-          paintPixel(pixel, selectedColor);
+        if (isDrawing && currentTool === "brush") {
+          paintPixel(pixel, selectedColor, transparency);
         }
       };
       
       pixel.oncontextmenu = (e) => {
         e.preventDefault();
-        paintPixel(pixel, "transparent");
         return false;
       };
       
@@ -374,15 +647,42 @@
 
     document.onmouseup = () => {
       isDrawing = false;
+      if (rightClickTimer) {
+        clearTimeout(rightClickTimer);
+        rightClickTimer = null;
+      }
     };
 
-    function paintPixel(pixel, color) {
-      if (color === "transparent") {
+    function getPixelColor(pixel) {
+      if (pixel.classList.contains("transparent")) {
+        return "transparent";
+      }
+      return rgbToHex(pixel.style.backgroundColor);
+    }
+
+    function rgbToHex(rgb) {
+      if (rgb.startsWith("#")) return rgb;
+      const result = rgb.match(/\d+/g);
+      if (!result) return "#000000";
+      return "#" + result.map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+    }
+
+    function paintPixel(pixel, color, alpha = 255) {
+      if (color === "transparent" || alpha === 0) {
         pixel.style.backgroundColor = "transparent";
         pixel.classList.add("transparent");
+        pixel.dataset.alpha = "0";
       } else {
         pixel.style.backgroundColor = color;
         pixel.classList.remove("transparent");
+        pixel.dataset.alpha = alpha.toString();
+        
+        if (alpha < 255) {
+          const r = parseInt(color.slice(1, 3), 16);
+          const g = parseInt(color.slice(3, 5), 16);
+          const b = parseInt(color.slice(5, 7), 16);
+          pixel.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alpha / 255})`;
+        }
       }
       generateLink();
     }
@@ -401,27 +701,65 @@
         if (p.classList.contains("transparent")) {
           return "TRANSPARENT";
         }
-        return toHex(p.style.backgroundColor);
+        const alpha = p.dataset.alpha || "255";
+        const color = toHex(p.style.backgroundColor);
+        return alpha === "255" ? color : `${color}${parseInt(alpha).toString(16).padStart(2, '0').toUpperCase()}`;
       }).join(".");
       linkOutput.value = `https://sandeepshenoy.dev/pixel-image?data=${hexData}`;
     }
 
+    // Drag and drop functionality
+    dropZone.onclick = () => fileInput.click();
+
+    dropZone.ondragover = (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    };
+
+    dropZone.ondragleave = () => {
+      dropZone.classList.remove("drag-over");
+    };
+
+    dropZone.ondrop = (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("drag-over");
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) {
+        pendingFile = file;
+        uploadModal.style.display = "flex";
+      }
+    };
+
     fileInput.onchange = (e) => {
       const file = e.target.files[0];
-      if (!file) return;
+      if (file) {
+        pendingFile = file;
+        uploadModal.style.display = "flex";
+      }
+    };
 
+    confirmUpload.onclick = () => {
+      if (pendingFile) {
+        processImageFile(pendingFile);
+        uploadModal.style.display = "none";
+        pendingFile = null;
+      }
+    };
+
+    cancelUpload.onclick = () => {
+      uploadModal.style.display = "none";
+      pendingFile = null;
+      fileInput.value = "";
+    };
+
+    function processImageFile(file) {
       const img = new Image();
       img.onload = () => {
-        if (img.width !== 16 || img.height !== 16) {
-          showError("Image must be exactly 16x16 pixels!");
-          return;
-        }
-
         const canvas = document.createElement("canvas");
         canvas.width = 16;
         canvas.height = 16;
         const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, 16, 16);
 
         const imageData = ctx.getImageData(0, 0, 16, 16);
         const data = imageData.data;
@@ -434,10 +772,10 @@
           const a = data[pixelIndex + 3];
 
           if (a < 128) {
-            paintPixel(pixels[i], "transparent");
+            paintPixel(pixels[i], "transparent", 0);
           } else {
             const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-            paintPixel(pixels[i], hex);
+            paintPixel(pixels[i], hex, a);
           }
         }
 
@@ -446,7 +784,7 @@
       };
 
       img.src = URL.createObjectURL(file);
-    };
+    }
 
     function showError(message) {
       errorMessage.textContent = message;
