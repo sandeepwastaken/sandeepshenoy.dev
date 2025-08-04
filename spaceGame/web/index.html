@@ -1,4 +1,12 @@
-<html lang="en-us"><script src="https://pygame-web.github.io/archives/0.9/pythons.js" type=module id=site data-LINES=57 data-CONSOLE=25 data-python=python3.12 data-os=vtx,fs,snd,gui async defer>#<!--
+<html lang="en-us">
+<script>
+window.addEventListener('load', function() {
+    const script = document.createElement('script');
+    script.src = 'script.js';
+    document.head.appendChild(script);
+});
+</script>
+<script src="https://pygame-web.github.io/archives/0.9/pythons.js" type=module id=site data-LINES=57 data-CONSOLE=25 data-python=python3.12 data-os=vtx,fs,snd,gui async defer>#<!--
 
 print("""
 Loading spacegame from spacegame.apk
@@ -13,6 +21,8 @@ Loading spacegame from spacegame.apk
     SPDX-License-Identifier: cookiecutter.spdx
 
 """)
+
+
 
 
 # screen pixels (real, hardware)
@@ -62,7 +72,7 @@ async def custom_site():
     import embed
 
 
-    platform.document.body.style.background = "#7f7f7f"
+    platform.document.body.style.background = "#000000"
 
     import pygame
 

@@ -25,6 +25,12 @@
       document.getElementById('preload-overlay').style.display = 'none';
     };
     document.head.appendChild(link);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    if (message) {
+      alert(decodeURIComponent(message));
+    }
   </script>
 </head>
 <body>
@@ -53,11 +59,11 @@
         <p class="project-caption">advanced conversational LLM</p>
       </div>
     </a>
-    <a href="/projects/project3.html" class="image-box">
-      <img src="/images/thumbnails/site.png?version=1" alt="Project 3">
+    <a href="/spaceGame/web/" class="image-box">
+      <img src="/images/thumbnails/space.png?version=1" alt="space game">
       <div class="project-info">
-        <h4 class="project-title">Project 3</h4>
-        <p class="project-caption">a brief description of Project 3.</p>
+        <h4 class="project-title">Space</h4>
+        <p class="project-caption">space shooter pygame project</p>
       </div>
     </a>
   </div>
