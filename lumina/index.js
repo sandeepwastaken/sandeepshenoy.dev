@@ -103,7 +103,7 @@ function stopTyping() {
     setInputState(true);
 }
 
-const userProfilePic = 'https://upload.wikimedia.org/wikipedia/en/9/94/Ryomen_Sukuna_%28character%29.jpg';
+const userProfilePic = 'user.png';
 const assistantProfilePic = 'logo.png';
 
 function createMessage(content, isUser = false) {
