@@ -13,7 +13,7 @@ async function initializeAI() {
         showLoadingBar('Initializing AI engine...');
         engine = new webllm.MLCEngine();
         
-        updateLoadingBar('Loading conversational AI model...', 0);
+        updateLoadingBar('Loading AI model via Web-LLM...', 0);
         
         const selectedModel = "Llama-3.2-3B-Instruct-q4f32_1-MLC";
         
@@ -69,6 +69,11 @@ function showLoadingBar(text) {
     loadingText.textContent = text;
     loadingProgress.style.width = '0%';
     loadingBar.style.display = 'block';
+    
+    const chatContainer = document.querySelector('.chat-container');
+    if (chatContainer && !chatContainer.contains(loadingBar)) {
+        chatContainer.appendChild(loadingBar);
+    }
 }
 
 function updateLoadingBar(text, progress) {
