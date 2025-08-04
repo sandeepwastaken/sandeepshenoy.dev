@@ -44,11 +44,13 @@ nav {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-surface);
+    background: color-mix(in srgb, var(--color-surface) 60%, transparent);
     padding: 1.5rem;
     box-shadow: 0 7.5px 0 0 color-mix(in srgb, var(--color-deep) 50%, transparent), inset 0 -5px 0 0 color-mix(in srgb, var(--color-secondary) 20%, transparent);
     position: relative;
     z-index: 10;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .nav-logo {

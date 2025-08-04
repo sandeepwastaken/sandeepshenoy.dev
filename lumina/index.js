@@ -133,7 +133,6 @@ function addMessage(content, isUser = false) {
 
 function typeMessage(content, speed = 30) {
     return new Promise((resolve) => {
-        // Create message element
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message assistant';
         
@@ -186,7 +185,6 @@ function typeMessage(content, speed = 30) {
 let conversationHistory = [];
 
 async function sendMessage() {
-    // If typing, stop it
     if (isTyping) {
         stopTyping();
         return;
@@ -206,7 +204,6 @@ async function sendMessage() {
         return;
     }
     
-    // Disable input while AI is thinking
     setInputState(false);
     isTyping = true;
     
@@ -236,7 +233,7 @@ async function sendMessage() {
         
         conversationHistory.push({ role: "assistant", content: aiResponse });
         
-        // Type out the response
+        speakMessage(aiResponse);
         await typeMessage(aiResponse);
         
     } catch (error) {
@@ -257,9 +254,34 @@ messageInput.addEventListener('keypress', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-    setInputState(false); // Disable input during loading
+    setInputState(false); 
     await initializeAI();
-    setInputState(true); // Enable input after loading
+    setInputState(true);
     
     console.log('AI assistant ready!');
 });
+
+// ---------
+
+function speakMessage(text) {
+    if ('speechSynthesis' in window) {
+        const speak = () => {
+            const voices = speechSynthesis.getVoices();
+            const voice = voices.find(voice => voice.name === 'Google US English');
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (voice) {
+                utterance.voice = voice;
+            }
+            utterance.rate = 1.2;
+            utterance.pitch = 0.9;
+            speechSynthesis.speak(utterance);
+        };
+
+        if (speechSynthesis.getVoices().length === 0) {
+            speechSynthesis.onvoiceschanged = speak;
+        } else {
+            speak();
+        }
+    }
+}
