@@ -94,7 +94,7 @@ function setInputState(enabled) {
         sendButton.textContent = 'Send';
     } else {
         messageInput.placeholder = 'AI is typing...';
-        sendButton.textContent = 'Stop';
+        sendButton.textContent = 'Send';
     }
 }
 
