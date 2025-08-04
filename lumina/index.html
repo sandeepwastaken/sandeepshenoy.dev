@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<html lang="en">
+<link rel="icon" type="image/png" href="logo.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina AI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <img src="tagline.png" alt="Lumina AI" class="nav-logo">
+        <a href="index.html">
+            <span class="nav-element active">Chat</span>
+        </a>
+        <a href="about.html">
+            <span class="nav-element">History</span>
+        </a>
+    </nav>
+    
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="messageInput" placeholder="Type your message..." class="chat-input">
+            <button id="sendButton" class="send-button">Send</button>
+        </div>
+    </div>
+    
+    <script type="module" src="index.js"></script>
+</body>
+</html>
