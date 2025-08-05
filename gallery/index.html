@@ -38,6 +38,52 @@
     <h2>my art collection</h2>
     <img src="/images/div.svg" alt="Divider" class="divider adjusted" />
   </div>
+  <h2 class="subtitle">Adobe Illustrator</h2>
+    <div class="gallery-grid">
+    <div class="gallery-item" data-title="Eye" data-description="This was one of my first pieces, which shows a human eye, which was made mainly to play around with the shape and curvature pen tool. I started with some basic shapes and then cut them to match the shape of an eye. I think it came out better than I originally thought it would. 👁" data-image="/gallery/pieces/eye.png">
+      <img src="/gallery/pieces/eye.png" alt="Eye" />
+    </div>
+    <div class="gallery-item" data-title="I am Hopeful" data-description='This poster shows my thoughts on why I am hopeful! I tried to depict a globe and a moon to show the word "world" more clearly. :D' data-image="/gallery/pieces/hopeful.png">
+      <img src="/gallery/pieces/hopeful.png" alt="I am Hopeful" />
+    </div>
+    <div class="gallery-item" data-title="Froggy Mola" data-description="Molas are a type of pattern often found on textiles in places like Panamá and Colombia in South America. They also often have a type of animal, in the one I made above the animal is a frog. I mainly used the pen and curvature pen. I think molas are really cool! 🤩" data-image="/gallery/pieces/mola.png">
+      <img src="/gallery/pieces/mola.png" alt="Froggy Mola" />
+    </div>
+    <div class="gallery-item" data-title="Sad Teardrop" data-description="oh no D:" data-image="/gallery/pieces/sad.png">
+      <img src="/gallery/pieces/sad.png" alt="Sad Teardrop" />
+    </div>
+    <div class="gallery-item" data-title="Principles of Art" data-description="This poster shows the various principles of art and with matching styles. I have referred back to this when making other pieces to remind myself of the principles of art." data-image="/gallery/pieces/principles.png">
+      <img src="/gallery/pieces/principles.png" alt="Principles of Art" />
+    </div>
+    <div class="gallery-item" data-title="Carved Pumpkin" data-description="This piece of art depicts a Jack o Lantern that has been freshly carved, on someone's concrete doorstep with some dropped candy near it. For this piece, I mainly used curvature pen and shapebuilder. Spooky! 🎃" data-image="/gallery/pieces/pumpkin.png">
+      <img src="/gallery/pieces/pumpkin.png" alt="Carved Pumpkin" />
+    </div>
+  </div>  
+  <img src="/images/div.svg" alt="Divider" class="divider adjusted" />
+  </div>
+  <h2 class="subtitle">Adobe Photoshop</h2>
+    <div class="gallery-grid">
+    <div class="gallery-item" data-title="Feline Fest" data-description="Happy Birthday! This cat is definitely having the time of its life. I made this in a Photoshop battle, and I added things to the picture like the cat's bib, the fork, the sandwich etc. I hope the cat is having a good time :D 🐱" data-image="/gallery/pieces/felinefest.png">
+      <img src="/gallery/pieces/felinefest.png" alt="Feline Fest" />
+    </div>
+    <div class="gallery-item" data-title="Festive Lights" data-description='Merry Christmas! Yup, we got another holiday (you can call a birthday that? I guess?) This was my first or second gif made in Photoshop, and I tried to make it look like a pattern you would see on Christmas tree lights. So glowy! 🎅' data-image="/gallery/pieces/festivelights.gif">
+      <img src="/gallery/pieces/festivelights.gif" alt="Festive Lights" />
+    </div>
+    <div class="gallery-item" data-title="Snowglobe" data-description="Yet another Christmas inspired gif. I tried to add parallax to this gif, to make it look somewhat realistic. Little did I realize I did it wrong... It's ok, it came out fine 🔮" data-image="/gallery/pieces/globe.gif">
+      <img src="/gallery/pieces/globe.gif" alt="Snowglobe" />
+    </div>
+    <div class="gallery-item" data-title="Barayne Jobamson" data-description="This is a mashup of Barack Obama's body and Dwayne The Rock Johnson's body. I tried to blend the skin tones and facial features seamlessly, and it came out somewhat convincing! I even gave it a fitting name, mushed up, just like the picture shown! 🪨" data-image="/gallery/pieces/obama.png">
+      <img src="/gallery/pieces/obama.png" alt="Barayne Jobamson" />
+    </div>
+    <div class="gallery-item" data-title="Thanksgiving" data-description="This is a little Thanksgiving card I made. I made it because I think that Thanksgiving is a great holiday because it really makes you think about what you're grateful for. I made it with multiple stock photos and a really cool font I found online. 🦃" data-image="/gallery/pieces/thanksgiving.png">
+      <img src="/gallery/pieces/thanksgiving.png" alt="Thanksgiving" />
+    </div>
+    <div class="gallery-item" data-title="Winter Wonderland" data-description="Walking in a winter wonderland... This piece shows off a new brush I made just for this project, which is a snowflake brush! I've needed to make snow scenes before but never really tried to make a snow brush until then... it came out pretty good! Will use in the future. ❄️" data-image="/gallery/pieces/winterwonderland.png">
+      <img src="/gallery/pieces/winterwonderland.png" alt="Winter Wonderland" />
+    </div>
+  </div> 
+  <img src="/images/div.svg" alt="Divider" class="divider adjusted" />
+  </div>
   <h2 class="subtitle">Art I</h2>
     <div class="gallery-grid">
     <div class="gallery-item" data-title="Portfolio Folder" data-description="Where it all began. All of my art has been contained within this folder at some point! It represents to me how everything starts from nothing; after all, this is about all I had at the start of the year. I think it's pretty crazy to think about how this was my first project, but also is the way I will bring all the work I made over the course of the year back home when school ends." data-materials="Cardstock paper (folder base), colored pencil, pencil, pen, marker, and paint marker." data-image="/gallery/pieces/image.png">
@@ -231,7 +277,17 @@ document.querySelectorAll('.gallery-item').forEach(item => {
   item.addEventListener('click', function () {
     document.getElementById('modal-title').textContent = this.dataset.title;
     document.getElementById('modal-description').textContent = this.dataset.description;
-    document.getElementById('modal-materials').textContent = this.dataset.materials;
+    
+    const materialsElement = document.getElementById('modal-materials');
+    const materialsContainer = materialsElement.parentElement;
+    
+    if (this.dataset.materials && this.dataset.materials.trim() !== '') {
+      materialsElement.textContent = this.dataset.materials;
+      materialsContainer.style.display = 'block';
+    } else {
+      materialsContainer.style.display = 'none';
+    }
+    
     const modalImg = document.getElementById('modal-image');
     modalImg.src = this.dataset.image;
     modalImg.alt = this.dataset.title;
