@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>gallery</title>
+  <title>home</title>
   <link rel="icon" type="image/x-icon" href="/images/logo.svg">
   <style>
     #preload-overlay {
@@ -13,7 +13,7 @@
       width: 100vw;
       height: 100vh;
       background-color: black;
-      z-index: 9999;
+      z-index: 999;
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
@@ -32,10 +32,22 @@
   <div class="background"></div>
   <div class="gradient"></div>
   <div class="overlay"></div>
-  <div class="main-content modified">
+  <div class="main-content">
     <img src="/images/logo.svg" alt="Logo" class="logo" />
     <h1 class="title">contact</h1>
-    <h2>under construction!</h2>
+    <h2>get in touch!</h2>
+    <img src="/images/div.svg" alt="Divider" class="divider" />
+    <div style="display: flex; gap: 1rem; justify-content: center; align-items: center;">
+      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=ask@sandeepshenoy.dev" target="_blank">
+        <img src="/images/email.png" alt="Email" style="width: 100px; height: 100px;" />
+      </a>
+      <a href="https://github.com/sandeepwastaken" target="_blank">
+        <img src="/images/github.png" alt="GitHub" style="width: 100px; height: 100px;" />
+      </a>
+      <a href="https://www.linkedin.com/in/sandeep-shenoy-576510362/" target="_blank">
+        <img src="/images/linkedin.png" alt="LinkedIn" style="width: 100px; height: 100px;" />
+      </a>
+    </div>
   </div>
   <nav>
   <a href="/">
@@ -46,7 +58,7 @@
     <img src="/images/projects.svg" alt="Projects Icon" class="nav-icon" />
     <span>Projects</span>
   </a>
-  <a href="/gallery/" class="active">
+  <a href="/gallery/">
     <img src="/images/gallery.svg" alt="Gallery Icon" class="nav-icon" />
     <span>Gallery</span>
   </a>
@@ -54,186 +66,10 @@
     <img src="/images/more.svg" alt="More Icon" class="nav-icon" />
     <span>More</span>
   </a>
-  <a href="/contact/">
+  <a href="/contact/" class="active">
     <img src="/images/contact.svg" alt="Contact Icon" class="nav-icon" />
     <span>Contact</span>
   </a>
 </nav>
-<style>
-
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(25vw, 1fr));
-    gap: 3.5vw;
-    max-width: 100vw;
-    margin: 10px;
-    padding: 2rem 1rem;
-    justify-items: center;
-    align-items: start;
-}
-
-.gallery-item {
-    display: flex;
-    scale: 1;
-    flex-direction: column;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    padding: 1rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    z-index: 4;
-}
-
-.gallery-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-}
-
-.gallery-item img {
-  width: 100%;
-  max-height: 300px;
-  object-fit: cover;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.main-content {
-  text-align: center;
-  padding: 2rem 1rem;
-}
-
-.modal {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.255); display: flex;
-  align-items: center; justify-content: center;
-  z-index: 10000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-.modal.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.modal-content {
-  display: flex;
-  background: #0e1a2bd9;
-  border-radius: 10px;
-  max-width: 90vw;
-  max-height: 90vh;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-  transform: scale(0.95);
-  transition: transform 0.3s ease;
-}
-.modal.show .modal-content {
-  transform: scale(1);
-}
-
-.modal-image-container {
-  flex: 1;
-  min-width: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-.modal-image-container img {
-  max-width: 100%;
-  max-height: 90vh;
-  border-radius: 10px 0 0 10px;
-  object-fit: contain;
-}
-
-.modal-text {
-  flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
-  max-height: 90vh;
-  text-align: left;
-  color: white;
-}
-
-#modal-title {
-  margin-bottom: 10px;
-}
-
-#modal-description {
-  margin-bottom: 10px;
-}
-
-#modal-materials {
-  color: #80a1cb;
-}
-
-.modal-text h2 {
-  margin-top: 0;
-}
-
-.close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 2rem;
-  cursor: pointer;
-  color: white;
-  z-index: 10;
-}
-@media screen and (max-width: 600px) {
-  .modal-content.mobile {
-    flex-direction: column;
-  }
-
-  .modal-image-container img {
-    border-radius: 10px 10px 0 0; 
-  }
-
-  .modal-text {
-    padding: 1.5rem;
-  }
-}
-</style>
-<script>
-document.querySelectorAll('.gallery-item').forEach(item => {
-  item.addEventListener('click', function () {
-    document.getElementById('modal-title').textContent = this.dataset.title;
-    document.getElementById('modal-description').textContent = this.dataset.description;
-    document.getElementById('modal-materials').textContent = this.dataset.materials;
-    const modalImg = document.getElementById('modal-image');
-    modalImg.src = this.dataset.image;
-    modalImg.alt = this.dataset.title;
-    
-    const modal = document.getElementById('gallery-modal');
-    modal.classList.add('show');
-  });
-});
-
-document.querySelector('.close').onclick = function () {
-  const modal = document.getElementById('gallery-modal');
-  modal.classList.remove('show');
-};
-
-document.getElementById('gallery-modal').onclick = function (e) {
-  if (e.target === this) {
-    this.classList.remove('show');
-  }
-};
-
-function adjustModalLayout() {
-  const modalContent = document.querySelector('.modal-content');
-  if (window.innerWidth <= 800) {
-    modalContent.classList.add('mobile');
-  } else {
-    modalContent.classList.remove('mobile');
-  }
-}
-
-window.addEventListener('load', adjustModalLayout);
-window.addEventListener('resize', adjustModalLayout);
-</script>
 </body>
 </html>
