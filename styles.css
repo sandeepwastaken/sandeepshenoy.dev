@@ -429,7 +429,23 @@ h3 {
   width: 100%;
   height: 500px;
   object-fit: cover;
+  border-radius: 0;
+}
+
+.video-label {
+  color: #a4b3c6;
+  font-size: 1.3rem;
+  margin: 0;
+  padding: 20px 20px 10px 20px;
+  background: #0e1a2b;
   border-radius: 12px 12px 0 0;
+  align-content: center;
+  font-weight: bold;
+  margin-bottom: 7.5px;
+  animation-name: flash;
+  animation-duration: 1s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
 }
 
 .modal-body {
@@ -562,6 +578,19 @@ h3 {
   cursor: pointer;
 }
 
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+
 @media (max-width: 768px) {
   .modal-content {
     width: 95%;
@@ -584,5 +613,10 @@ h3 {
   
   .modal-trait {
     padding: 12px;
+  }
+  
+  .image-box {
+    flex: 1 1 100%;
+    max-width: 350px;
   }
 }
