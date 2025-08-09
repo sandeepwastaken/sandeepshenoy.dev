@@ -315,7 +315,79 @@
     }
   });
 
-  document.addEventListener('DOMContentLoaded', generateProjects);
+  const PERSPECTIVE_SETTINGS = {
+    hoverIntensity: 30,
+    scaleAmount: 1.05,
+    baseRotateYRange: 20,
+    baseRotateXMax: 12
+  };
+
+  function setup3DEffects() {
+    const projectBoxes = document.querySelectorAll('.project-box');
+    
+    projectBoxes.forEach(box => {
+      updateCardPerspective(box);
+      
+      box.addEventListener('mousemove', (e) => {
+        const rect = box.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        
+        const rotateX = (mouseY - centerY) / rect.height * -PERSPECTIVE_SETTINGS.hoverIntensity;
+        const rotateY = (mouseX - centerX) / rect.width * PERSPECTIVE_SETTINGS.hoverIntensity;
+        
+        const basePerspective = getBasePerspective(box);
+        
+        box.style.transform = `
+          ${basePerspective}
+          rotateX(${rotateX}deg) 
+          rotateY(${rotateY}deg) 
+          scale(${PERSPECTIVE_SETTINGS.scaleAmount})
+        `;
+      });
+      
+      box.addEventListener('mouseleave', () => {
+        const basePerspective = getBasePerspective(box);
+        box.style.transform = basePerspective;
+      });
+    });
+  }
+  
+  function getBasePerspective(box) {
+    const rect = box.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const cardCenter = rect.top + rect.height / 2;
+    
+    const verticalPosition = cardCenter / viewportHeight;
+    
+    const baseRotateY = -15 + (verticalPosition * PERSPECTIVE_SETTINGS.baseRotateYRange);
+    const baseRotateX = verticalPosition * PERSPECTIVE_SETTINGS.baseRotateXMax;
+    
+    return `rotateY(${baseRotateY}deg) rotateX(${baseRotateX}deg)`;
+  }
+  
+  function updateCardPerspective(box) {
+    const basePerspective = getBasePerspective(box);
+    box.style.transform = basePerspective;
+  }
+  
+  window.addEventListener('scroll', () => {
+    const projectBoxes = document.querySelectorAll('.project-box');
+    projectBoxes.forEach(updateCardPerspective);
+  });
+  
+  window.addEventListener('resize', () => {
+    const projectBoxes = document.querySelectorAll('.project-box');
+    projectBoxes.forEach(updateCardPerspective);
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    generateProjects();
+    setTimeout(setup3DEffects, 100);
+  });
 </script>
 
 </body>
