@@ -325,33 +325,37 @@
   function setup3DEffects() {
     const projectBoxes = document.querySelectorAll('.project-box');
     
-    projectBoxes.forEach(box => {
-      updateCardPerspective(box);
-      
-      box.addEventListener('mousemove', (e) => {
-        const rect = box.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+    projectBoxes.forEach(box => box.offsetHeight);
+    
+    requestAnimationFrame(() => {
+      projectBoxes.forEach(box => {
+        updateCardPerspective(box);
         
-        const mouseX = e.clientX;
-        const mouseY = e.clientY;
+        box.addEventListener('mousemove', (e) => {
+          const rect = box.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          const mouseX = e.clientX;
+          const mouseY = e.clientY;
+          
+          const rotateX = (mouseY - centerY) / rect.height * -PERSPECTIVE_SETTINGS.hoverIntensity;
+          const rotateY = (mouseX - centerX) / rect.width * PERSPECTIVE_SETTINGS.hoverIntensity;
+          
+          const basePerspective = getBasePerspective(box);
+          
+          box.style.transform = `
+            ${basePerspective}
+            rotateX(${rotateX}deg) 
+            rotateY(${rotateY}deg) 
+            scale(${PERSPECTIVE_SETTINGS.scaleAmount})
+          `;
+        });
         
-        const rotateX = (mouseY - centerY) / rect.height * -PERSPECTIVE_SETTINGS.hoverIntensity;
-        const rotateY = (mouseX - centerX) / rect.width * PERSPECTIVE_SETTINGS.hoverIntensity;
-        
-        const basePerspective = getBasePerspective(box);
-        
-        box.style.transform = `
-          ${basePerspective}
-          rotateX(${rotateX}deg) 
-          rotateY(${rotateY}deg) 
-          scale(${PERSPECTIVE_SETTINGS.scaleAmount})
-        `;
-      });
-      
-      box.addEventListener('mouseleave', () => {
-        const basePerspective = getBasePerspective(box);
-        box.style.transform = basePerspective;
+        box.addEventListener('mouseleave', () => {
+          const basePerspective = getBasePerspective(box);
+          box.style.transform = basePerspective;
+        });
       });
     });
   }
@@ -359,9 +363,14 @@
   function getBasePerspective(box) {
     const rect = box.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
-    const cardCenter = rect.top + rect.height / 2;
     
-    const verticalPosition = cardCenter / viewportHeight;
+    // Ensure we have valid dimensions before calculating
+    if (rect.height === 0 || viewportHeight === 0) {
+      return 'rotateY(-15deg) rotateX(5deg)'; // fallback to default
+    }
+    
+    const cardCenter = rect.top + rect.height / 2;
+    const verticalPosition = Math.max(0, Math.min(1, cardCenter / viewportHeight));
     
     const baseRotateY = -15 + (verticalPosition * PERSPECTIVE_SETTINGS.baseRotateYRange);
     const baseRotateX = verticalPosition * PERSPECTIVE_SETTINGS.baseRotateXMax;
@@ -386,7 +395,10 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     generateProjects();
-    setTimeout(setup3DEffects, 100);
+    // Wait for images to load and layout to stabilize
+    setTimeout(() => {
+      setup3DEffects();
+    }, 200);
   });
 </script>
 

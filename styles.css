@@ -219,7 +219,7 @@ h3 {
   text-decoration: none;
   color: inherit;
   transform-style: preserve-3d;
-  transform: rotateY(-15deg) rotateX(5deg);
+  transform: none;
   transition: transform 0.3s ease-out, filter 0.3s ease, margin 1s ease;
 }
 
