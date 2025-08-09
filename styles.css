@@ -225,7 +225,7 @@ h3 {
 
 .project-box {
   filter: none;
-  transition: filter 0.15s ease, margin 0.3s ease;
+  transition: filter 0.2s ease, margin 0.4s ease, transform 0.2s ease-out;
   cursor: pointer;
 }
 
@@ -247,7 +247,6 @@ h3 {
 
 .image-box img:hover {
   box-shadow: 10px 10px rgba(0, 0, 0, 0.323);
-  
 }
 
 .project-info {
