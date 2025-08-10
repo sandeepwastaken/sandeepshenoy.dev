@@ -1,4 +1,3 @@
-
 const CONFIG = {
     MIN_CIRCLE_SIZE: 500,
     MAX_CIRCLE_SIZE: 700,

@@ -1,28 +1,43 @@
-html {
-    
-}
-
 body {
     margin: 0;
-    font-family: sans-serif;
+    font-family: 'Nunito', sans-serif;
     display: flex;
     flex-direction: column;
     height: 100vh;
+    background-color: rgb(67, 49, 68);
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: radial-gradient(circle, rgba(26, 23, 27, 0.3) 3.5px, transparent 3.5px);
+    background-size: 4.5rem 4.5rem;
+    transform: rotate(15deg);
+    z-index: -1;
 }
 
 header {
     display: flex;
     align-items: center;
-    background-color: red;
+    background-color: rgb(26, 23, 27);
     padding: 0.5rem;
 }
 
 .logo {
-    background-color: blue;
-    color: white;
     font-weight: bold;
     font-size: 1.5rem;
     padding: 0.5rem 1rem;
+}
+
+.logo-img {
+    margin-top: 12.5px;
+    height: 35px;
+    filter: drop-shadow(3.5px 3.5px 0px rgb(0, 0, 0));
 }
 
 main {
@@ -31,19 +46,42 @@ main {
 }
 
 nav {
-    background-color: blue;
+    background-color: rgb(42, 32, 44);
     color: black;
     font-weight: bold;
-    padding: 1rem;
-    min-width: 200px;
+    padding: 0;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
 }
 
 .menu-item {
-    margin: 0.75rem;
+    margin: 0;
+    font-size: 25px;
+    color: white;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+    padding: 1.5rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.3s ease, font-size 0.3s ease;
+    border-bottom: 5px solid rgba(0, 0, 0, 0.5);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.content {
-    flex: 1;
-    background-color: white;
-    padding: 1rem;
+.nav-icon {
+    font-size: 1.2em;
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:hover {
+    background-color: #cb83d318;
+    font-size: 30px;
 }
