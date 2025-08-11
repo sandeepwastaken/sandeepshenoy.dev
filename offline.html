@@ -15,8 +15,12 @@
       background-color: black;
       z-index: 999;
     }
+    
+    body {
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet" onerror="this.remove()">
   <script>
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -26,6 +30,7 @@
     };
     link.onerror = () => {
       document.getElementById('preload-overlay').style.display = 'none';
+      console.warn('Failed to load styles.css - using cached version or basic styling');
     };
     document.head.appendChild(link);
 
