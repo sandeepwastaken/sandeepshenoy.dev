@@ -7,9 +7,16 @@ function updateHue(newHue) {
 }
 
 function initializeHueControl() {
-  console.log('Initializing hue control...');
+  
   updateHue(window.hue);
   
+  
+  if (!window.location.pathname.includes('/settings/')) {
+    console.log('Not on settings page, skipping hue control UI creation');
+    return;
+  }
+  
+  console.log('Initializing hue control on settings page...');
   
   let container = document.getElementById('hue-control-container');
   console.log('Container found:', container);
@@ -18,17 +25,17 @@ function initializeHueControl() {
   if (!container) {
     console.log('No container found, creating one...');
     const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
+    const settingsTitle = document.querySelector('.settings-title');
+    
+    
+    if (mainContent && settingsTitle) {
       container = document.createElement('div');
       container.id = 'hue-control-container';
-      
-      const settingsTitle = document.querySelector('.settings-title');
-      if (settingsTitle) {
-        settingsTitle.insertAdjacentElement('afterend', container);
-      } else {
-        mainContent.appendChild(container);
-      }
+      settingsTitle.insertAdjacentElement('afterend', container);
       console.log('Container created:', container);
+    } else {
+      console.log('Not on settings page (no settings-title found)');
+      return;
     }
   }
   
