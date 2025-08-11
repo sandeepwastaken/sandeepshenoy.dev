@@ -10,7 +10,7 @@ const CACHE_FILES = [
   '/images/offline.svg',
   '/images/offline.png',
   '/images/div.svg',
-  'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap'
+  'https:
 ];
 
 
@@ -49,20 +49,20 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
   
-  // Handle navigation requests (page loads)
+  
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).then((response) => {
         return response;
       }).catch(() => {
-        // Return offline page for any failed navigation
+        
         return caches.match('/offline.html');
       })
     );
     return;
   }
   
-  // Special handling for critical files
+  
   if (requestUrl.pathname === '/styles.css' || requestUrl.pathname === '/offline.html') {
     event.respondWith(
       fetch(event.request, {
@@ -73,24 +73,24 @@ self.addEventListener('fetch', (event) => {
           'Expires': '0'
         }
       }).then((response) => {
-        // Clone the response to cache it
+        
         const responseClone = response.clone();
         
-        // Cache the response
+        
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseClone);
         });
         
         return response;
       }).catch(() => {
-        // Return cached version if network fails
+        
         return caches.match(event.request);
       })
     );
     return;
   }
   
-  // Handle all other requests with cache-first strategy
+  
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -98,7 +98,7 @@ self.addEventListener('fetch', (event) => {
       }
       
       return fetch(event.request).then((response) => {
-        // Only cache successful responses
+        
         if (response.status === 200) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -107,13 +107,13 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => {
-        // For HTML requests, return offline page
+        
         if (event.request.headers.get('accept') && 
             event.request.headers.get('accept').includes('text/html')) {
           return caches.match('/offline.html');
         }
         
-        // For other requests, return a generic offline response
+        
         return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
       });
     })
