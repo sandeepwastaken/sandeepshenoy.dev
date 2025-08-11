@@ -32,6 +32,7 @@ Either...
 1. Clone the repository
 2. Open `index.html` in a web browser
 3. Or serve with any static file server for full PWA functionality
+
 OR...
 1. Open sandeepshenoy.dev and save yourself the trouble ;D
 
@@ -42,6 +43,7 @@ OR...
 - **Gallery** (`/gallery/`) - Artistic works and visual projects
 - **Contact** (`/contact/`) - Professional contact information
 - **Settings** (`/settings/`) - Customization and appearance controls
+
 Along with many other pages under /projects/!
 
 ## 🎯 Project Structure
