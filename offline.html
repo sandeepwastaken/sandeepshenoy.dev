@@ -13,9 +13,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet" onerror="this.remove()">
   <link rel="stylesheet" href="/styles.css">
   <script>
-    if (window.location.pathname === '/offline.html') {
-      window.history.replaceState({}, 'sandeepshenoy.dev', '/');
+    function checkOnlineStatus() {
+      if (navigator.onLine) {
+        const currentPath = window.location.pathname;
+        if (currentPath === '/offline.html') {
+          window.location.href = '/';
+        } else {
+          window.location.href = currentPath;
+        }
+      }
     }
+
+    setInterval(checkOnlineStatus, 1000);
+
+    window.addEventListener('online', checkOnlineStatus);
   </script>
 </head>
 <body>
