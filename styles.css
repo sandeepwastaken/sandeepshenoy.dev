@@ -264,6 +264,7 @@ h3 {
 
 .bottom-heavy {
   margin-bottom: 100px;
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 .image-box {
@@ -319,12 +320,14 @@ h3 {
 .project-caption {
   font-size: 0.9rem;
   color: var(--color-text-link);
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 .subtitle {
   font-size: 2rem;
   margin-top: 10px;
   margin-bottom: -10px;
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 @media (max-width: 600px) {
@@ -479,6 +482,7 @@ h3 {
   cursor: pointer;
   z-index: 1001;
   transition: color 0.3s ease;
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 .modal-close:hover {
@@ -714,6 +718,7 @@ h3 {
   overflow: hidden;
   transform: scale(0.95);
   transition: transform 0.3s ease;
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 .gallery-page .modal.show .modal-content {
@@ -734,6 +739,7 @@ h3 {
   max-height: 90vh;
   border-radius: 10px 0 0 10px;
   object-fit: contain;
+  filter: hue-rotate(calc(-1 * var(--hue-rotation)));
 }
 
 .gallery-page .modal-text {
