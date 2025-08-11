@@ -593,11 +593,11 @@ h3 {
   box-shadow: none;
 }
 
-.project-box {
+.gallery-page .project-box {
   cursor: pointer;
 }
 
-.gallery-grid {
+.gallery-page .gallery-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(25vw, 1fr));
     gap: 3.5vw;
@@ -608,7 +608,7 @@ h3 {
     align-items: start;
 }
 
-.gallery-item {
+.gallery-page .gallery-item {
     display: flex;
     scale: 1;
     flex-direction: column;
@@ -621,12 +621,12 @@ h3 {
     z-index: 4;
 }
 
-.gallery-item:hover {
+.gallery-page .gallery-item:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.35);
 }
 
-.gallery-item img {
+.gallery-page .gallery-item img {
   width: 100%;
   max-height: 300px;
   object-fit: cover;
@@ -634,12 +634,13 @@ h3 {
   cursor: pointer;
   transition: transform 0.2s ease;
 }
-.main-content {
+
+.gallery-page .main-content {
   text-align: center;
   padding: 2rem 1rem;
 }
 
-.modal {
+.gallery-page .modal {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: rgba(0, 0, 0, 0.255); display: flex;
   align-items: center; justify-content: center;
@@ -648,12 +649,13 @@ h3 {
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
-.modal.show {
+
+.gallery-page .modal.show {
   opacity: 1;
   pointer-events: auto;
 }
 
-.modal-content {
+.gallery-page .modal-content {
   display: flex;
   background: #0e1a2bd9;
   border-radius: 10px;
@@ -666,11 +668,12 @@ h3 {
   transform: scale(0.95);
   transition: transform 0.3s ease;
 }
-.modal.show .modal-content {
+
+.gallery-page .modal.show .modal-content {
   transform: scale(1);
 }
 
-.modal-image-container {
+.gallery-page .modal-image-container {
   flex: 1;
   min-width: 300px;
   display: flex;
@@ -678,14 +681,15 @@ h3 {
   justify-content: center;
   overflow: hidden;
 }
-.modal-image-container img {
+
+.gallery-page .modal-image-container img {
   max-width: 100%;
   max-height: 90vh;
   border-radius: 10px 0 0 10px;
   object-fit: contain;
 }
 
-.modal-text {
+.gallery-page .modal-text {
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
@@ -694,19 +698,19 @@ h3 {
   color: white;
 }
 
-#modal-title {
+.gallery-page #modal-title {
   margin-bottom: 10px;
 }
 
-#modal-description {
+.gallery-page #modal-description {
   margin-bottom: 10px;
 }
 
-#modal-materials {
+.gallery-page #modal-materials {
   color: #80a1cb;
 }
 
-.modal-text h2 {
+.gallery-page .modal-text h2 {
   margin-top: 0;
 }
 
