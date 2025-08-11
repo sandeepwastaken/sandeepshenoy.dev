@@ -368,12 +368,14 @@ h3 {
   align-items: center;
   z-index: 1000;
   backdrop-filter: blur(0px);
+  filter: hue-rotate(var(--hue-rotation));
   transition: background 0.3s ease, backdrop-filter 0.3s ease;
 }
 
 .modal-overlay.show {
   background: rgba(var(--color-dark-base), 0.8);
   backdrop-filter: blur(5px);
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 .modal-content {
@@ -482,7 +484,6 @@ h3 {
   cursor: pointer;
   z-index: 1001;
   transition: color 0.3s ease;
-  filter: hue-rotate(var(--hue-rotation));
 }
 
 .modal-close:hover {
@@ -491,15 +492,16 @@ h3 {
 
 .modal-video {
   width: 100%;
-  background: var(--color-primary-dark);
+  background: transparent;
   border-radius: 12px 12px 0 0;
+  filter: hue-rotate(calc(-1 * var(--hue-rotation)));
 }
 
 .modal-video video {
   width: 100%;
   height: 500px;
   object-fit: cover;
-  border-radius: 0;
+  border-radius: 12px 12px 0 0;
 }
 
 .video-label {
@@ -516,6 +518,7 @@ h3 {
   animation-duration: 1s;
   animation-timing-function: ease;
   animation-iteration-count: infinite;
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 .modal-body {
@@ -791,19 +794,6 @@ h3 {
 }
 
 
-@keyframes flash {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-
 @media (max-width: 768px) {
   .modal-content {
     width: 95%;
@@ -832,4 +822,75 @@ h3 {
     flex: 1 1 100%;
     max-width: 350px;
   }
+}
+
+.hue-control {
+  margin: 30px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.hue-slider {
+  position: relative;
+  width: 300px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, 
+    hsl(0, 80%, 60%), 
+    hsl(60, 80%, 60%), 
+    hsl(120, 80%, 60%), 
+    hsl(180, 80%, 60%), 
+    hsl(240, 80%, 60%), 
+    hsl(300, 80%, 60%), 
+    hsl(360, 80%, 60%)
+  );
+  cursor: pointer;
+  filter: hue-rotate(calc(-1 * var(--hue-rotation)));
+}
+
+.settings-title {
+  margin-bottom: -0.5rem;
+}
+
+.hue-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  background: transparent;
+}
+
+.hue-handle {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--color-text-primary);
+  border: 2px solid var(--color-primary-darker);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  transition: box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hue-handle:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.hue-handle:active {
+  cursor: grabbing;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.hue-label {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
 }

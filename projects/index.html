@@ -126,6 +126,10 @@
     <img src="/images/contact.svg" alt="Contact Icon" class="nav-icon" />
     <span>Contact</span>
   </a>
+  <a href="/settings/">
+    <img src="/images/settings.svg" alt="Settings Icon" class="nav-icon" />
+    <span>Settings</span>
+  </a>
 </nav>
 
 <script>
@@ -211,13 +215,13 @@
     
     if (project.mobileSupported) {
       mobileSpan.textContent = 'Mobile Supported';
-      mobileSpan.style.color = '#8bb079';
+      mobileSpan.style.color = '#e0e6f0';
       visitButton.disabled = false;
       visitButton.textContent = 'Visit';
       visitButton.classList.remove('disabled');
     } else {
       mobileSpan.textContent = 'Mobile Unsupported';
-      mobileSpan.style.color = '#9c381f';
+      mobileSpan.style.color = '#e0e6f0';
       if (isMobile) {
         visitButton.disabled = true;
         visitButton.textContent = 'Unsupported';

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>contact</title>
+  <title>settings</title>
   <link rel="icon" type="image/x-icon" href="/images/logo.svg">
   <style>
     #preload-overlay {
@@ -46,20 +46,18 @@
   <div class="overlay"></div>
   <div class="main-content">
     <img src="/images/logo.svg" alt="Logo" class="logo" />
-    <h1 class="title">contact</h1>
-    <h2>get in touch!</h2>
+    <h1 class="title">settings</h1>
+    <h2>ultra customizable!</h2>
     <img src="/images/div.svg" alt="Divider" class="divider" />
-    <div style="display: flex; gap: 1rem; justify-content: center; align-items: center;">
-      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=ask@sandeepshenoy.dev" target="_blank">
-        <img class="contact-icon" src="/images/email.png" alt="Email" style="width: 100px; height: 100px;" />
-      </a>
-      <a href="https://github.com/sandeepwastaken" target="_blank">
-        <img class="contact-icon" src="/images/github.png" alt="GitHub" style="width: 100px; height: 100px;" />
-      </a>
-      <a href="https://www.linkedin.com/in/sandeep-shenoy-576510362/" target="_blank">
-        <img class="contact-icon" src="/images/linkedin.png" alt="LinkedIn" style="width: 100px; height: 100px;" />
-      </a>
+    <h3 class="settings-title">color control</h3>
+    <div class="hue-control">
+      <div class="hue-slider">
+        <div class="hue-track"></div>
+        <div class="hue-handle" id="hueHandle"></div>
+      </div>
+      <div class="hue-label" id="hueLabel">hue rotation - 0°/359°</div>
     </div>
+  
   </div>
   <nav>
   <a href="/">
@@ -75,11 +73,11 @@
     <span>Gallery</span>
   </a>
   
-  <a href="/contact/" class="active">
+  <a href="/contact/">
     <img src="/images/contact.svg" alt="Contact Icon" class="nav-icon" />
     <span>Contact</span>
   </a>
-  <a href="/settings/">
+  <a href="/settings/" class="active">
     <img src="/images/settings.svg" alt="Settings Icon" class="nav-icon" />
     <span>Settings</span>
   </a>
