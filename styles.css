@@ -830,6 +830,8 @@ h3 {
   flex-direction: column;
   align-items: center;
   gap: 15px;
+  position: relative;
+  z-index: 100;
 }
 
 .hue-slider {
@@ -848,6 +850,7 @@ h3 {
   );
   cursor: pointer;
   filter: hue-rotate(calc(-1 * var(--hue-rotation)));
+  z-index: 101;
 }
 
 .settings-title {
@@ -875,17 +878,38 @@ h3 {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   cursor: grab;
-  transition: box-shadow 0.2s ease;
+  transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  outline: none;
+  z-index: 103;
 }
 
 .hue-handle:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
-.hue-handle:active {
+.hue-handle:active,
+.hue-handle:focus {
   cursor: grabbing;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.hue-handle:focus {
+  border-color: var(--color-text-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-base), 0.3), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.hue-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  background: transparent;
+  z-index: 102;
 }
 
 .hue-label {
