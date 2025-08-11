@@ -70,6 +70,15 @@ nav {
     display: flex;
     align-items: center;
     gap: 1rem;
+    text-decoration: none;
+}
+
+.menu-item:link,
+.menu-item:visited,
+.menu-item:hover,
+.menu-item:active {
+    text-decoration: none;
+    color: white;
 }
 
 .nav-icon {
