@@ -57,6 +57,10 @@ Along with many other pages under `/projects/`!
 
 Open source - but feel free to use as inspiration for your own portfolio. Please credit :P
 
+## TO-DO
+> Finish Chromis
+> Finish Collekt
+
 ## 🙏 Attributions
 
 > krystonschwarze for SVG icons (*Coolicons Line Oval Icons*)
