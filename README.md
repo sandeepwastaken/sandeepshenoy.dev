@@ -44,7 +44,7 @@ OR...
 - **Contact** (`/contact/`) - Professional contact information
 - **Settings** (`/settings/`) - Customization and appearance controls
 
-Along with many other pages under /projects/!
+Along with many other pages under `/projects/`!
 
 ## 🎯 Project Structure
 
