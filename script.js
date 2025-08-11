@@ -1,5 +1,6 @@
 window.hue = parseInt(localStorage.getItem('hue-rotation')) || 0;
 window.grayscale = parseInt(localStorage.getItem('grayscale')) || 0;
+window.selectedFont = localStorage.getItem('selected-font') || 'Nunito';
 
 function updateHue(newHue) {
   window.hue = newHue;
@@ -13,12 +14,17 @@ function updateGrayscale(newGrayscale) {
   document.documentElement.style.setProperty('--grayscale', `${newGrayscale}%`);
 }
 
+function updateFont(newFont) {
+  window.selectedFont = newFont;
+  localStorage.setItem('selected-font', newFont);
+  document.documentElement.style.setProperty('--selected-font', `'${newFont}'`);
+}
+
 function initializeControls() {
-  // Always apply the effects on all pages
   updateHue(window.hue);
   updateGrayscale(window.grayscale);
+  updateFont(window.selectedFont);
   
-  // Only initialize control UIs on the settings page
   if (!window.location.pathname.includes('/settings/')) {
     console.log('Not on settings page, skipping control UI creation');
     return;
@@ -68,34 +74,63 @@ if (document.readyState === 'loading') {
 }
 
 function createControls(container) {
-  // Create both hue and grayscale controls
   container.innerHTML = `
-    <div class="control-group">
-      <div class="hue-control control">
-        <div class="hue-slider" id="hueSlider">
-          <div class="hue-track"></div>
-          <div class="hue-handle" id="hueHandle"></div>
+    <div class="settings-container">
+      <div class="color-control-section">
+        <h3 class="section-title">color control</h3>
+        <div class="control-group">
+          <div class="hue-control control">
+            <div class="hue-slider" id="hueSlider">
+              <div class="hue-track"></div>
+              <div class="hue-handle" id="hueHandle"></div>
+            </div>
+            <div class="hue-label" id="hueLabel">hue rotation - ${window.hue}°/359°</div>
+          </div>
+          <div class="grayscale-control control">
+            <div class="grayscale-slider" id="grayscaleSlider">
+              <div class="grayscale-track"></div>
+              <div class="grayscale-handle" id="grayscaleHandle"></div>
+            </div>
+            <div class="grayscale-label" id="grayscaleLabel">grayscale - ${window.grayscale}%/100%</div>
+          </div>
         </div>
-        <div class="hue-label" id="hueLabel">hue rotation - ${window.hue}°/359°</div>
       </div>
-      
-      <div class="grayscale-control control">
-        <div class="grayscale-slider" id="grayscaleSlider">
-          <div class="grayscale-track"></div>
-          <div class="grayscale-handle" id="grayscaleHandle"></div>
+      <img src="/images/div.svg" alt="Divider" class="divider special-case" />
+      <div class="visual-settings-section">
+        <h3 class="section-title">visual settings</h3>
+        <div class="control-group">
+          <div class="font-control control">
+            <div class="font-dropdown-container">
+              <select class="font-dropdown" id="fontDropdown">
+                <option value="Nunito">Nunito</option>
+                <option value="Inter">Inter</option>
+                <option value="Roboto">Roboto</option>
+                <option value="Open Sans">Open Sans</option>
+                <option value="Lato">Lato</option>
+                <option value="Poppins">Poppins</option>
+                <option value="Source Sans Pro">Source Sans Pro</option>
+                <option value="Montserrat">Montserrat</option>
+                <option value="Raleway">Raleway</option>
+                <option value="Ubuntu">Ubuntu</option>
+                <option value="Fira Sans">Fira Sans</option>
+                <option value="Work Sans">Work Sans</option>
+                <option value="Playfair Display">Playfair Display</option>
+                <option value="Merriweather">Merriweather</option>
+                <option value="Crimson Text">Crimson Text</option>
+              </select>
+            </div>
+            <div class="font-label" id="fontLabel">font family - ${window.selectedFont}</div>
+          </div>
         </div>
-        <div class="grayscale-label" id="grayscaleLabel">grayscale - ${window.grayscale}%/100%</div>
       </div>
     </div>
   `;
   
-  // Initialize hue control
   createHueSlider();
-  
-  // Initialize grayscale control
   createGrayscaleSlider();
+  createFontDropdown();
   
-  console.log('Both controls created and events attached');
+  console.log('All controls created and events attached');
 }
 
 function createHueSlider() {
@@ -274,5 +309,19 @@ function createGrayscaleSlider() {
   });
 }
 
+function createFontDropdown() {
+  const dropdown = document.getElementById('fontDropdown');
+  const label = document.getElementById('fontLabel');
+  
+  dropdown.value = window.selectedFont;
+  
+  dropdown.addEventListener('change', (e) => {
+    const newFont = e.target.value;
+    updateFont(newFont);
+    label.textContent = `font family - ${newFont}`;
+  });
+}
+
 window.updateHue = updateHue;
 window.updateGrayscale = updateGrayscale;
+window.updateFont = updateFont;
