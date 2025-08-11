@@ -24,6 +24,7 @@ body::before {
 header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     background-color: rgb(26, 23, 27);
     padding: 0.5rem;
 }
@@ -31,7 +32,7 @@ header {
 .logo {
     font-weight: bold;
     font-size: 1.5rem;
-    padding: 0.5rem 1rem;
+    padding: 1rem 1rem;
 }
 
 .logo-img {
@@ -60,7 +61,7 @@ nav {
     font-size: 25px;
     color: white;
     text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
-    padding: 1.5rem 1rem;
+    padding: 1rem 1.5rem;
     text-align: left;
     cursor: pointer;
     transition: background-color 0.3s ease, font-size 0.3s ease;
@@ -84,4 +85,22 @@ nav {
 .menu-item:hover {
     background-color: #cb83d318;
     font-size: 30px;
+}
+
+button {
+    background-color: rgb(42, 32, 44);
+    font-family: 'Nunito', sans-serif;
+    border-radius: 10px;
+    font-size: 20px;
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 20px;
+    filter: drop-shadow(5px 5px 0px rgba(0, 0, 0, 0.5));
+}
+
+button:hover {
+    background-color: rgb(67, 49, 68);
 }

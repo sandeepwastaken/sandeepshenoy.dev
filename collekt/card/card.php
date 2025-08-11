@@ -43,6 +43,12 @@ $targetHeight = 3250 * $scale;
 
 $canvas = imagecreatetruecolor($targetWidth, $targetHeight);
 
+imagealphablending($canvas, false);
+imagesavealpha($canvas, true);
+$transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
+imagefill($canvas, 0, 0, $transparent);
+imagealphablending($canvas, true);
+
 $baseCard = imagecreatefrompng($baseCardFile);
 if (!$baseCard) {
     http_response_code(500);

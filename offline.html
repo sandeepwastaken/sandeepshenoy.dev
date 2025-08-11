@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>offline</title>
+  <link rel="icon" type="image/x-icon" href="/images/logo.svg">
+  <style>
+    #preload-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+      z-index: 999;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+  <script>
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/styles.css';
+    link.onload = () => {
+      document.getElementById('preload-overlay').style.display = 'none';
+    };
+    link.onerror = () => {
+      document.getElementById('preload-overlay').style.display = 'none';
+    };
+    document.head.appendChild(link);
+
+    if (window.location.pathname === '/offline.html') {
+      window.history.replaceState({}, 'sandeepshenoy.dev', '/');
+    }
+  </script>
+</head>
+<body>
+  <div id="preload-overlay"></div>
+  <div class="background"></div>
+  <div class="gradient"></div>
+  <div class="overlay"></div>
+  <div class="main-content">
+    <img src="/images/logo.svg" alt="Logo" class="logo" />
+    <h1 class="title">sandeepshenoy.dev</h1>
+    <h2>you are offline</h2>
+  </div>
+  <img src="/images/offline.png" alt="Offline Icon" class="offline-icon" />
+  <nav>
+  <a class="active">
+    <img src="/images/offline.svg" alt="Offline Icon" class="nav-icon" />
+    <span>Offline</span>
+  </a>
+</nav>
+</body>
+</html>

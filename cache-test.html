@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cache Test - sandeepshenoy.dev</title>
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: black;
+      color: white;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test-section {
+      background: #111;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+    button {
+      background: #007acc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #005a9e;
+    }
+    #results {
+      background: #000;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+    .info { color: #2196F3; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <h1>sandeepshenoy.dev - Cache Implementation Test</h1>
+  
+  <div class="test-section">
+    <h2>Service Worker Status</h2>
+    <p>Service Worker Support: <span id="sw-support"></span></p>
+    <p>Service Worker Registration: <span id="sw-registration"></span></p>
+    <button onclick="checkServiceWorker()">Check Service Worker</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Cache Tests</h2>
+    <button onclick="testStylesCache()">Test Styles.css Caching</button>
+    <button onclick="testOfflineCache()">Test Offline.html Caching</button>
+    <button onclick="listCaches()">List All Caches</button>
+    <button onclick="clearCaches()">Clear All Caches</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Network Tests</h2>
+    <p>Current Status: <span id="network-status"></span></p>
+    <button onclick="simulateOffline()">Simulate Offline Navigation</button>
+    <button onclick="testOfflinePage()">Test Offline Page</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Results</h2>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const results = document.getElementById('results');
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = `[${timestamp}] ${message}`;
+      results.appendChild(div);
+      results.scrollTop = results.scrollHeight;
+      console.log(message);
+    }
+
+    // Check service worker support and registration
+    function checkServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        document.getElementById('sw-support').textContent = 'Supported';
+        document.getElementById('sw-support').className = 'success';
+        
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          if (registrations.length > 0) {
+            document.getElementById('sw-registration').textContent = 'Registered';
+            document.getElementById('sw-registration').className = 'success';
+            log(`Service Worker registered. Scope: ${registrations[0].scope}`, 'success');
+          } else {
+            document.getElementById('sw-registration').textContent = 'Not Registered';
+            document.getElementById('sw-registration').className = 'error';
+            log('Service Worker not registered', 'error');
+          }
+        });
+      } else {
+        document.getElementById('sw-support').textContent = 'Not Supported';
+        document.getElementById('sw-support').className = 'error';
+        log('Service Worker not supported', 'error');
+      }
+    }
+
+    // Test styles.css caching
+    function testStylesCache() {
+      log('Testing styles.css caching...');
+      
+      const timestamp = Date.now();
+      fetch(`/styles.css?test=${timestamp}`, { cache: 'no-cache' })
+        .then(response => {
+          if (response.ok) {
+            log('styles.css fetched successfully (forced fresh)', 'success');
+            return response.text();
+          }
+          throw new Error('Failed to fetch styles.css');
+        })
+        .then(css => {
+          log(`styles.css size: ${css.length} characters`, 'info');
+        })
+        .catch(error => {
+          log(`Error fetching styles.css: ${error.message}`, 'error');
+        });
+    }
+
+    // Test offline.html caching
+    function testOfflineCache() {
+      log('Testing offline.html caching...');
+      
+      fetch('/offline.html', { cache: 'no-cache' })
+        .then(response => {
+          if (response.ok) {
+            log('offline.html fetched successfully (forced fresh)', 'success');
+            return response.text();
+          }
+          throw new Error('Failed to fetch offline.html');
+        })
+        .then(html => {
+          log(`offline.html size: ${html.length} characters`, 'info');
+          if (html.includes('sandeepshenoy.dev')) {
+            log('offline.html contains correct branding', 'success');
+          }
+        })
+        .catch(error => {
+          log(`Error fetching offline.html: ${error.message}`, 'error');
+        });
+    }
+
+    // List all caches
+    function listCaches() {
+      if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+          log(`Found ${cacheNames.length} cache(s):`);
+          cacheNames.forEach(cacheName => {
+            log(`- ${cacheName}`, 'info');
+            
+            caches.open(cacheName).then(cache => {
+              cache.keys().then(requests => {
+                log(`  Cache "${cacheName}" contains ${requests.length} items:`);
+                requests.forEach(request => {
+                  log(`    - ${request.url}`, 'info');
+                });
+              });
+            });
+          });
+        });
+      } else {
+        log('Cache API not supported', 'error');
+      }
+    }
+
+    // Clear all caches
+    function clearCaches() {
+      if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+          return Promise.all(
+            cacheNames.map(cacheName => {
+              log(`Deleting cache: ${cacheName}`);
+              return caches.delete(cacheName);
+            })
+          );
+        }).then(() => {
+          log('All caches cleared', 'success');
+        }).catch(error => {
+          log(`Error clearing caches: ${error.message}`, 'error');
+        });
+      } else {
+        log('Cache API not supported', 'error');
+      }
+    }
+
+    // Check network status
+    function updateNetworkStatus() {
+      const status = navigator.onLine ? 'Online' : 'Offline';
+      document.getElementById('network-status').textContent = status;
+      document.getElementById('network-status').className = navigator.onLine ? 'success' : 'error';
+    }
+
+    // Simulate offline navigation
+    function simulateOffline() {
+      log('Simulating offline navigation...');
+      log('Try disabling your internet connection and refresh the page', 'info');
+    }
+
+    // Test offline page directly
+    function testOfflinePage() {
+      window.open('/offline.html', '_blank');
+      log('Opened offline page in new tab', 'info');
+    }
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            log('Service Worker registered successfully', 'success');
+          })
+          .catch((registrationError) => {
+            log(`Service Worker registration failed: ${registrationError}`, 'error');
+          });
+      });
+    }
+
+    // Network status listeners
+    window.addEventListener('online', () => {
+      log('Network: Back online', 'success');
+      updateNetworkStatus();
+    });
+
+    window.addEventListener('offline', () => {
+      log('Network: Gone offline', 'error');
+      updateNetworkStatus();
+    });
+
+    // Initialize
+    updateNetworkStatus();
+    checkServiceWorker();
+    log('Cache test page loaded', 'success');
+  </script>
+</body>
+</html>

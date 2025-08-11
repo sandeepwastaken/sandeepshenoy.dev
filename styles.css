@@ -97,6 +97,15 @@ body {
   z-index: 1;
 }
 
+.offline-icon {
+  width: 350px;
+  height: auto;
+  margin: 2rem 0;
+  z-index: 10000 !important;
+  margin-top: -3.5rem;
+  filter: drop-shadow(-10px 10px rgba(4, 13, 26, 0.5));
+}
+
 .modified {
   margin-bottom: -40px;
 }
