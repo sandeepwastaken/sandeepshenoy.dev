@@ -15,12 +15,16 @@
   <script>
     function checkOnlineStatus() {
       if (navigator.onLine) {
-        const currentPath = window.location.pathname;
-        if (currentPath === '/offline.html') {
-          window.location.href = '/';
-        } else {
-          window.location.href = currentPath;
-        }
+        setTimeout(() => {
+          if (navigator.onLine) {
+            const currentPath = window.location.pathname;
+            if (currentPath === '/offline.html') {
+              window.location.href = '/';
+            } else {
+              window.location.href = currentPath;
+            }
+          }
+        }, 2000);
       }
     }
 
