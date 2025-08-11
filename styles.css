@@ -1,3 +1,44 @@
+:root {
+  /* Main color palette */
+  --color-primary-dark: #0e1a2b;
+  --color-primary-darker: #040d1a;
+  --color-primary-bg: rgb(17, 30, 50);
+  --color-secondary: #152539;
+  --color-tertiary: rgb(35, 68, 109);
+  --color-accent: rgba(26, 49, 78, 1);
+  --color-surface: rgba(21, 37, 58, 1);
+  
+  /* Text colors */
+  --color-text-primary: #e0e6f0;
+  --color-text-secondary: #d6e0f0;
+  --color-text-muted: #a4b3c6;
+  --color-text-subtle: #8ca1b9;
+  --color-text-link: #80a1cb;
+  
+  /* Button colors */
+  --color-button-primary: #3498db;
+  --color-button-primary-hover: #2980b9;
+  --color-button-disabled: #555;
+  --color-button-disabled-text: #999;
+  
+  /* Icon colors and filters */
+  --nav-icon-color: #80a1cb;
+  --nav-icon-hover-color: #e0e6f0;
+  --nav-icon-filter: invert(66%) sepia(13%) saturate(1177%) hue-rotate(181deg) brightness(93%) contrast(91%);
+  --nav-icon-hover-filter: invert(100%);
+  --contact-icon-filter: var(--nav-icon-filter);
+  --trait-icon-filter: var(--nav-icon-filter);
+  
+  /* Base colors for transparency calculations */
+  --color-primary-dark-base: 14, 26, 43;
+  --color-dark-base: 4, 13, 26;
+  --color-black-base: 0, 0, 0;
+  --color-white-base: 255, 255, 255;
+  --color-surface-base: 21, 37, 58;
+  --color-accent-base: 26, 49, 78;
+  --color-gray-base: 102, 102, 102;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -11,7 +52,7 @@
 }
 
 .contact-icon:hover {
-  filter: invert(66%) sepia(13%) saturate(1177%) hue-rotate(181deg) brightness(93%) contrast(91%);
+  filter: var(--contact-icon-filter);
   width: 90px !important;
   height: 90px !important;
   rotate: 10deg;
@@ -24,12 +65,12 @@
   width: 100vw;
   height: 100vh;
   z-index: 0;
-  background: linear-gradient(to bottom right, #0e1a2b, #040d1a);
+  background: linear-gradient(to bottom right, var(--color-primary-dark), var(--color-primary-darker));
   pointer-events: none;
 }
 
 html, body {
-  background-color: rgb(17, 30, 50);
+  background-color: var(--color-primary-bg);
   margin: 0;
   padding: 0;
   width: 100%;
@@ -37,7 +78,7 @@ html, body {
 }
 
 body {
-  color: #e0e6f0;
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -58,7 +99,7 @@ body {
   width: 100vw;
   height: 75px;
   z-index: 5;
-  background: #0e1a2bd9;
+  background: rgba(var(--color-primary-dark-base), 0.85);
   pointer-events: none;
   backdrop-filter: blur(3.5px);
 }
@@ -103,7 +144,7 @@ body {
   margin: 2rem 0;
   z-index: 10000 !important;
   margin-top: -3.5rem;
-  filter: drop-shadow(-10px 10px rgba(4, 13, 26, 0.5));
+  filter: drop-shadow(-10px 10px rgba(var(--color-dark-base), 0.5));
 }
 
 .modified {
@@ -114,20 +155,20 @@ nav {
   position: fixed;
   top: 0;
   width: 100%;
-  background: rgba(21, 37, 58, 0.5);
+  background: rgba(var(--color-surface-base), 0.5);
   display: flex;
   justify-content: center;
   gap: 40px;
   padding: 20px 0;
   align-items: center;
-  border-bottom: 3.5px solid rgba(26, 49, 78, 0.7);
+  border-bottom: 3.5px solid rgba(var(--color-accent-base), 0.7);
   z-index: 6;
-  box-shadow: 0px 50px 30px rgba(4, 13, 26, 0.5);
-  box-shadow: 0px 10px rgba(4, 13, 26, 0.5);
+  box-shadow: 0px 50px 30px rgba(var(--color-dark-base), 0.5);
+  box-shadow: 0px 10px rgba(var(--color-dark-base), 0.5);
 }
 
 nav a {
-  color: #80a1cb;
+  color: var(--color-text-link);
   text-decoration: none;
   padding-bottom: 5px;
   border-bottom: 2px solid transparent;
@@ -140,18 +181,18 @@ nav a {
   margin-right: 5px;
   display: inline-block;
   vertical-align: middle;
-  filter: invert(66%) sepia(13%) saturate(1177%) hue-rotate(181deg) brightness(93%) contrast(91%);
+  filter: var(--nav-icon-filter);
 }
 
 nav a:hover,
 nav a.active {
-  color: #e0e6f0;
-  border-bottom: 2px solid rgb(35, 68, 109)
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-tertiary)
 }
 
 nav a:hover .nav-icon,
 nav a.active .nav-icon {
-  filter: invert(100%);
+  filter: var(--nav-icon-hover-filter);
 }
 
 .logo {
@@ -168,12 +209,12 @@ nav a.active .nav-icon {
   margin-bottom: 0.5rem;
   position: relative;
   z-index: 2;
-  color: #d6e0f0;
+  color: var(--color-text-secondary);
 }
 
 h2 {
   font-size: 1.5rem;
-  color: #a4b3c6;
+  color: var(--color-text-muted);
   position: relative;
   z-index: 2;
 }
@@ -183,7 +224,7 @@ h3 {
   margin-bottom: 10px;
   margin-left: 10px;
   margin-right: 10px;
-  color: #8ca1b9;
+  color: var(--color-text-subtle);
   position: relative;
   z-index: 2;
 }
@@ -250,12 +291,12 @@ h3 {
   height: auto;
   display: block;
   border-radius: 8px;
-  box-shadow: 5px 5px rgba(4, 13, 26, 0.5);
+  box-shadow: 5px 5px rgba(var(--color-dark-base), 0.5);
   transition: box-shadow 0.3s ease;
 }
 
 .image-box img:hover {
-  box-shadow: 10px 10px rgba(0, 0, 0, 0.323);
+  box-shadow: 10px 10px rgba(var(--color-black-base), 0.323);
 }
 
 .project-info {
@@ -271,7 +312,7 @@ h3 {
 
 .project-caption {
   font-size: 0.9rem;
-  color: #80a1cb;
+  color: var(--color-text-link);
 }
 
 .subtitle {
@@ -312,7 +353,7 @@ h3 {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(4, 13, 26, 0);
+  background: rgba(var(--color-dark-base), 0);
   display: none;
   justify-content: center;
   align-items: center;
@@ -322,20 +363,20 @@ h3 {
 }
 
 .modal-overlay.show {
-  background: rgba(4, 13, 26, 0.8);
+  background: rgba(var(--color-dark-base), 0.8);
   backdrop-filter: blur(5px);
 }
 
 .modal-content {
-  background: #152539;
+  background: var(--color-secondary);
   border-radius: 12px;
   width: 90%;
   max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 5px 5px rgba(4, 13, 26, 1);
-  border: 2px solid rgba(26, 49, 78, 0.7);
+  box-shadow: 5px 5px rgba(var(--color-dark-base), 1);
+  border: 2px solid rgba(var(--color-accent-base), 0.7);
   transform: translateY(100vh);
   transition: transform 0.3s ease;
 }
@@ -348,8 +389,8 @@ h3 {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(21, 37, 58, 0.8);
-  border: 2px solid rgba(26, 49, 78, 0.7);
+  background: rgba(var(--color-surface-base), 0.8);
+  border: 2px solid rgba(var(--color-accent-base), 0.7);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -362,7 +403,7 @@ h3 {
 }
 
 .modal-nav:hover {
-  background: rgba(26, 49, 78, 0.9);
+  background: rgba(var(--color-accent-base), 0.9);
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -377,23 +418,23 @@ h3 {
 .modal-nav svg {
   width: 24px;
   height: 24px;
-  fill: #80a1cb;
+  fill: var(--color-text-link);
   transition: fill 0.3s ease;
 }
 
 .modal-nav:hover svg {
-  fill: #e0e6f0;
+  fill: var(--color-text-primary);
 }
 
 .modal-mobile-nav {
   display: none;
   justify-content: space-between;
   padding: 15px 30px;
-  border-top: 1px solid rgba(26, 49, 78, 0.7);
+  border-top: 1px solid rgba(var(--color-accent-base), 0.7);
 }
 
 .modal-mobile-nav button {
-  background: #3498db;
+  background: var(--color-button-primary);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -404,12 +445,12 @@ h3 {
 }
 
 .modal-mobile-nav button:hover:not(:disabled) {
-  background: #2980b9;
+  background: var(--color-button-primary-hover);
 }
 
 .modal-mobile-nav button:disabled {
-  background: #555;
-  color: #999;
+  background: var(--color-button-disabled);
+  color: var(--color-button-disabled-text);
   cursor: not-allowed;
 }
 
@@ -428,19 +469,19 @@ h3 {
   top: 15px;
   right: 20px;
   font-size: 30px;
-  color: #80a1cb;
+  color: var(--color-text-link);
   cursor: pointer;
   z-index: 1001;
   transition: color 0.3s ease;
 }
 
 .modal-close:hover {
-  color: #e0e6f0;
+  color: var(--color-text-primary);
 }
 
 .modal-video {
   width: 100%;
-  background: #0e1a2b;
+  background: var(--color-primary-dark);
   border-radius: 12px 12px 0 0;
 }
 
@@ -452,11 +493,11 @@ h3 {
 }
 
 .video-label {
-  color: #a4b3c6;
+  color: var(--color-text-muted);
   font-size: 1.3rem;
   margin: 0;
   padding: 20px 20px 10px 20px;
-  background: #0e1a2b;
+  background: var(--color-primary-dark);
   border-radius: 12px 12px 0 0;
   align-content: center;
   font-weight: bold;
@@ -478,14 +519,14 @@ h3 {
 }
 
 .modal-left h3 {
-  color: #d6e0f0;
+  color: var(--color-text-secondary);
   font-size: 2rem;
   margin-bottom: 15px;
   margin-left: 0;
 }
 
 .modal-left p {
-  color: #a4b3c6;
+  color: var(--color-text-muted);
   font-size: 1.1rem;
   line-height: 1.6;
 }
@@ -502,19 +543,19 @@ h3 {
   align-items: center;
   gap: 12px;
   padding: 15px;
-  background: rgba(14, 26, 43, 0.5);
+  background: rgba(var(--color-primary-dark-base), 0.5);
   border-radius: 8px;
-  border: 1px solid rgba(26, 49, 78, 0.7);
+  border: 1px solid rgba(var(--color-accent-base), 0.7);
 }
 
 .trait-icon {
   width: 24px;
   height: 24px;
-  filter: invert(66%) sepia(13%) saturate(1177%) hue-rotate(181deg) brightness(93%) contrast(91%);
+  filter: var(--trait-icon-filter);
 }
 
 .modal-trait span {
-  color: #e0e6f0;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
@@ -528,8 +569,8 @@ h3 {
 }
 
 .nav-button {
-  background: rgba(21, 37, 58, 0.8);
-  border: 2px solid rgba(26, 49, 78, 0.7);
+  background: rgba(var(--color-surface-base), 0.8);
+  border: 2px solid rgba(var(--color-accent-base), 0.7);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -541,12 +582,12 @@ h3 {
 }
 
 .nav-button:hover:not(:disabled) {
-  background: rgba(26, 49, 78, 0.9);
+  background: rgba(var(--color-accent-base), 0.9);
   transform: scale(1.1);
 }
 
 .nav-button:disabled {
-  background: #555;
+  background: var(--color-button-disabled);
   border-color: #666;
   cursor: not-allowed;
   opacity: 0.5;
@@ -555,20 +596,20 @@ h3 {
 .nav-button svg {
   width: 24px;
   height: 24px;
-  fill: #80a1cb;
+  fill: var(--color-text-link);
   transition: fill 0.3s ease;
 }
 
 .nav-button:hover:not(:disabled) svg {
-  fill: #e0e6f0;
+  fill: var(--color-text-primary);
 }
 
 .nav-button:disabled svg {
-  fill: #999;
+  fill: var(--color-button-disabled-text);
 }
 
 .visit-button {
-  background: #3498db;
+  background: var(--color-button-primary);
   color: white;
   border: none;
   padding: 15px 40px;
@@ -577,18 +618,18 @@ h3 {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 3px 3px rgba(4, 13, 26, 0.5);
+  box-shadow: 3px 3px rgba(var(--color-dark-base), 0.5);
 }
 
 .visit-button:hover:not(.disabled) {
-  background: #2980b9;
+  background: var(--color-button-primary-hover);
   transform: translateY(-2px);
-  box-shadow: 5px 5px rgba(4, 13, 26, 0.5);
+  box-shadow: 5px 5px rgba(var(--color-dark-base), 0.5);
 }
 
 .visit-button.disabled {
-  background: #555;
-  color: #999;
+  background: var(--color-button-disabled);
+  color: var(--color-button-disabled-text);
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -613,17 +654,17 @@ h3 {
     scale: 1;
     flex-direction: column;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--color-white-base), 0.03);
     border-radius: 10px;
     padding: 1rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 10px rgba(var(--color-black-base), 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     z-index: 4;
 }
 
 .gallery-page .gallery-item:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 20px rgba(var(--color-black-base), 0.35);
 }
 
 .gallery-page .gallery-item img {
@@ -642,7 +683,7 @@ h3 {
 
 .gallery-page .modal {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.255); display: flex;
+  background: rgba(var(--color-black-base), 0.255); display: flex;
   align-items: center; justify-content: center;
   z-index: 10000;
   opacity: 0;
@@ -657,12 +698,12 @@ h3 {
 
 .gallery-page .modal-content {
   display: flex;
-  background: #0e1a2bd9;
+  background: rgba(var(--color-primary-dark-base), 0.85);
   border-radius: 10px;
   max-width: 90vw;
   max-height: 90vh;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(var(--color-black-base), 0.2);
   position: relative;
   overflow: hidden;
   transform: scale(0.95);
@@ -707,7 +748,7 @@ h3 {
 }
 
 .gallery-page #modal-materials {
-  color: #80a1cb;
+  color: var(--color-text-link);
 }
 
 .gallery-page .modal-text h2 {
