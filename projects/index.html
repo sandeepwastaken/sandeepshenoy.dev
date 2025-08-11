@@ -147,7 +147,8 @@
       url: '/',
       mobileSupported: true,
       version: 'Version 1.2.0',
-      release: 'Released May 9th 2025'
+      release: 'Released May 9th 2025',
+      extraClasses: 'dynamic'
     },
     lumina: {
       title: 'lumina',
@@ -188,8 +189,13 @@
       projectElement.className = 'image-box project-box';
       projectElement.onclick = () => openModal(projectId);
       
+      let imgClasses = '';
+      if (project.extraClasses) {
+        imgClasses = ` class="${project.extraClasses}"`;
+      }
+      
       projectElement.innerHTML = `
-        <img src="${project.thumbnail}" alt="${project.title}">
+        <img src="${project.thumbnail}" alt="${project.title}"${imgClasses}>
         <div class="project-info">
           <h4 class="project-title">${project.title}</h4>
           <p class="project-caption">${project.caption}</p>

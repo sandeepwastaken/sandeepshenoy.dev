@@ -35,13 +35,13 @@ function initializeControls() {
   let container = document.getElementById('hue-control-container');
   console.log('Container found:', container);
   
-  // Only create container if we're specifically on the settings page
+  
   if (!container) {
     console.log('No container found, creating one...');
     const mainContent = document.querySelector('.main-content');
     const settingsTitle = document.querySelector('.settings-title');
     
-    // Double check we're on settings page by looking for settings-specific elements
+    
     if (mainContent && settingsTitle) {
       container = document.createElement('div');
       container.id = 'hue-control-container';
