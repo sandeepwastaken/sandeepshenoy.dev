@@ -25,6 +25,11 @@
       document.getElementById('preload-overlay').style.display = 'none';
     };
     document.head.appendChild(link);
+    
+    const scriptEl = document.createElement('script');
+    scriptEl.src = '/script.js?v=' + Date.now();
+    document.head.appendChild(scriptEl);
+    
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -37,7 +42,6 @@
       });
     }
   </script>
-  <script src="/script.js"></script>
 </head>
 <body class="gallery-page">
   <div id="preload-overlay"></div>
