@@ -1,4 +1,7 @@
 :root {
+  /* Hue rotation variable - can be changed via JavaScript */
+  --hue-rotation: 0deg;
+  
   /* Main color palette */
   --color-primary-dark: #0e1a2b;
   --color-primary-darker: #040d1a;
@@ -67,6 +70,7 @@
   z-index: 0;
   background: linear-gradient(to bottom right, var(--color-primary-dark), var(--color-primary-darker));
   pointer-events: none;
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 html, body {
@@ -88,7 +92,6 @@ body {
   box-sizing: border-box;
   position: relative;
   z-index: 1;
-  overflow-x: hidden;
   margin: 0;
 }
 
@@ -102,6 +105,7 @@ body {
   background: rgba(var(--color-primary-dark-base), 0.85);
   pointer-events: none;
   backdrop-filter: blur(3.5px);
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 .background {
@@ -136,6 +140,7 @@ body {
   flex-direction: column;
   align-items: center;
   z-index: 1;
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 .offline-icon {
@@ -165,6 +170,7 @@ nav {
   z-index: 6;
   box-shadow: 0px 50px 30px rgba(var(--color-dark-base), 0.5);
   box-shadow: 0px 10px rgba(var(--color-dark-base), 0.5);
+  filter: hue-rotate(var(--hue-rotation));
 }
 
 nav a {
