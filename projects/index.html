@@ -171,6 +171,17 @@
       mobileSupported: false,
       version: 'Version 1.0.0',
       release: 'Released July 20th 2025'
+    },
+    portify: {
+      title: 'portify',
+      caption: 'music streaming web app',
+      description: 'A web app for streaming your own music, built with HTML, CSS, and JavaScript. Upload your songs, create playlists, and enjoy features like shuffling and offline support.',
+      thumbnail: '/images/thumbnails/portify.png?version=1',
+      video: 'portify-demo.mov',
+      url: '/portify/',
+      mobileSupported: false,
+      version: 'Version 1.0.0',
+      release: 'Released August 15th 2025'
     }
   };
 
@@ -421,7 +432,6 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     generateProjects();
-    // Wait for images to load and layout to stabilize
     setTimeout(() => {
       setup3DEffects();
     }, 200);
