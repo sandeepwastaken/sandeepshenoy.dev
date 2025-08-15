@@ -225,3 +225,20 @@ footer {
 .shuffle-left.active {
     filter: invert(1) brightness(2) drop-shadow(0 0 10px var(--accent));
 }
+
+.pencil-icon, .delete-icon, .download-icon,
+.song-pencil-icon, .song-delete-icon, .song-download-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-left: 8px;
+    opacity: 0.2;
+    filter: invert(1);
+    cursor: pointer;
+    transition: opacity 0.2s, filter 0.2s;
+}
+.pencil-icon:hover, .delete-icon:hover, .download-icon:hover,
+.song-pencil-icon:hover, .song-delete-icon:hover, .song-download-icon:hover {
+    opacity: 1;
+    filter: invert(1) brightness(2) drop-shadow(0 0 10px var(--accent));
+}
