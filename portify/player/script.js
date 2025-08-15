@@ -85,7 +85,7 @@ function save() {
 
 function renderSidebar() {
     const sidebar = document.querySelector('.sidebar');
-    sidebar.innerHTML = '<h2>library</h2>' + playlists.map((p, i) => `<p draggable="true" ondragstart="dragPlaylist(event,${i})"><span class="playlist-name" onclick="selectPlaylist(${i})">${(currentPlaylist===i && currentSong!==null) ? '' : ''}${p.name}</span><img src="/portify/pencil.svg" class="pencil-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"><img src="/portify/delete.svg" class="delete-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"><img src="/portify/download.svg" class="download-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"></p>`).join('') + '<button onclick="addPlaylist()">Add Playlist</button>';
+    sidebar.innerHTML = '<h2>library</h2>' + playlists.map((p, i) => `<p draggable="true" ondragstart="dragPlaylist(event,${i})"><span class="playlist-name" onclick="selectPlaylist(${i})">${(currentPlaylist===i && currentSong!==null) ? '' : ''}${p.name}</span><img src="/portify/player/pencil.svg" class="pencil-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"><img src="/portify/player/delete.svg" class="delete-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"><img src="/portify/player/download.svg" class="download-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"></p>`).join('') + '<button onclick="addPlaylist()">Add Playlist</button>';
     setTimeout(() => {
         document.querySelectorAll('.delete-icon').forEach(icon => {
             icon.onclick = function(e) {
@@ -126,7 +126,7 @@ function renderPlaylist() {
     } else {
         area.innerHTML = `<div class="playlist-title" style="cursor:pointer;" id="playlist-title">${playlists[currentPlaylist].name}</div>` + playlists[currentPlaylist].songs.map((s, i) => {
             const isPlaying = (playingPlaylist === currentPlaylist && currentSong === i);
-            return `<div class="song${isPlaying ? ' song-playing':''}" draggable="true" ondragstart="dragSong(event,${i})"><span onclick="playSong(${i})">${isPlaying ? '<img src="/portify/sound.svg" style="height:1em;vertical-align:middle;margin-right:6px;">':''}${s.name}</span><img src="/portify/delete.svg" class="song-delete-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"><img src="/portify/download.svg" class="song-download-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"></div>`;
+            return `<div class="song${isPlaying ? ' song-playing':''}" draggable="true" ondragstart="dragSong(event,${i})"><span onclick="playSong(${i})">${isPlaying ? '<img src="/portify/player/sound.svg" style="height:1em;vertical-align:middle;margin-right:6px;">':''}${s.name}</span><img src="/portify/player/delete.svg" class="song-delete-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"><img src="/portify/player/download.svg" class="song-download-icon" data-idx="${i}" style="width:16px;height:16px;vertical-align:middle;margin-left:8px;opacity:0.2;filter:invert(1);cursor:pointer;"></div>`;
         }).join('');
     }
     setTimeout(() => {
@@ -482,7 +482,7 @@ window.onload = () => {
                 playlists[playingPlaylist] &&
                 playlists[playingPlaylist].songs[currentSong]
             ) {
-                np.innerHTML = `<img src="/portify/sound.svg" style="height:1em;vertical-align:middle;margin-right:6px;">Now Playing: ${playlists[playingPlaylist].songs[currentSong].name}`;
+                np.innerHTML = `<img src="/portify/player/sound.svg" style="height:1em;vertical-align:middle;margin-right:6px;">Now Playing: ${playlists[playingPlaylist].songs[currentSong].name}`;
             } else {
                 np.textContent = '';
             }
