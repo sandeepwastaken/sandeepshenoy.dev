@@ -1,0 +1,227 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
+
+:root {
+    --bg-main: #0d1117;
+    --bg-sidebar: #161b22;
+    --bg-header: #161b22;
+    --bg-footer: #161b22;
+    --bg-progress: #1f252e;
+    --bg-progress-fill: #80a4e7;
+    --text-main: #e6edf3;
+    --text-secondary: #9baec8;
+    --accent: #80a4e7;
+    --accent-soft: #1f252e;
+    --border-main: #2a3039;
+    --border-light: #2a3039;
+}
+
+body {
+    margin: 0;
+    font-family: 'Noto Sans', Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+
+.song-progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background: var(--bg-footer);
+    color: var(--text-main);
+    gap: 16px;
+    padding-bottom: 2rem;
+}
+.song-time {
+    font-size: 0.95em;
+    min-width: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+.progress-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+.progress-line {
+    width: 100%;
+    height: 8px; /* was 4px, now 8px for easier clicking */
+    background: var(--bg-progress);
+    border-radius: 4px;
+    position: relative;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+.progress-fill {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 8px;
+    background: var(--bg-progress-fill);
+    border-radius: 4px;
+    filter: drop-shadow(0 0 20px var(--accent));
+    transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+    z-index: 1;
+}
+
+header {
+    background: var(--bg-header);
+    color: var(--accent);
+    padding: 15px;
+    font-weight: bold;
+    font-size: 1.5em;
+    border-bottom: 2px solid var(--border-main);
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 220px;
+    border-right: 2px solid var(--border-main);
+    padding: 15px;
+    overflow-y: auto;
+    background: var(--bg-sidebar);
+    color: var(--text-secondary);
+}
+.sidebar h2 {
+    margin-top: 0;
+    color: var(--accent);
+    text-transform: capitalize;
+}
+.sidebar p {
+    cursor: pointer;
+    margin: 5px 0;
+    color: var(--text-main);
+    background: var(--bg-sidebar);
+    border-radius: 4px;
+    padding: 4px 8px;
+    transition: background 0.7s;
+    padding: 0.7rem;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar p:hover {
+    background: var(--accent-soft);
+    color: #fff;
+}
+
+.playlist-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: var(--bg-main);
+}
+.playlist-title {
+    padding: 10px;
+    font-weight: bold;
+    font-size: 22.5px;
+    border-bottom: 2px solid var(--border-main);
+    color: var(--accent);
+    background: var(--bg-main);
+}
+.song {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer;
+    color: var(--text-main);
+    background: var(--bg-main);
+    transition: background 0.5s, color 0.3s;
+}
+.song:hover {
+    background: var(--bg-sidebar);
+}
+.song-playing {
+    color: var(--accent);
+    background: var(--bg-main);
+    font-weight: bold;
+}
+
+footer {
+    border-top: 2px solid var(--border-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    gap: 20px;
+    background: var(--bg-footer);
+}
+.portify-fire {
+    height: 1.5em;
+    vertical-align: middle;
+    margin-right: 0.2em;
+}
+footer img {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    filter: invert(1) brightness(1.1);
+    transform: scale(1);
+    transition: filter 1s, transform 0.3s;
+    margin-top: 1rem;
+}
+footer img:hover {
+    filter: invert(1) brightness(2) drop-shadow(0 0 10px var(--accent));
+    transform: scale(1.2);
+}
+
+button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    font-family: 'Noto Sans', Arial, sans-serif;
+    height: 1.5em;
+    line-height: 1.5em;
+    display: inline-flex;
+    align-items: center;
+}
+.sidebar button {
+    margin-left: 10px;
+}
+button:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    transform: scale(1.05);
+}
+
+input[type="file"] {
+    background: var(--bg-sidebar);
+    color: var(--text-main);
+    border: 1px solid var(--border-main);
+    border-radius: 6px;
+    padding: 8px;
+    margin: 10px 0;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.shuffle-left {
+    order: -1;
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    gap: 20px;
+    background: var(--bg-footer);
+    border-top: 2px solid var(--border-main);
+}
+
+.shuffle-left.active {
+    filter: invert(1) brightness(2) drop-shadow(0 0 10px var(--accent));
+}
