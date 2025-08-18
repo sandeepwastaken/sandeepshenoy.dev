@@ -491,21 +491,21 @@ h3 {
   color: var(--color-text-primary);
 }
 
-.modal-video {
+.modal-preview {
   width: 100%;
   background: transparent;
   border-radius: 12px 12px 0 0;
   filter: hue-rotate(calc(-1 * var(--hue-rotation)));
 }
 
-.modal-video video {
+.modal-preview video, .modal-preview img {
   width: 100%;
-  height: 500px;
+  height: 400px;
   object-fit: cover;
   border-radius: 12px 12px 0 0;
 }
 
-.video-label {
+.preview-label {
   color: var(--color-text-muted);
   font-size: 1.3rem;
   margin: 0;
