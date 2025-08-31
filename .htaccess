@@ -19,3 +19,8 @@ AddType video/quicktime .mov
 RewriteCond %{REQUEST_URI} ^/videos/([^/]+)\.(mp4|mov)$ [NC]
 RewriteCond %{HTTP_REFERER} !^.*\/player [NC]
 RewriteRule ^videos/(.*)$ /player?src=/videos/$1 [R=302,L]
+
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
