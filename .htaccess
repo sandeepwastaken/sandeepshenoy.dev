@@ -1,4 +1,5 @@
 RewriteEngine On
+Options -Indexes
 
 # Force trailing slash ONLY if the request doesn't point to a real file or dir
 RewriteCond %{REQUEST_FILENAME} !-f
