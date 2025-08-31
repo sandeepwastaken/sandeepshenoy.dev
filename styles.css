@@ -747,14 +747,14 @@ textarea::placeholder {
     background: rgba(var(--color-white-base), 0.03);
     border-radius: 10px;
     padding: 1rem;
-    box-shadow: 0 4px 10px rgba(var(--color-black-base), 0.25);
+    box-shadow: 5px 5px 0px rgba(var(--color-black-base), 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     z-index: 4;
 }
 
 .gallery-page .gallery-item:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(var(--color-black-base), 0.35);
+  box-shadow: 7.5px 7.5px 0px rgba(var(--color-black-base), 0.25);
 }
 
 .gallery-page .gallery-item img {
