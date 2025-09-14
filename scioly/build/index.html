@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>3D Model Viewer</title>
+  <title>SciOly Build</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-  <style>
-    body { margin: 0; }
-    model-viewer { width: 100vw; height: 100vh; display: block; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
+</head>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;400&display=swap" rel="stylesheet">
 </head>
 <body>
   <model-viewer
@@ -16,8 +15,11 @@
     auto-rotate
     background-color="#ffffff"
     environment-image="box.jpg"
-    exposure="1.2"
+    exposure="1"
     shadow-intensity="1">
   </model-viewer>
 </body>
+  <div class="overlay-text">
+    <div class="title">SciOly Machines Build</div>
+    <div class="subtitle">Mockup by Sandeep Shenoy</div>
 </html>
