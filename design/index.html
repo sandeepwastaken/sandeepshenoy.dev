@@ -10,21 +10,11 @@
   <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <button class="default-button">CLICK</button>
+  <button class="default-button">CLICK ME</button>
   <canvas id="backgroundCanvas"></canvas>
   <canvas id="blurCanvas" class="blurCanvas"></canvas>
-    <script>
-      const btn = document.querySelector('.default-button');
-      btn.addEventListener('mousedown', function() {
-        btn.classList.add('clicked');
-      });
-      btn.addEventListener('mouseup', function() {
-        btn.classList.remove('clicked');
-      });
-      btn.addEventListener('mouseleave', function() {
-        btn.classList.remove('clicked');
-      });
-    </script>
+  <div id="cursor-glow"></div>
+  <script src="script.js"></script>
   <script src="canvas.js"></script>
 </body>
 </html>

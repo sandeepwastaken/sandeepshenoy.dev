@@ -9,7 +9,8 @@ const CONFIG = {
     MIN_SPEED: 0.015,
     MAX_SPEED: 0.03,
     
-    CIRCLE_COLOR: '#7c4dff',
+    TOP: '#8e4dffff',
+    BOTTOM: '#571368ff',
     OPACITY_START: 0.15,
     OPACITY_PEAK: 0.3,
     
@@ -61,9 +62,20 @@ class FloatingCircle {
         const cx = Math.round(this.x) + 0.5;
         const cy = Math.round(this.y) + 0.5;
         const r = this.size / 2;
+        const blend = Math.min(1, Math.max(0, cy / this.canvas.height));
+        function lerpColor(a, b, t) {
+            const ar = parseInt(a.slice(1,3),16), ag = parseInt(a.slice(3,5),16), ab = parseInt(a.slice(5,7),16), aa = parseInt(a.slice(7,9),16);
+            const br = parseInt(b.slice(1,3),16), bg = parseInt(b.slice(3,5),16), bb = parseInt(b.slice(5,7),16), ba = parseInt(b.slice(7,9),16);
+            const rr = Math.round(ar + (br-ar)*t);
+            const rg = Math.round(ag + (bg-ag)*t);
+            const rb = Math.round(ab + (bb-ab)*t);
+            const ra = Math.round(aa + (ba-aa)*t);
+            return `rgba(${rr},${rg},${rb},${(ra/255).toFixed(2)})`;
+        }
+        const circleColor = lerpColor(CONFIG.TOP, CONFIG.BOTTOM, blend);
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-        gradient.addColorStop(0, CONFIG.CIRCLE_COLOR);
-        gradient.addColorStop(0.7, CONFIG.CIRCLE_COLOR);
+        gradient.addColorStop(0, circleColor);
+        gradient.addColorStop(0.7, circleColor);
         gradient.addColorStop(1, 'transparent');
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -81,7 +93,6 @@ class CanvasAnimation {
     constructor() {
         this.canvas = document.getElementById('backgroundCanvas');
         this.ctx = this.canvas.getContext('2d');
-        // Enable image smoothing for cleaner rendering
         this.ctx.imageSmoothingEnabled = true;
         this.ctx.imageSmoothingQuality = 'high';
         this.circles = [];
@@ -100,7 +111,6 @@ class CanvasAnimation {
     resizeCanvas() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        // Re-apply smoothing after resize (some browsers reset it)
         this.ctx.imageSmoothingEnabled = true;
         this.ctx.imageSmoothingQuality = 'high';
     }
@@ -132,7 +142,6 @@ class CanvasAnimation {
     }
 
     draw() {
-        // Clear with a full reset to avoid ghosting/artifacts
         this.ctx.save();
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
