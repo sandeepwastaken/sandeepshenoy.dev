@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>wat</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+  <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <canvas id="backgroundCanvas"></canvas>
+  <header>
+    <h1>idk the name yet</h1>
+    <p class="subtitle">description</p>
+  </header>
+
+  <main class="form-container" id="form-screen">
+    <div class="input-group">
+      <input type="text" id="linkedin" placeholder="LinkedIn Profile URL">
+      <span class="status" id="linkedin-status">❔</span>
+    </div>
+    <div class="input-group">
+      <input type="text" id="twitter" placeholder="Twitter Profile URL">
+      <span class="status" id="twitter-status">❔</span>
+    </div>
+    <div class="input-group">
+      <input type="text" id="facebook" placeholder="Facebook Profile URL">
+      <span class="status" id="facebook-status">❔</span>
+    </div>
+  <button class="btn" id="submit-btn" onclick="startProcess()" disabled>Submit</button>
+  </main>
+
+  <section class="loading-screen" id="loading-screen">
+    <h2>Processing...</h2>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div id="loading-step" class="loading-step">Starting...</div>
+  </section>
+
+  <section class="results-screen" id="results-screen">
+    <h2>Profile Summary</h2>
+    <p><strong>Profile:</strong> Demo User (LinkedIn, Twitter, Facebook)</p>
+    <p><strong>Summary:</strong> In the past week, your accounts were mentioned in several conversations. Key highlights include positive engagement on your latest LinkedIn post, a trending Twitter reply, and increased interaction on Facebook.</p>
+
+    <h2>Feedback</h2>
+    <div class="feedback-box">👍 Great response on LinkedIn post about AI trends.</div>
+    <div class="feedback-box">💬 Twitter reply gained traction and sparked discussion.</div>
+    <div class="feedback-box">📢 Facebook group post had strong engagement.</div>
+
+    <div class="ai-suggestions">
+      <h3>AI Suggestions:</h3>
+      <ul>
+        <li>Thank your LinkedIn network for their support and ask a follow-up question.</li>
+        <li>On Twitter, reply with additional insights and share a link to your blog.</li>
+        <li>On Facebook, create a poll to continue the conversation with your group.</li>
+      </ul>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+  <script src="canvas.js"></script>
+</body>
+</html>
