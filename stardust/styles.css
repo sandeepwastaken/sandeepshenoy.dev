@@ -95,3 +95,8 @@ body {
   font-size: 1.2em;
   color: var(--muted);
 }
+
+.title {
+  margin-bottom: 8px;
+  text-align: center;
+}
