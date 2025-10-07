@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>PDF Snipper</title>
+	<link rel="icon" type="image/x-icon" href="/images/logo.svg">
+	<style>
+        /* ALL vibe coded LOL */
+		#preload-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background-color: black;
+			z-index: 999;
+		}
+
+			/* small tweaks for the snip UI */
+			.snip-card {
+				max-width: 720px;
+				margin: 0px auto 6vh;
+				background: rgba(255,255,255,0.03);
+				padding: 22px;
+				border-radius: 12px;
+				box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+				backdrop-filter: blur(6px);
+			}
+			.snip-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+			.snip-row > * { flex: 1 1 140px; min-width: 120px; }
+			.snip-row label { display:block; margin-bottom:6px; color:var(--color-text-subtle); font-size:0.95rem; }
+			.muted { opacity:0.9; font-size:0.95rem; }
+			.small { font-size:0.9rem; }
+
+			/* Inputs and file control */
+			input[type=file] {
+				width: 100%;
+				padding: 10px 12px;
+				background: rgba(var(--color-white-base), 0.02);
+				color: var(--color-text-primary);
+				border: 1px solid rgba(var(--color-white-base), 0.06);
+				border-radius: 8px;
+				cursor: pointer;
+			}
+
+			input[type=number], input[type=text], select {
+				width: 100%;
+				padding: 10px 12px;
+				background: rgba(var(--color-white-base), 0.02);
+				color: var(--color-text-primary);
+				border: 1px solid rgba(var(--color-white-base), 0.06);
+				border-radius: 8px;
+				outline: none;
+				font-size: 0.95rem;
+			}
+			input[type=number]:focus, input[type=text]:focus, select:focus, input[type=file]:focus {
+				border-color: rgba(var(--color-accent-base), 0.7);
+				box-shadow: 0 4px 18px rgba(var(--color-accent-base), 0.08);
+			}
+
+			/* Button styling consistent with root site */
+			.button {
+				background: linear-gradient(180deg, var(--color-button-primary), var(--color-button-primary-hover));
+				color: white;
+				border: none;
+				padding: 10px 16px;
+				border-radius: 8px;
+				cursor: pointer;
+				font-weight: 600;
+				box-shadow: 0 6px 18px rgba(12,23,40,0.35);
+			}
+			.button:disabled {
+				background: var(--color-button-disabled);
+				color: var(--color-button-disabled-text);
+				cursor: default;
+				box-shadow: none;
+			}
+
+			.status { margin-top:12px; font-size:0.95rem; }
+	</style>
+	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+	<script>
+		const link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = '/styles.css?v=' + Date.now();
+		link.onload = () => {
+			const po = document.getElementById('preload-overlay');
+			if (po) po.style.display = 'none';
+		};
+		document.head.appendChild(link);
+		const scriptEl = document.createElement('script');
+		scriptEl.src = '/script.js?v=' + Date.now();
+		document.head.appendChild(scriptEl);
+	</script>
+</head>
+<body>
+	<div id="preload-overlay"></div>
+	<div class="background"></div>
+	<div class="gradient"></div>
+	<div class="overlay"></div>
+
+	<div class="main-content">
+		<img src="/images/logo.svg" alt="Logo" class="logo" />
+		<h1 class="title">PDF Snipper</h1>
+		<h2 class="muted">extract pages from any PDF — client-side, private</h2>
+		<img src="/images/div.svg" alt="Divider" class="divider" />
+
+		<div class="snip-card">
+			<div class="snip-row file-row">
+				<div class="file-row-inner">
+					<label class="muted small">Choose PDF</label>
+					<input id="file" type="file" accept="application/pdf" />
+				</div>
+			</div>
+
+			<div class="snip-row" style="margin-top:12px;">
+				<div>
+					<label class="muted small">Start page</label>
+					<input id="start" type="number" min="1" value="1" />
+				</div>
+				<div>
+					<label class="muted small">End page</label>
+					<input id="end" type="number" min="1" value="1" />
+				</div>
+				<div style="flex:0 0 auto;">
+					<label class="muted small">&nbsp;</label>
+					<button id="snip" class="button">Snip</button>
+				</div>
+			</div>
+
+			<div class="status" id="status">No file selected.</div>
+		</div>
+
+		<h3 style="margin-top:36px">Notes</h3>
+		<h3 class="muted small">All processing happens in your browser. Large PDFs may use significant memory.</h3>
+	</div>
+
+	<nav>
+		<a href="/" >
+			<img src="/images/home.svg" alt="Home Icon" class="nav-icon" />
+			<span>Home</span>
+		</a>
+		<a href="/projects/">
+			<img src="/images/projects.svg" alt="Projects Icon" class="nav-icon" />
+			<span>Projects</span>
+		</a>
+		<a href="/gallery/">
+			<img src="/images/gallery.svg" alt="Gallery Icon" class="nav-icon" />
+			<span>Gallery</span>
+		</a>
+		<a href="/contact/">
+			<img src="/images/contact.svg" alt="Contact Icon" class="nav-icon" />
+			<span>Contact</span>
+		</a>
+		<a href="/settings/">
+			<img src="/images/settings.svg" alt="Settings Icon" class="nav-icon" />
+			<span>Settings</span>
+		</a>
+	</nav>
+
+	<!-- pdf-lib from CDN -->
+	<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+	<script>
+		// Contract:
+		// - input: PDF file (any size), start and end page (1-based inclusive)
+		// - output: downloaded PDF containing pages [start..end]
+		const fileInput = document.getElementById('file');
+		const startInput = document.getElementById('start');
+		const endInput = document.getElementById('end');
+		const snipBtn = document.getElementById('snip');
+		const status = document.getElementById('status');
+
+		let loadedPdf = null;
+		let loadedArrayBuffer = null;
+		let loadedPageCount = 0;
+		let loadedName = 'document';
+
+		function setStatus(msg, isError) {
+			status.textContent = msg;
+			status.style.color = isError ? '#ff8b8b' : '';
+		}
+
+		fileInput.addEventListener('change', async (e) => {
+			const f = e.target.files && e.target.files[0];
+			if (!f) return;
+			loadedName = f.name.replace(/\.pdf$/i, '') || 'document';
+			setStatus('Loading PDF (this may take a moment)...');
+			snipBtn.disabled = true;
+			try {
+				loadedArrayBuffer = await f.arrayBuffer();
+				// Load with pdf-lib to get page count
+				const pdf = await PDFLib.PDFDocument.load(loadedArrayBuffer, { updateMetadata: false });
+				loadedPdf = pdf;
+				loadedPageCount = pdf.getPageCount();
+				setStatus(`Loaded: ${f.name} — ${loadedPageCount} pages`);
+				startInput.max = loadedPageCount;
+				endInput.max = loadedPageCount;
+				endInput.value = Math.min(endInput.value || 1, loadedPageCount);
+				startInput.value = Math.min(startInput.value || 1, loadedPageCount);
+				snipBtn.disabled = false;
+			} catch (err) {
+				console.error(err);
+				setStatus('Error loading PDF — it may be encrypted or corrupted.', true);
+			}
+		});
+
+		function validateRange() {
+			const s = Number(startInput.value) || 1;
+			const e = Number(endInput.value) || 1;
+			if (!loadedPdf) return { ok: false, msg: 'No PDF loaded' };
+			if (s < 1 || e < 1) return { ok: false, msg: 'Page numbers must be >= 1' };
+			if (s > loadedPageCount || e > loadedPageCount) return { ok: false, msg: `Range must be within 1..${loadedPageCount}` };
+			if (s > e) return { ok: false, msg: 'Start page must be <= end page' };
+			return { ok: true, start: s, end: e };
+		}
+
+		snipBtn.addEventListener('click', async () => {
+			const v = validateRange();
+			if (!v.ok) { setStatus(v.msg, true); return; }
+			snipBtn.disabled = true;
+			setStatus('Processing — extracting pages...');
+			try {
+				// Re-load original from stored array buffer to avoid mutated doc
+				const srcPdf = await PDFLib.PDFDocument.load(loadedArrayBuffer);
+				const newPdf = await PDFLib.PDFDocument.create();
+				const indices = [];
+				for (let i = v.start - 1; i <= v.end - 1; i++) indices.push(i);
+				const copied = await newPdf.copyPages(srcPdf, indices);
+				copied.forEach((p) => newPdf.addPage(p));
+				const outBytes = await newPdf.save();
+				const blob = new Blob([outBytes], { type: 'application/pdf' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				const safeStart = v.start;
+				const safeEnd = v.end;
+				a.href = url;
+				a.download = `${loadedName}-pages-${safeStart}-${safeEnd}.pdf`;
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+				setStatus(`Downloaded ${a.download}`);
+			} catch (err) {
+				console.error(err);
+				setStatus('Failed to create snip. See console for details.', true);
+			} finally {
+				snipBtn.disabled = false;
+			}
+		});
+
+		// small UX: update status when inputs change
+		startInput.addEventListener('input', () => {
+			const v = validateRange();
+			if (!loadedPdf) return;
+			if (!v.ok) setStatus(v.msg, true);
+			else setStatus(`Ready — will extract pages ${v.start}–${v.end}`);
+		});
+		endInput.addEventListener('input', () => {
+			const v = validateRange();
+			if (!loadedPdf) return;
+			if (!v.ok) setStatus(v.msg, true);
+			else setStatus(`Ready — will extract pages ${v.start}–${v.end}`);
+		});
+	</script>
+</body>
+</html>
