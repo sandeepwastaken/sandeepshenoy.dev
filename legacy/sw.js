@@ -9,8 +9,7 @@ const CACHE_FILES = [
   '/images/logo.svg',
   '/images/offline.svg',
   '/images/offline.png',
-  '/images/div.svg',
-  'https:
+  '/images/div.svg'
 ];
 
 
