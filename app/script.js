@@ -85,9 +85,18 @@ async function startProcess() {
     showStep('Preparing AI prompt...', 0.65);
     const scrapedSummary = proxyResults.map(r => {
       if (!r.ok) return `${r.url} → ERROR: ${r.error || JSON.stringify(r.response).slice(0,200)}`;
-      let snippet = '';
-      if (typeof r.response === 'object' && r.response.body) snippet = r.response.body.slice(0,1000);
-      else snippet = String(r.response).slice(0,1000);
+      // Extract a trimmed, text-only snippet (strip HTML/script/style) for faster AI response
+      let raw = '';
+      if (typeof r.response === 'object' && r.response.body) raw = String(r.response.body);
+      else raw = String(r.response || '');
+      // Remove script/style tags and strip remaining HTML tags
+      let textOnly = raw
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;|&amp;|&lt;|&gt;|&quot;|&#39;/g, ' ');
+      textOnly = textOnly.replace(/\s+/g, ' ').trim();
+      const snippet = textOnly.slice(0,500); // reduce to 500 chars
       return `${r.url}\n${snippet}\n---`;
     }).join('\n\n');
 
@@ -96,7 +105,7 @@ async function startProcess() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt: `You are given scraped social media content for the following profiles. Provide (1) a short profile summary (2) 3 suggested follow-ups the user can post, and (3) simple consistency checks for tone/content.\n\nDATA:\n${scrapedSummary}\n\nOutput in JSON: { "profile_summary": "...", "suggestions": ["..."], "checks": ["..."] }`
+        prompt: `You are an assistant analyzing social media profiles. Given the following scraped content, provide ONLY JSON with the following fields:\n\n1. "profile_summary": a concise summary of the person's profile and interests.\n2. "suggestions": an array of 3 suggested follow-up posts or questions the user could post.\n3. "checks": an array of 3 simple consistency or tone checks to ensure professional and appropriate content.\n\nDATA:\n${scrapedSummary}\n\nIMPORTANT: Output strictly valid JSON only. Do not include any explanations or extra text outside the JSON object.`
       })
     });
 
@@ -106,9 +115,17 @@ async function startProcess() {
     }
 
     showStep('Formatting results...', 0.95);
-    const aiText = await aiResp.text();
-    let aiJson = null;
-    try { aiJson = JSON.parse(aiText); } catch(e) { aiJson = { raw: aiText }; }
+    let aiText = await aiResp.text();
+    // Strip code fences like ```json ... ``` that some models return
+    aiText = aiText.trim().replace(/^```json|```$/g, '');
+
+    let aiJson;
+    try {
+      aiJson = JSON.parse(aiText);
+    } catch(e) {
+      console.error('Failed to parse AI JSON:', e);
+      aiJson = { profile_summary: aiText, suggestions: [], checks: [] };
+    }
 
     showStep('Rendering suggestions...', 1);
     setTimeout(() => {
@@ -121,9 +138,15 @@ async function startProcess() {
         <pre id="profile-summary" style="white-space:pre-wrap; text-align:left; max-width:760px;"></pre>
         <h2>AI Suggestions</h2>
         <div id="ai-suggestions-list" style="text-align:left; max-width:760px;"></div>
+        <h2>Consistency Checks</h2>
+        <div id="ai-checks-list" style="text-align:left; max-width:760px;"></div>
       `;
 
-      document.getElementById('profile-summary').textContent = aiJson.profile_summary || aiJson.raw || aiText;
+      if (!aiJson.profile_summary) {
+        document.getElementById('profile-summary').textContent = "Could not generate profile summary. See raw output below:\n" + aiText;
+      } else {
+        document.getElementById('profile-summary').textContent = aiJson.profile_summary;
+      }
 
       const suggestionsNode = document.getElementById('ai-suggestions-list');
       if (Array.isArray(aiJson.suggestions)) {
@@ -139,6 +162,19 @@ async function startProcess() {
         d.textContent = aiText;
         suggestionsNode.appendChild(d);
       }
+
+      const checksNode = document.getElementById('ai-checks-list');
+      checksNode.innerHTML = '';
+      if (Array.isArray(aiJson.checks)) {
+        aiJson.checks.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'feedback-box';
+          div.textContent = '⚠️ ' + c;
+          checksNode.appendChild(div);
+        });
+      }
+
+      if (window.twemoji) twemoji.parse(resultsScreen, {folder: 'svg', ext: '.svg'});
     }, 600);
 
   } catch(err) {
@@ -147,7 +183,12 @@ async function startProcess() {
     setTimeout(() => {
       alert('An error occurred: ' + err.message);
       loadingScreen.style.display = 'none';
-      document.getElementById('results-screen').style.display = 'flex';
+      const resultsScreen = document.getElementById('results-screen');
+      resultsScreen.style.display = 'flex';
+      resultsScreen.innerHTML = `
+        <h2>Processing Error</h2>
+        <div class="feedback-box">${String(err.message)}</div>
+      `;
     }, 800);
   }
 }
