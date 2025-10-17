@@ -13,6 +13,8 @@ ErrorDocument 404 /404/
 AddType video/mp4 .mp4
 AddType video/quicktime .mov
 
+php_value max_execution_time 120
+
 <FilesMatch "\.(mp4|mov)$">
   Header set Content-Disposition inline
 </FilesMatch>

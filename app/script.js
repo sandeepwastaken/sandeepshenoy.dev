@@ -60,37 +60,38 @@ async function startProcess() {
   }
 
   try {
-    showStep('Fetching live profile data...', 0.05);
+    const proxyResults = [];
+    for (let i = 0; i < urls.length; i++) {
+      showStep(`Fetching profile ${i + 1} of ${urls.length}...`, 0.05 + 0.2 * i);
+      const proxyResp = await fetch('https://sandeepshenoy.dev/api/brightdata_proxy.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls: [urls[i]] })
+      });
 
-    const proxyResp = await fetch('https://sandeepshenoy.dev/api/brightdata_proxy.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls })
-    });
+      if (!proxyResp.ok) {
+        const txt = await proxyResp.text();
+        throw new Error(`Proxy error ${proxyResp.status}: ${txt}`);
+      }
 
-    if (!proxyResp.ok) {
-      const txt = await proxyResp.text();
-      throw new Error(`Proxy error ${proxyResp.status}: ${txt}`);
+      const proxyJson = await proxyResp.json();
+      if (!proxyJson.results || !Array.isArray(proxyJson.results)) {
+        throw new Error('Invalid response from scraper proxy.');
+      }
+
+      proxyResults.push(proxyJson.results[0]);
     }
 
-    showStep('Profiles fetched, parsing results...', 0.25);
-    const proxyJson = await proxyResp.json();
-
-    if (!proxyJson.results || !Array.isArray(proxyJson.results)) {
-      throw new Error('Invalid response from scraper proxy.');
-    }
-
-    showStep('Preparing AI prompt...', 0.40);
-    const scrapedSummary = proxyJson.results.map(r => {
+    showStep('Preparing AI prompt...', 0.65);
+    const scrapedSummary = proxyResults.map(r => {
       if (!r.ok) return `${r.url} → ERROR: ${r.error || JSON.stringify(r.response).slice(0,200)}`;
-      // Bright Data may return object with body
       let snippet = '';
       if (typeof r.response === 'object' && r.response.body) snippet = r.response.body.slice(0,1000);
       else snippet = String(r.response).slice(0,1000);
       return `${r.url}\n${snippet}\n---`;
     }).join('\n\n');
 
-    showStep('Sending data to AI for analysis...', 0.55);
+    showStep('Sending data to AI for analysis...', 0.85);
     const aiResp = await fetch('/api/openai.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -104,7 +105,7 @@ async function startProcess() {
       throw new Error(`AI endpoint error ${aiResp.status}: ${txt}`);
     }
 
-    showStep('Formatting results...', 0.80);
+    showStep('Formatting results...', 0.95);
     const aiText = await aiResp.text();
     let aiJson = null;
     try { aiJson = JSON.parse(aiText); } catch(e) { aiJson = { raw: aiText }; }
