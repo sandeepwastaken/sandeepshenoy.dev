@@ -51,6 +51,17 @@ async function startProcess() {
     document.getElementById('facebook').value.trim()
   ];
 
+  const processedUrls = urls.map((url, index) => {
+    if (index === 1) { 
+      const match = url.match(/https?:\/\/(www\.)?x\.com\/([A-Za-z0-9_]+)/);
+      if (match) {
+        const username = match[2];
+        return `https://r.jina.ai/https://twitter.com/${username}`;
+      }
+    }
+    return url;
+  });
+
   function showStep(text, pct) {
     stepEl.textContent = text;
     stepEl.style.animation = "none";
@@ -61,12 +72,12 @@ async function startProcess() {
 
   try {
     const proxyResults = [];
-    for (let i = 0; i < urls.length; i++) {
-      showStep(`Fetching profile ${i + 1} of ${urls.length}...`, 0.05 + 0.2 * i);
+    for (let i = 0; i < processedUrls.length; i++) {
+      showStep(`Fetching profile ${i + 1} of ${processedUrls.length}...`, 0.05 + 0.2 * i);
       const proxyResp = await fetch('https://sandeepshenoy.dev/api/brightdata_proxy.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls: [urls[i]] })
+        body: JSON.stringify({ urls: [processedUrls[i]] })
       });
 
       if (!proxyResp.ok) {
@@ -85,18 +96,16 @@ async function startProcess() {
     showStep('Preparing AI prompt...', 0.65);
     const scrapedSummary = proxyResults.map(r => {
       if (!r.ok) return `${r.url} → ERROR: ${r.error || JSON.stringify(r.response).slice(0,200)}`;
-      // Extract a trimmed, text-only snippet (strip HTML/script/style) for faster AI response
       let raw = '';
       if (typeof r.response === 'object' && r.response.body) raw = String(r.response.body);
       else raw = String(r.response || '');
-      // Remove script/style tags and strip remaining HTML tags
       let textOnly = raw
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
         .replace(/<[^>]+>/g, ' ')
         .replace(/&nbsp;|&amp;|&lt;|&gt;|&quot;|&#39;/g, ' ');
       textOnly = textOnly.replace(/\s+/g, ' ').trim();
-      const snippet = textOnly.slice(0,500); // reduce to 500 chars
+      const snippet = textOnly.slice(0,500);
       return `${r.url}\n${snippet}\n---`;
     }).join('\n\n');
 
@@ -105,7 +114,24 @@ async function startProcess() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt: `You are an assistant analyzing social media profiles. Given the following scraped content, provide ONLY JSON with the following fields:\n\n1. "profile_summary": a concise summary of the person's profile and interests.\n2. "suggestions": an array of 3 suggested follow-up posts or questions the user could post.\n3. "checks": an array of 3 simple consistency or tone checks to ensure professional and appropriate content.\n\nDATA:\n${scrapedSummary}\n\nIMPORTANT: Output strictly valid JSON only. Do not include any explanations or extra text outside the JSON object.`
+        prompt: `You are an assistant analyzing social media profiles for consistency, professionalism, and areas of improvement. Given the following scraped content, provide ONLY JSON with the following fields:
+
+1. "profile_summary": a concise summary of the person's profile and interests.
+
+2. "suggestions": an array of 6-9 objects, each with:
+   - "emoji": a single emoji that best represents the suggestion
+   - "text": the suggestion text focused on profile consistency, areas to improve, gaps in presence, branding opportunities, etc.
+
+3. "checks": an array of 6-9 objects, each with:
+   - "emoji": a single emoji that best fits the constructive criticism
+   - "text": the consistency or tone check for professional and appropriate content
+
+4. "final_comments": a plain text string with general feedback on their profiles and how they could improve them overall.
+
+DATA:
+${scrapedSummary}
+
+IMPORTANT: Output strictly valid JSON only. Do not include any explanations or extra text outside the JSON object. Each suggestion and check must have both an emoji and text field.`
       })
     });
 
@@ -116,7 +142,6 @@ async function startProcess() {
 
     showStep('Formatting results...', 0.95);
     let aiText = await aiResp.text();
-    // Strip code fences like ```json ... ``` that some models return
     aiText = aiText.trim().replace(/^```json|```$/g, '');
 
     let aiJson;
@@ -124,7 +149,7 @@ async function startProcess() {
       aiJson = JSON.parse(aiText);
     } catch(e) {
       console.error('Failed to parse AI JSON:', e);
-      aiJson = { profile_summary: aiText, suggestions: [], checks: [] };
+      aiJson = { profile_summary: aiText, suggestions: [], checks: [], final_comments: '' };
     }
 
     showStep('Rendering suggestions...', 1);
@@ -136,10 +161,12 @@ async function startProcess() {
       resultsScreen.innerHTML = `
         <h2>Profile Summary</h2>
         <pre id="profile-summary" style="white-space:pre-wrap; text-align:left; max-width:760px;"></pre>
-        <h2>AI Suggestions</h2>
+        <h2>Areas to Improve</h2>
         <div id="ai-suggestions-list" style="text-align:left; max-width:760px;"></div>
         <h2>Consistency Checks</h2>
         <div id="ai-checks-list" style="text-align:left; max-width:760px;"></div>
+        <h2>Final Comments</h2>
+        <div id="final-comments" class="feedback-box" style="text-align:left; max-width:760px; white-space:pre-wrap;"></div>
       `;
 
       if (!aiJson.profile_summary) {
@@ -153,7 +180,11 @@ async function startProcess() {
         aiJson.suggestions.forEach(s => {
           const d = document.createElement('div');
           d.className = 'feedback-box';
-          d.textContent = '💡 ' + s;
+          if (typeof s === 'object' && s.emoji && s.text) {
+            d.textContent = s.emoji + ' ' + s.text;
+          } else {
+            d.textContent = String(s);
+          }
           suggestionsNode.appendChild(d);
         });
       } else {
@@ -169,9 +200,20 @@ async function startProcess() {
         aiJson.checks.forEach(c => {
           const div = document.createElement('div');
           div.className = 'feedback-box';
-          div.textContent = '⚠️ ' + c;
+          if (typeof c === 'object' && c.emoji && c.text) {
+            div.textContent = c.emoji + ' ' + c.text;
+          } else {
+            div.textContent = String(c);
+          }
           checksNode.appendChild(div);
         });
+      }
+
+      const finalCommentsNode = document.getElementById('final-comments');
+      if (aiJson.final_comments) {
+        finalCommentsNode.textContent = aiJson.final_comments;
+      } else {
+        finalCommentsNode.textContent = 'No additional comments provided.';
       }
 
       if (window.twemoji) twemoji.parse(resultsScreen, {folder: 'svg', ext: '.svg'});
