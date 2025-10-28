@@ -61,6 +61,26 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  if (requestUrl.pathname.endsWith('.css') || requestUrl.pathname.endsWith('.js')) {
+    event.respondWith(
+      fetch(event.request, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
+      .then((response) => {
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  
   
   if (requestUrl.pathname === '/styles.css' || requestUrl.pathname === '/offline.html') {
     event.respondWith(

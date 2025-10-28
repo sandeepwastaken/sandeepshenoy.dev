@@ -104,9 +104,77 @@ h1, h2 {
   text-align: center;
 }
 
+.title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.logo #part1 {
+  animation: float1 3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.logo #part2 {
+  animation: float2 3.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.logo #part3 {
+  animation: float3 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes float1 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-2px, -3px);
+  }
+}
+
+@keyframes float2 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(2px, -2px);
+  }
+}
+
+@keyframes float3 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(1px, 2px);
+  }
+}
+
+.logo {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.logo #part1,
+.logo #part2,
+.logo #part3 {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .subtitle {
   color: var(--muted);
-  margin-bottom: 30px;
+  margin-bottom: -10px;
   text-align: center;
 }
 
@@ -295,4 +363,8 @@ select:-webkit-autofill {
   -webkit-text-fill-color: var(--text) !important;
   color: var(--text) !important;
   caret-color: var(--text);
+}
+
+.container {
+  margin-bottom: 50px;
 }
