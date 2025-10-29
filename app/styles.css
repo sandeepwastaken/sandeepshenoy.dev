@@ -213,6 +213,21 @@ h1, h2 {
   transition: border 0.3s;
 }
 
+.input-group .social-logo {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  opacity: 0.6;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 0 0 rgba(0,0,0,0));
+  transition: opacity 3s ease;
+}
+
+.input-group:has(input:not(:placeholder-shown)) .social-logo {
+  opacity: 1;
+}
+
 .input-group input {
   flex: 1;
   background: none;

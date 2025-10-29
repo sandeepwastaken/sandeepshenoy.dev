@@ -77,18 +77,25 @@ function setMarkdown(node, markdown) {
 
 let analysisContext = { scrapedSummary: '', aiJson: null, aiRaw: '' };
 let clarifyState = { remaining: 5 };
+let clarifyHistory = [];
 
 const regexPatterns = {
   linkedin: /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
   twitter: /^https?:\/\/(www\.)?(x\.com|twitter\.com)\/[A-Za-z0-9_]+\/?$/,
-  facebook: /^https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9\._\-]+\/?$/
+  facebook: /^https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9\._\-]+\/?$/,
+  instagram: /^https?:\/\/(www\.)?instagram\.com\/[A-Za-z0-9_.]+\/?$/,
+  bluesky: /^https?:\/\/(www\.)?bsky\.app\/profile\/[^\/\s]+\/?$/
 };
 
 document.querySelectorAll('.input-group input').forEach(input => {
   input.addEventListener('input', () => {
     const id = input.id;
     const statusEl = document.getElementById(id + '-status');
-    if (regexPatterns[id].test(input.value)) {
+    const val = (input.value || '').trim();
+    if (!val) {
+      statusEl.textContent = "◌";
+      statusEl.style.color = "";
+    } else if (regexPatterns[id] && regexPatterns[id].test(val)) {
       statusEl.textContent = "✅";
       statusEl.style.color = "var(--success)";
     } else {
@@ -96,22 +103,22 @@ document.querySelectorAll('.input-group input').forEach(input => {
       statusEl.style.color = "var(--error)";
     }
     if (window.twemoji) twemoji.parse(statusEl, {folder: 'svg', ext: '.svg'});
-    const allValid = ['linkedin','twitter','facebook'].every(
-      key => regexPatterns[key].test(document.getElementById(key).value)
-    );
-    document.getElementById('submit-btn').disabled = !allValid;
+    const keys = ['linkedin','twitter','facebook','instagram','bluesky'];
+    const validCount = keys.filter(key => {
+      const v = (document.getElementById(key)?.value || '').trim();
+      return v && regexPatterns[key].test(v);
+    }).length;
+    document.getElementById('submit-btn').disabled = (validCount < 1 || validCount > 4);
   });
 });
 
 
 async function startProcess() {
-  const allValid = ['linkedin', 'twitter', 'facebook'].every(
-    key => regexPatterns[key].test(document.getElementById(key).value)
-  );
-  if (!allValid) {
-    alert('Please enter valid URLs for all three profiles before continuing.');
-    return;
-  }
+  const keys = ['linkedin','twitter','facebook','instagram','bluesky'];
+  const entries = keys.map(k => ({ key: k, val: (document.getElementById(k)?.value || '').trim() }));
+  const valid = entries.filter(e => e.val && regexPatterns[e.key].test(e.val));
+  if (valid.length < 1) { alert('Enter at least one valid profile URL (max 4).'); return; }
+  if (valid.length > 4) { alert('Please enter no more than 4 valid profiles.'); return; }
 
   document.getElementById('form-screen').style.display = 'none';
   const loadingScreen = document.getElementById('loading-screen');
@@ -119,13 +126,7 @@ async function startProcess() {
   const stepEl = document.getElementById('loading-step');
   const progressFill = document.getElementById('progress-fill');
 
-  const urls = [
-    document.getElementById('linkedin').value.trim(),
-    document.getElementById('twitter').value.trim(),
-    document.getElementById('facebook').value.trim()
-  ];
-
-  const processedUrls = urls;
+  const processedUrls = valid.slice(0, 4).map(e => e.val);
 
   function showStep(text, pct) {
     stepEl.textContent = text;
@@ -301,6 +302,7 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
       const clarifyBtn = document.getElementById('clarify-btn');
       const clarifyMsg = document.getElementById('clarify-messages');
       const clarifyRemaining = document.getElementById('clarify-remaining');
+  clarifyHistory = [];
 
       function setClarifyDisabled(disabled) {
         clarifyInput.disabled = disabled;
@@ -317,6 +319,7 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
         clarifyMsg.appendChild(wrapper);
         clarifyMsg.scrollTop = clarifyMsg.scrollHeight;
         if (window.twemoji) twemoji.parse(wrapper, {folder: 'svg', ext: '.svg'});
+        if (role === 'user' || role === 'assistant') clarifyHistory.push({ role, content });
       }
 
       async function askClarification() {
@@ -327,7 +330,8 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
         clarifyInput.value = '';
         setClarifyDisabled(true);
         try {
-          const prompt = `You are answering a clarification question about a previous analysis of a person's social profiles. Use the provided analysis JSON and source context to answer the user's question clearly and practically. If the user asks how to implement something, provide a short step-by-step and concrete tips. Try to make your response long and detailed but stay within output token limits. You may use Markdown for structure (headings, lists, code blocks) when helpful. Keep it focused; do not restate the entire JSON.\n\nANALYSIS_JSON:\n${JSON.stringify(analysisContext.aiJson, null, 2)}\n\nSOURCE_CONTEXT_SNIPPETS:\n${analysisContext.scrapedSummary}\n\nUSER_QUESTION:\n${q}`;
+          const historyText = clarifyHistory.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+          const prompt = `You are answering a clarification question about a previous analysis of a person's social profiles. Use the provided analysis JSON and source context to answer the user's question clearly and practically. If the user asks how to implement something, provide a short step-by-step and concrete tips. Try to make your response long and detailed but stay within output token limits. You may use Markdown for structure (headings, lists, code blocks) when helpful. Keep it focused; do not restate the entire JSON.\n\nANALYSIS_JSON:\n${JSON.stringify(analysisContext.aiJson, null, 2)}\n\nSOURCE_CONTEXT_SNIPPETS:\n${analysisContext.scrapedSummary}\n\nCONVERSATION_HISTORY:\n${historyText}\n\nUSER_QUESTION:\n${q}`;
 
           const resp = await fetch('/api/openai.php', {
             method: 'POST',
