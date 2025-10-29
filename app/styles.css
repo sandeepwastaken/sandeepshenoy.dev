@@ -544,3 +544,72 @@ body:not(.intro-active) header,
 body:not(.intro-active) main,
 body:not(.intro-active) section,
 body:not(.intro-active) #backgroundCanvas { filter: none; }
+
+.md-content {
+  line-height: 1.55;
+}
+.md-content h1, .md-content h2, .md-content h3, .md-content h4 {
+  margin: 0.6em 0 0.4em;
+}
+.md-content ul, .md-content ol {
+  margin: 0.2em 0 0.6em 1.2em;
+}
+.md-content code {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 0.1em 0.35em;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}
+.md-content pre code {
+  display: block;
+  padding: 12px;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+.md-content a { color: var(--accent-3); }
+
+.clarify-container {
+  margin-top: 10px;
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.clarify-meta {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.clarify-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.clarify-item.user .feedback-box {
+  border-color: rgba(76, 175, 80, 0.25);
+}
+.clarify-item.assistant .feedback-box {
+  border-color: rgba(128, 90, 213, 0.35);
+}
+.clarify-input-row {
+  display: flex;
+  gap: 10px;
+}
+.clarify-input {
+  flex: 1;
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 12px 14px;
+  outline: none;
+}
+.clarify-input:focus {
+  border-color: var(--primary);
+}
+.clarify-button {
+  white-space: nowrap;
+}

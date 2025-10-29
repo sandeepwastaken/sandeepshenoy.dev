@@ -21,6 +21,28 @@ document.addEventListener('DOMContentLoaded', function() {
     startBtn.addEventListener('click', leaveIntro);
   }
 
+function renderMarkdown(markdown) {
+  const escape = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+  try {
+    if (window.marked) {
+      const html = window.marked.parse(markdown || '');
+      if (window.DOMPurify) return window.DOMPurify.sanitize(html);
+      return html;
+    }
+  } catch(e) {
+    console.warn('Markdown render failed, falling back to escape-only', e);
+  }
+  return escape(String(markdown || '')).replace(/\n/g, '<br>');
+}
+
+function setMarkdown(node, markdown) {
+  if (!node) return;
+  node.innerHTML = renderMarkdown(markdown);
+}
+
+let analysisContext = { scrapedSummary: '', aiJson: null, aiRaw: '' };
+let clarifyState = { remaining: 5 };
+
 const regexPatterns = {
   linkedin: /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
   twitter: /^https?:\/\/(www\.)?x\.com\/[A-Za-z0-9_]+$/,
@@ -169,6 +191,10 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
       aiJson = { profile_summary: aiText, suggestions: [], checks: [], final_comments: '' };
     }
 
+    analysisContext.scrapedSummary = scrapedSummary;
+    analysisContext.aiJson = aiJson;
+    analysisContext.aiRaw = aiText;
+
     showStep('Rendering suggestions...', 1);
     const finishRender = () => {
       loadingScreen.style.display = 'none';
@@ -177,37 +203,47 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
 
       resultsScreen.innerHTML = `
         <h2>Profile Summary</h2>
-        <pre id="profile-summary" style="white-space:pre-wrap; text-align:left; max-width:760px;"></pre>
+        <div id="profile-summary" class="md-content" style="text-align:left; max-width:760px;"></div>
         <h2>Areas to Improve</h2>
         <div id="ai-suggestions-list" style="text-align:left; max-width:760px;"></div>
         <h2>Consistency Checks</h2>
         <div id="ai-checks-list" style="text-align:left; max-width:760px;"></div>
         <h2>Final Comments</h2>
-        <div id="final-comments" class="feedback-box" style="text-align:left; max-width:760px; white-space:pre-wrap;"></div>
+        <div id="final-comments" class="feedback-box md-content" style="text-align:left; max-width:760px;"></div>
+
+        <div id="clarify-container" class="clarify-container">
+          <h2>Questions about the feedback</h2>
+          <div class="clarify-meta">You can ask up to <span id="clarify-remaining">5</span> clarification questions.</div>
+          <div id="clarify-messages" class="clarify-messages"></div>
+          <div class="clarify-input-row">
+            <input id="clarify-input" class="clarify-input" type="text" placeholder="Ask how to implement a suggestion, or what something means…" maxlength="500" />
+            <button id="clarify-btn" class="btn clarify-button">Ask</button>
+          </div>
+        </div>
       `;
 
       if (!aiJson.profile_summary) {
-        document.getElementById('profile-summary').textContent = "Could not generate profile summary. See raw output below:\n" + aiText;
+        setMarkdown(document.getElementById('profile-summary'), "Could not generate profile summary. See raw output below:\n\n" + (analysisContext.aiRaw || ''));
       } else {
-        document.getElementById('profile-summary').textContent = aiJson.profile_summary;
+        setMarkdown(document.getElementById('profile-summary'), aiJson.profile_summary);
       }
 
       const suggestionsNode = document.getElementById('ai-suggestions-list');
       if (Array.isArray(aiJson.suggestions)) {
         aiJson.suggestions.forEach(s => {
           const d = document.createElement('div');
-          d.className = 'feedback-box';
+          d.className = 'feedback-box md-content';
           if (typeof s === 'object' && s.emoji && s.text) {
-            d.textContent = s.emoji + ' ' + s.text;
+            setMarkdown(d, `${s.emoji} ${s.text}`);
           } else {
-            d.textContent = String(s);
+            setMarkdown(d, String(s));
           }
           suggestionsNode.appendChild(d);
         });
       } else {
         const d = document.createElement('div');
-        d.className = 'feedback-box';
-        d.textContent = aiText;
+        d.className = 'feedback-box md-content';
+        setMarkdown(d, analysisContext.aiRaw || '');
         suggestionsNode.appendChild(d);
       }
 
@@ -216,11 +252,11 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
       if (Array.isArray(aiJson.checks)) {
         aiJson.checks.forEach(c => {
           const div = document.createElement('div');
-          div.className = 'feedback-box';
+          div.className = 'feedback-box md-content';
           if (typeof c === 'object' && c.emoji && c.text) {
-            div.textContent = c.emoji + ' ' + c.text;
+            setMarkdown(div, `${c.emoji} ${c.text}`);
           } else {
-            div.textContent = String(c);
+            setMarkdown(div, String(c));
           }
           checksNode.appendChild(div);
         });
@@ -228,10 +264,76 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
 
       const finalCommentsNode = document.getElementById('final-comments');
       if (aiJson.final_comments) {
-        finalCommentsNode.textContent = aiJson.final_comments;
+        setMarkdown(finalCommentsNode, aiJson.final_comments);
       } else {
-        finalCommentsNode.textContent = 'No additional comments provided.';
+        setMarkdown(finalCommentsNode, 'No additional comments provided.');
       }
+
+      const clarifyInput = document.getElementById('clarify-input');
+      const clarifyBtn = document.getElementById('clarify-btn');
+      const clarifyMsg = document.getElementById('clarify-messages');
+      const clarifyRemaining = document.getElementById('clarify-remaining');
+
+      function setClarifyDisabled(disabled) {
+        clarifyInput.disabled = disabled;
+        clarifyBtn.disabled = disabled;
+      }
+
+      function appendQA(role, content) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `clarify-item ${role}`;
+        const box = document.createElement('div');
+        box.className = `feedback-box md-content`;
+        setMarkdown(box, content);
+        wrapper.appendChild(box);
+        clarifyMsg.appendChild(wrapper);
+        clarifyMsg.scrollTop = clarifyMsg.scrollHeight;
+        if (window.twemoji) twemoji.parse(wrapper, {folder: 'svg', ext: '.svg'});
+      }
+
+      async function askClarification() {
+        const q = (clarifyInput.value || '').trim();
+        if (!q) return;
+        if (clarifyState.remaining <= 0) return;
+        appendQA('user', `❓ ${q}`);
+        clarifyInput.value = '';
+        setClarifyDisabled(true);
+        try {
+          const prompt = `You are answering a clarification question about a previous analysis of a person's social profiles. Use the provided analysis JSON and source context to answer the user's question clearly and practically. If the user asks how to implement something, provide a short step-by-step and concrete tips. You may use Markdown for structure (headings, lists, code blocks) when helpful. Keep it focused; do not restate the entire JSON.\n\nANALYSIS_JSON:\n${JSON.stringify(analysisContext.aiJson, null, 2)}\n\nSOURCE_CONTEXT_SNIPPETS:\n${analysisContext.scrapedSummary}\n\nUSER_QUESTION:\n${q}`;
+
+          const resp = await fetch('/api/openai.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+          });
+          if (!resp.ok) {
+            const t = await resp.text();
+            throw new Error(`AI endpoint error ${resp.status}: ${t}`);
+          }
+          const answer = (await resp.text()).trim();
+          appendQA('assistant', answer);
+          clarifyState.remaining -= 1;
+          clarifyRemaining.textContent = String(clarifyState.remaining);
+          if (clarifyState.remaining <= 0) {
+            setClarifyDisabled(true);
+            clarifyInput.placeholder = 'Limit reached (5/5)';
+          } else {
+            setClarifyDisabled(false);
+          }
+        } catch (e) {
+          console.error(e);
+          appendQA('assistant', 'Sorry, I could not answer that right now. Please try again.');
+          setClarifyDisabled(false);
+        }
+      }
+
+      clarifyBtn.addEventListener('click', askClarification);
+      clarifyInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          askClarification();
+        }
+      });
 
       if (window.twemoji) twemoji.parse(resultsScreen, {folder: 'svg', ext: '.svg'});
     };
