@@ -194,6 +194,7 @@ async function startProcess() {
 4. "final_comments": a plain text string with general feedback on their profiles and how they could improve them overall. If data is given that is insufficient for analysis, state that clearly. Along with that, if data is given that is inconsistent or contradictory, point that out as well, especially if the user provides profile that seem to be from differing people.
 
 Make sure to focus on areas such as professionalism, consistency across profiles, completeness of information, and opportunities for better personal branding. Avoid generic advice; tailor your suggestions and checks to the specific content found in the profiles.
+Note that user may provide profiles that belong to different people; if so, point this out in the final comments, but still provide useful feedback for each one.
 
 DATA:
 ${scrapedSummary}
@@ -326,7 +327,7 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
         clarifyInput.value = '';
         setClarifyDisabled(true);
         try {
-          const prompt = `You are answering a clarification question about a previous analysis of a person's social profiles. Use the provided analysis JSON and source context to answer the user's question clearly and practically. If the user asks how to implement something, provide a short step-by-step and concrete tips. You may use Markdown for structure (headings, lists, code blocks) when helpful. Keep it focused; do not restate the entire JSON.\n\nANALYSIS_JSON:\n${JSON.stringify(analysisContext.aiJson, null, 2)}\n\nSOURCE_CONTEXT_SNIPPETS:\n${analysisContext.scrapedSummary}\n\nUSER_QUESTION:\n${q}`;
+          const prompt = `You are answering a clarification question about a previous analysis of a person's social profiles. Use the provided analysis JSON and source context to answer the user's question clearly and practically. If the user asks how to implement something, provide a short step-by-step and concrete tips. Try to make your response long and detailed but stay within output token limits. You may use Markdown for structure (headings, lists, code blocks) when helpful. Keep it focused; do not restate the entire JSON.\n\nANALYSIS_JSON:\n${JSON.stringify(analysisContext.aiJson, null, 2)}\n\nSOURCE_CONTEXT_SNIPPETS:\n${analysisContext.scrapedSummary}\n\nUSER_QUESTION:\n${q}`;
 
           const resp = await fetch('/api/openai.php', {
             method: 'POST',
