@@ -2,7 +2,24 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.twemoji) {
     twemoji.parse(document.body, {folder: 'svg', ext: '.svg'});
   }
-});
+
+  document.body.classList.add('intro-active');
+  const overlay = document.getElementById('introOverlay');
+  const startBtn = document.getElementById('introStart');
+  if (overlay && startBtn) {
+    const leaveIntro = () => {
+      document.body.classList.remove('intro-active');
+      overlay.classList.add('is-leaving');
+      const cleanup = () => {
+        overlay.removeEventListener('transitionend', cleanup);
+        if (overlay && overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      };
+      overlay.addEventListener('transitionend', cleanup);
+    };
+    startBtn.addEventListener('click', leaveIntro);
+  }
 
 const regexPatterns = {
   linkedin: /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
@@ -153,7 +170,7 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
     }
 
     showStep('Rendering suggestions...', 1);
-    setTimeout(() => {
+    const finishRender = () => {
       loadingScreen.style.display = 'none';
       const resultsScreen = document.getElementById('results-screen');
       resultsScreen.style.display = 'flex';
@@ -217,7 +234,16 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
       }
 
       if (window.twemoji) twemoji.parse(resultsScreen, {folder: 'svg', ext: '.svg'});
-    }, 600);
+    };
+
+    const onTransitionEnd = () => {
+      clearTimeout(fallbackTimer);
+      progressFill.removeEventListener('transitionend', onTransitionEnd);
+      finishRender();
+    };
+
+    const fallbackTimer = setTimeout(finishRender, 2000);
+    progressFill.addEventListener('transitionend', onTransitionEnd);
 
   } catch(err) {
     console.error(err);
@@ -234,3 +260,6 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
     }, 800);
   }
 }
+
+  document.getElementById('submit-btn').addEventListener('click', startProcess);
+});
