@@ -3,6 +3,38 @@ document.addEventListener('DOMContentLoaded', function() {
     twemoji.parse(document.body, {folder: 'svg', ext: '.svg'});
   }
 
+  (function ensureMarkdownLibs() {
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('Failed to load ' + src));
+        document.head.appendChild(s);
+      });
+    }
+    const loaders = [];
+    if (!(window.marked && typeof window.marked.parse === 'function')) {
+      loaders.push(
+        loadScript('https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js')
+          .catch(() => loadScript('https://unpkg.com/marked@12.0.2/marked.min.js'))
+          .catch(() => {/* swallow */})
+      );
+    }
+    if (!(window.DOMPurify && typeof window.DOMPurify.sanitize === 'function')) {
+      loaders.push(
+        loadScript('https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js')
+          .catch(() => loadScript('https://unpkg.com/dompurify@3.1.7/dist/purify.min.js'))
+          .catch(() => {/* swallow */})
+      );
+    }
+    if (loaders.length) {
+      Promise.allSettled(loaders).then(() => {
+      });
+    }
+  })();
+
   document.body.classList.add('intro-active');
   const overlay = document.getElementById('introOverlay');
   const startBtn = document.getElementById('introStart');
@@ -212,7 +244,6 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
         <div id="final-comments" class="feedback-box md-content" style="text-align:left; max-width:760px;"></div>
 
         <div id="clarify-container" class="clarify-container">
-          <h2>Questions about the feedback</h2>
           <div class="clarify-meta">You can ask up to <span id="clarify-remaining">5</span> clarification questions.</div>
           <div id="clarify-messages" class="clarify-messages"></div>
           <div class="clarify-input-row">
@@ -295,7 +326,7 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
         const q = (clarifyInput.value || '').trim();
         if (!q) return;
         if (clarifyState.remaining <= 0) return;
-        appendQA('user', `❓ ${q}`);
+        appendQA('user', q);
         clarifyInput.value = '';
         setClarifyDisabled(true);
         try {
@@ -333,6 +364,64 @@ IMPORTANT: Output strictly valid JSON only. Do not include any explanations or e
           e.preventDefault();
           askClarification();
         }
+      });
+
+      const clarifyContainer = document.getElementById('clarify-container');
+      const clarifyOuter = document.getElementById('clarify-container')?.parentElement;
+      if (clarifyOuter && !document.getElementById('clarify-slot')) {
+        const slot = document.createElement('div');
+        slot.id = 'clarify-slot';
+        clarifyOuter.insertBefore(slot, clarifyContainer);
+        slot.appendChild(clarifyContainer);
+      }
+
+      const header = document.createElement('div');
+      header.className = 'clarify-header';
+      header.innerHTML = `
+        <div class="clarify-title">Questions about the feedback</div>
+        <div class="clarify-actions">
+          <button id="clarify-popup-btn" class="btn btn-secondary" type="button" aria-haspopup="dialog">Open chat popup</button>
+        </div>`;
+      const clarWrap = document.getElementById('clarify-container');
+      if (clarWrap && !clarWrap.querySelector('.clarify-header')) {
+        clarWrap.insertBefore(header, clarWrap.firstChild);
+      }
+
+      let modal = document.getElementById('clarify-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'clarify-modal';
+        modal.className = 'clarify-modal-overlay';
+        modal.innerHTML = `
+          <div class="clarify-modal" role="dialog" aria-modal="true" aria-labelledby="clarify-modal-title">
+            <button class="clarify-modal-close" aria-label="Close">&times;</button>
+            <div class="clarify-modal-title" id="clarify-modal-title">Clarification Chat</div>
+            <div class="clarify-modal-body"></div>
+          </div>`;
+        document.body.appendChild(modal);
+      }
+
+      const popupBtn = document.getElementById('clarify-popup-btn');
+      const slot = document.getElementById('clarify-slot');
+      const modalBody = modal.querySelector('.clarify-modal-body');
+      const closeBtn = modal.querySelector('.clarify-modal-close');
+
+      function openClarifyModal() {
+        if (!clarWrap || !modalBody) return;
+        modalBody.appendChild(clarWrap);
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeClarifyModal() {
+        if (!slot || !clarWrap) return;
+        slot.appendChild(clarWrap);
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+      popupBtn?.addEventListener('click', openClarifyModal);
+      closeBtn?.addEventListener('click', closeClarifyModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeClarifyModal();
       });
 
       if (window.twemoji) twemoji.parse(resultsScreen, {folder: 'svg', ext: '.svg'});
