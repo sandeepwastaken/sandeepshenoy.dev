@@ -3,3 +3,5 @@ videos
 admin/
 .vscode/
 .env
+api/secrets.php
+api/.scrapfly.key

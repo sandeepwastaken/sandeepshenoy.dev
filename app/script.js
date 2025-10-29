@@ -91,7 +91,7 @@ async function startProcess() {
     const proxyResults = [];
     for (let i = 0; i < processedUrls.length; i++) {
       showStep(`Fetching profile ${i + 1} of ${processedUrls.length}...`, 0.05 + 0.2 * i);
-      const proxyResp = await fetch('https://sandeepshenoy.dev/api/brightdata_proxy.php', {
+      const proxyResp = await fetch('/api/scrapfly_proxy.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ urls: [processedUrls[i]] })
