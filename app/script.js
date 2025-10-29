@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
   if (window.twemoji) {
+    try {
+      window.twemoji.base = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/';
+    } catch (e) { /* noop */ }
     twemoji.parse(document.body, {folder: 'svg', ext: '.svg'});
   }
 
@@ -77,7 +80,7 @@ let clarifyState = { remaining: 5 };
 
 const regexPatterns = {
   linkedin: /^https?:\/\/(www\.)?linkedin\.com\/.*$/,
-  twitter: /^https?:\/\/(www\.)?x\.com\/[A-Za-z0-9_]+$/,
+  twitter: /^https?:\/\/(www\.)?(x\.com|twitter\.com)\/[A-Za-z0-9_]+\/?$/,
   facebook: /^https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9\._\-]+\/?$/
 };
 
@@ -122,16 +125,7 @@ async function startProcess() {
     document.getElementById('facebook').value.trim()
   ];
 
-  const processedUrls = urls.map((url, index) => {
-    if (index === 1) { 
-      const match = url.match(/https?:\/\/(www\.)?x\.com\/([A-Za-z0-9_]+)/);
-      if (match) {
-        const username = match[2];
-        return `https://r.jina.ai/https://twitter.com/${username}`;
-      }
-    }
-    return url;
-  });
+  const processedUrls = urls;
 
   function showStep(text, pct) {
     stepEl.textContent = text;
@@ -197,7 +191,9 @@ async function startProcess() {
    - "emoji": a single emoji that best fits the constructive criticism
    - "text": the consistency or tone check for professional and appropriate content
 
-4. "final_comments": a plain text string with general feedback on their profiles and how they could improve them overall.
+4. "final_comments": a plain text string with general feedback on their profiles and how they could improve them overall. If data is given that is insufficient for analysis, state that clearly. Along with that, if data is given that is inconsistent or contradictory, point that out as well, especially if the user provides profile that seem to be from differing people.
+
+Make sure to focus on areas such as professionalism, consistency across profiles, completeness of information, and opportunities for better personal branding. Avoid generic advice; tailor your suggestions and checks to the specific content found in the profiles.
 
 DATA:
 ${scrapedSummary}

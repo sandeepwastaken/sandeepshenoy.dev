@@ -27,7 +27,7 @@ if (!$apiKey || !is_string($apiKey) || $apiKey === '') {
     }
   }
 }
-// Fallback 2: a plain text file with the key
+
 if (!$apiKey || !is_string($apiKey) || $apiKey === '') {
   $keyFile = __DIR__ . '/.scrapfly.key';
   if (is_file($keyFile)) {

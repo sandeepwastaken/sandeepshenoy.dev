@@ -47,36 +47,35 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
+  const isSameOrigin = requestUrl.origin === self.location.origin;
   
   
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).then((response) => {
-        return response;
-      }).catch(() => {
-        
-        return caches.match('/offline.html');
-      })
+      fetch(event.request)
+        .then((response) => response)
+        .catch(() => {
+          return caches.match('/offline.html').then((r) => r || new Response('Offline', { status: 503, statusText: 'Service Unavailable' }));
+        })
     );
     return;
   }
   
+  
+  if (!isSameOrigin) {
+    
+    return; 
+  }
+  
   if (requestUrl.pathname.endsWith('.css') || requestUrl.pathname.endsWith('.js')) {
     event.respondWith(
-      fetch(event.request, {
-        cache: 'no-cache',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      })
+      fetch(event.request, { cache: 'no-cache' })
       .then((response) => {
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(event.request).then((r) => r || new Response('', { status: 200, statusText: 'OK' })))
     );
     return;
   }
@@ -84,14 +83,7 @@ self.addEventListener('fetch', (event) => {
   
   if (requestUrl.pathname === '/styles.css' || requestUrl.pathname === '/offline.html') {
     event.respondWith(
-      fetch(event.request, {
-        cache: 'no-cache',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      }).then((response) => {
+      fetch(event.request, { cache: 'no-cache' }).then((response) => {
         
         const responseClone = response.clone();
         
@@ -103,7 +95,7 @@ self.addEventListener('fetch', (event) => {
         return response;
       }).catch(() => {
         
-        return caches.match(event.request);
+        return caches.match(event.request).then((r) => r || (requestUrl.pathname.endsWith('.html') ? caches.match('/offline.html') : new Response('', { status: 200 })));
       })
     );
     return;
