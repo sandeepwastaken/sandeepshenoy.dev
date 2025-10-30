@@ -675,6 +675,7 @@ body:not(.intro-active) #backgroundCanvas { filter: none; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 .clarify-modal-title {
   font-weight: 700;
