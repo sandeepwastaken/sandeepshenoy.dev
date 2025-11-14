@@ -21,10 +21,18 @@
       <section class="card" id="card">
         <div class="meta">
           <div id="difficulty" class="difficulty">—</div>
-          <button id="newBtn" class="btn btn-primary">New question</button>
+          <div style="display:flex;align-items:center;gap:10px">
+            <label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px">
+              <input id="selfStudy" type="checkbox" checked style="transform:scale(1.05)" />
+              Self-study (auto-advance)
+            </label>
+            <button id="newBtn" class="btn btn-primary">New</button>
+          </div>
         </div>
 
-        <div id="sentence" class="sentence">Press "New question" to begin.</div>
+        <div id="sentence" class="sentence">Press "New" to begin.</div>
+
+        <div id="resultBanner" class="result-banner" aria-live="polite" role="status" hidden></div>
 
         <div id="choices" class="choices"></div>
 
@@ -36,15 +44,11 @@
 
       <aside class="panel">
         <div class="panel-section">
-          <h3>Last correct words</h3>
-          <div id="history" class="history">(none yet)</div>
-        </div>
-        <div class="panel-section">
           <h3>Quick tips</h3>
           <ul>
             <li>Answer definitions based on the sentence context.</li>
             <li>Streak grows with each correct answer; resets when you miss one.</li>
-            <li>We avoid reusing recently-correct words until you hit 35 correct words.</li>
+            <li>We avoid reusing recently-correct words until you hit 35 correct words (kept internally).</li>
           </ul>
         </div>
       </aside>

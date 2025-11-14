@@ -7,10 +7,11 @@ const newBtn = document.getElementById('newBtn');
 const skipBtn = document.getElementById('skipBtn');
 const revealBtn = document.getElementById('revealBtn');
 const toastEl = document.getElementById('toast');
-const historyEl = document.getElementById('history');
 const streakEl = document.getElementById('streak');
 const bestEl = document.getElementById('best');
 const difficultyEl = document.getElementById('difficulty');
+const resultBanner = document.getElementById('resultBanner');
+const selfStudyToggle = document.getElementById('selfStudy');
 
 let current = null; // {word,sentence,choices,answer_index,explanation}
 let isLocked = false;
@@ -24,7 +25,7 @@ function getHistory(){
   try{return JSON.parse(localStorage.getItem(KEY_HISTORY) || '[]')}
   catch(e){return []}
 }
-function saveHistory(arr){ localStorage.setItem(KEY_HISTORY, JSON.stringify(arr)); renderHistory(); }
+function saveHistory(arr){ localStorage.setItem(KEY_HISTORY, JSON.stringify(arr)); /* intentionally don't render history in UI (internal only) */ }
 function addToHistory(word){ const h = getHistory(); h.push(word); saveHistory(h); }
 
 function getStreak(){ return Number(localStorage.getItem(KEY_STREAK) || 0); }
@@ -32,14 +33,7 @@ function setStreak(n){ localStorage.setItem(KEY_STREAK, String(n)); streakEl.tex
 function getBest(){ return Number(localStorage.getItem(KEY_BEST) || 0); }
 function setBest(n){ localStorage.setItem(KEY_BEST, String(n)); bestEl.textContent = String(n); }
 
-function renderHistory(){
-  const h = getHistory();
-  historyEl.innerHTML = '';
-  if(!h.length){ historyEl.textContent='(none yet)'; return; }
-  // show last up to 20
-  const recent = h.slice(-20).reverse();
-  recent.forEach(w=>{ const s = document.createElement('span'); s.className='pill'; s.textContent = w; historyEl.appendChild(s); });
-}
+function renderHistory(){ /* no-op: history is stored but not shown per settings */ }
 
 function showToast(msg, timeout=2500){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(showToast._t); showToast._t = setTimeout(()=>toastEl.classList.remove('show'), timeout); }
 
@@ -105,6 +99,7 @@ function renderQuestion(){
   current.choices.forEach((c,i)=>{
     const b = document.createElement('button');
     b.className = 'choice';
+    b.setAttribute('data-choice', String(i));
     b.innerHTML = `<span>${String.fromCharCode(65+i)}.</span>&nbsp; ${c}`;
     b.onclick = ()=>selectChoice(i,b);
     choicesEl.appendChild(b);
@@ -112,30 +107,61 @@ function renderQuestion(){
 }
 
 function selectChoice(i, btn){
-  if(isLocked) return;
+  if(isLocked || !current) return;
   isLocked = true;
-  // disable all buttons
+  // disable buttons
   Array.from(choicesEl.children).forEach(ch=>ch.style.pointerEvents='none');
   const correct = (i === current.answer_index);
   if(correct){
     btn.classList.add('correct');
     const newStreak = getStreak()+1; setStreak(newStreak); if(newStreak>getBest()){ setBest(newStreak); }
     addToHistory(current.word);
-    showToast('Correct! +' + (1));
+    showResultBanner(true, 'Correct!');
+    showToast('Correct!');
   } else {
     btn.classList.add('wrong');
     // highlight correct
-    const correctBtn = choicesEl.children[current.answer_index];
+    const correctBtn = choicesEl.querySelector('[data-choice="'+current.answer_index+'"]');
     if(correctBtn) correctBtn.classList.add('correct');
     setStreak(0);
+    const ansLetter = String.fromCharCode(65+current.answer_index);
+    showResultBanner(false, `Wrong — ${ansLetter}. ${current.choices[current.answer_index]}`);
     showToast('Wrong — keep trying!');
   }
-  // show explanation by appending small text
-  const expl = document.createElement('div'); expl.style.marginTop='12px'; expl.style.color='var(--muted)'; expl.style.fontSize='13px'; expl.textContent = current.explanation || '';
-  if(expl.textContent) choicesEl.parentElement.appendChild(expl);
-  // unlock Next after a short delay
-  setTimeout(()=>{ isLocked=false; Array.from(choicesEl.children).forEach(ch=>ch.style.pointerEvents='auto'); }, 600);
+  // show explanation inside banner
+  if(current.explanation && resultBanner){
+    const expl = document.createElement('div'); expl.style.marginTop='6px'; expl.style.color='var(--muted)'; expl.style.fontSize='13px'; expl.textContent = current.explanation;
+    resultBanner.appendChild(expl);
+  }
+  // after a short delay, hide banner and optionally auto-fetch next
+  setTimeout(()=>{
+    hideResultBanner();
+    Array.from(choicesEl.children).forEach(ch=>{ ch.classList.remove('correct','wrong'); ch.style.pointerEvents='auto'; });
+    isLocked = false;
+    if(selfStudyToggle && selfStudyToggle.checked){ fetchQuestion(); }
+  }, 1400);
 }
+
+function showResultBanner(isCorrect, text){
+  if(!resultBanner) return;
+  resultBanner.hidden = false;
+  resultBanner.classList.remove('correct','wrong');
+  resultBanner.classList.add(isCorrect? 'correct':'wrong');
+  resultBanner.innerHTML = '';
+  const t = document.createElement('div'); t.textContent = text; resultBanner.appendChild(t);
+}
+function hideResultBanner(){ if(!resultBanner) return; resultBanner.hidden = true; resultBanner.innerHTML = ''; resultBanner.classList.remove('correct','wrong'); }
+
+// keyboard A-D support
+window.addEventListener('keydown', (e)=>{
+  if(!current || isLocked) return;
+  const k = e.key.toLowerCase();
+  if(['a','b','c','d'].includes(k)){
+    const idx = ['a','b','c','d'].indexOf(k);
+    const btn = choicesEl.querySelector('[data-choice="'+idx+'"]');
+    if(btn) btn.click();
+  }
+});
 
 function revealAnswer(){
   if(!current) return; const btn = choicesEl.children[current.answer_index]; if(btn) btn.classList.add('correct'); setStreak(0); showToast('Answer revealed');
@@ -152,4 +178,4 @@ setStreak(getStreak()); setBest(getBest()); renderHistory();
 window.addEventListener('load', ()=>{ if(!getHistory().length && getStreak()===0){ /* show hint, not auto-fire */ } });
 
 // expose for debugging
-window.__sat = { fetchQuestion, getHistory };
+window.__sat = { fetchQuestion, getHistory, normalizeAndRender };
