@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SAT Vocab Trainer</title>
+  <!-- Inter: modern industry font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app-header">
+        <h1>SAT Vocab Trainer</h1>
+        <div class="scoreboard">
+          <div class="streak">Streak: <span id="streak">0</span></div>
+          <div class="best">Best: <span id="best">0</span></div>
+        </div>
+      </header>
+
+      <section class="card" id="card">
+        <div class="meta">
+          <div id="difficulty" class="difficulty">—</div>
+          <button id="newBtn" class="btn btn-primary">New question</button>
+        </div>
+
+        <div id="sentence" class="sentence">Press "New question" to begin.</div>
+
+        <div id="choices" class="choices"></div>
+
+        <div class="controls">
+          <button id="skipBtn" class="btn btn-ghost">Skip</button>
+          <button id="revealBtn" class="btn btn-ghost">Reveal answer</button>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-section">
+          <h3>Last correct words</h3>
+          <div id="history" class="history">(none yet)</div>
+        </div>
+        <div class="panel-section">
+          <h3>Quick tips</h3>
+          <ul>
+            <li>Answer definitions based on the sentence context.</li>
+            <li>Streak grows with each correct answer; resets when you miss one.</li>
+            <li>We avoid reusing recently-correct words until you hit 35 correct words.</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <script src="script.js" type="module"></script>
+  </body>
+</html>
