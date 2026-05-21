@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Officer Resources</title>
+		<style>
+			:root {
+				color-scheme: light;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				font-family: "Trebuchet MS", "Segoe UI", Tahoma, Arial, sans-serif;
+				color: #000;
+				background: #fff;
+			}
+
+			.page {
+				min-height: 100vh;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px;
+			}
+
+			.content {
+				width: 100%;
+				max-width: 900px;
+				display: flex;
+				flex-direction: column;
+				gap: 18px;
+				text-align: center;
+			}
+
+			.title {
+				margin: 0;
+				font-size: 32px;
+				letter-spacing: 0.3px;
+			}
+
+			.context {
+				margin: 0;
+				font-size: 16px;
+				line-height: 1.5;
+				font-style: italic;
+			}
+
+			.actions {
+				width: 100%;
+				display: flex;
+				gap: 20px;
+				flex-direction: row;
+			}
+
+			.action {
+				flex: 1 1 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 12px;
+				padding: 18px 22px;
+				border: 1px solid #000;
+				border-radius: 8px;
+				text-decoration: none;
+				color: #000;
+				background: #fff;
+				font-size: 18px;
+				font-weight: 600;
+			}
+
+			.action:focus {
+				outline: 2px solid #000;
+				outline-offset: 3px;
+			}
+
+			.action img {
+				width: 28px;
+				height: 28px;
+				object-fit: contain;
+			}
+
+			@media (max-width: 700px) {
+				.actions {
+					flex-direction: column;
+				}
+
+				.action {
+					width: 100%;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main class="page">
+			<div class="content">
+				<h1 class="title">QR Code</h1>
+				<p class="context">
+					Hello! This is a portal to see what I&apos;m talking about in my presentation :) Click on what
+					you wanna see! Then, when you&apos;re done viewing the content, you can return here. Or just close it.
+				</p>
+				<section class="actions" aria-label="Officer links">
+					<a class="action" href="https://rousescioly.github.io" target="_blank" rel="noreferrer">
+						<img src="website.png" alt="Website icon" />
+						<span>Visit website</span>
+					</a>
+					<a
+						class="action"
+						href="https://docs.google.com/document/d/1BfcycC3s5NVB65WEjrUM2II-H5r-f33zNkJUbAt7GL8/edit?usp=sharing"
+						target="_blank"
+						rel="noreferrer"
+					>
+						<img src="document.png" alt="Document icon" />
+						<span>View handbook template</span>
+					</a>
+				</section>
+			</div>
+		</main>
+	</body>
+</html>
