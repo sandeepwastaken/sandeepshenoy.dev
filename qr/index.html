@@ -120,5 +120,20 @@
 				</section>
 			</div>
 		</main>
+		<script>
+			const formatter = new Intl.DateTimeFormat("en-US", {
+				timeZone: "America/Chicago",
+				year: "numeric",
+				month: "2-digit",
+				day: "2-digit",
+			});
+			const parts = formatter.formatToParts(new Date());
+			const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+			const isTargetDate =
+				values.year === "2026" && values.month === "05" && values.day === "21";
+			if (!isTargetDate) {
+				window.location.replace("https://sandeepshenoy.dev");
+			}
+		</script>
 	</body>
 </html>
