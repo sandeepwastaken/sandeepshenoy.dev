@@ -1,6 +1,11 @@
 RewriteEngine On
 Options -Indexes
 
+AddDefaultCharset UTF-8
+
+AddType 'text/plain; charset=UTF-8' .txt
+AddCharset UTF-8 .txt
+
 # Force trailing slash ONLY if the request doesn't point to a real file or dir
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
