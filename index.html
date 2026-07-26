@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sandeep Shenoy</title>
+  <meta name="description" content="Sandeep Shenoy — a developer and artist working where clean code meets bold visual design." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script>document.documentElement.classList.add("pt");</script>
+  <script type="speculationrules">
+    {
+      "prerender": [{ "urls": ["/projects/", "/toolkit/"], "eagerness": "moderate" }],
+      "prefetch":  [{ "urls": ["/gallery/"], "eagerness": "moderate" }]
+    }
+  </script>
+</head>
+<body>
+
+  <!-- ───────────── NAV ───────────── -->
+  <header class="nav" id="top">
+    <a class="nav__brand" href="#top" data-scroll aria-label="Home">
+      <img src="logo.svg" alt="Sandeep Shenoy" width="30" height="30" />
+    </a>
+    <nav class="nav__actions">
+      <a class="pill liquid-glass" href="#hero" data-scroll>
+        <svg viewBox="0 0 24 24" class="pill__icon" aria-hidden="true">
+          <circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M5.5 19c.6-3.4 3.3-5.3 6.5-5.3s5.9 1.9 6.5 5.3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>About me</span>
+      </a>
+      <a class="pill liquid-glass" href="#contact" data-scroll>
+        <svg viewBox="0 0 24 24" class="pill__icon" aria-hidden="true">
+          <rect x="7" y="3" width="10" height="18" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+          <line x1="10.7" y1="18" x2="13.3" y2="18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>Let's talk!</span>
+      </a>
+    </nav>
+  </header>
+
+  <!-- ───────────── HERO ───────────── -->
+  <main>
+    <section class="hero" id="hero">
+      <div class="hero__stage">
+        <div class="chrome" id="chrome">
+          <canvas class="chrome__canvas" id="chromeCanvas" aria-hidden="true"></canvas>
+        </div>
+      </div>
+
+      <h1 class="headline" id="headline" aria-label="Art. Code. Craft.">
+        <span class="word" data-word data-fx="draw">Art.</span>
+        <span class="word" data-word data-fx="binary">Code.</span>
+        <span class="word" data-word data-fx="blocks">Craft.</span>
+      </h1>
+
+      <p class="hero__intro">
+        I'm Sandeep Shenoy, a developer and artist who thrives where clean code
+        meets bold, expressive visual design.
+      </p>
+
+      <a class="scroll-pill liquid-glass" href="#indexLinks" data-scroll aria-label="Scroll down">
+        <span class="scroll-pill__label">SCROLL&nbsp;DOWN</span>
+        <svg class="scroll-pill__chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </section>
+
+    <!-- ───────────── INDEX LINKS (built from SITE.sections) ───────────── -->
+    <nav class="index-links" id="indexLinks" aria-label="Sections"></nav>
+
+    <!-- ───────────── CONTACT ───────────── -->
+    <section class="contact" id="contact">
+      <span class="eyebrow">Let's talk</span>
+      <h2>Got something in mind?</h2>
+      <p class="contact__sub">Tell me about it! I usually reply within a day.</p>
+      <form class="form" id="contactForm" method="post" action="contact.php" novalidate>
+        <input type="text" name="company" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="form__row">
+          <label>Name<input type="text" name="name" required autocomplete="name" /></label>
+          <label>Email<input type="email" name="email" required autocomplete="email" /></label>
+        </div>
+        <label>Message<textarea name="message" rows="4" required></textarea></label>
+        <button type="submit" class="btn-submit">Send message</button>
+        <p class="form__status" id="formStatus" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <img src="logo.svg" alt="" width="22" height="22" />
+    <span>© <span data-year></span> Sandeep Shenoy</span>
+    <a href="#top" data-scroll>Back to top ↑</a>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="js/lenis.min.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/chrome.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/headline.js"></script>
+</body>
+</html>

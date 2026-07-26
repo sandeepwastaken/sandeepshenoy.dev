@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Theater - Sandeep Shenoy</title>
+  <meta name="description" content="A Three.js cinema for Sandeep Shenoy's films — slot in a cassette and watch, from the best seat in the house." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+
+  <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/theater.css" />
+  <script>document.documentElement.classList.add("pt");</script>
+  <script type="speculationrules">
+    { "prerender": [{ "urls": ["/"], "eagerness": "moderate" }] }
+  </script>
+</head>
+<body class="theater-page">
+  <header class="page-top theater-top" id="top">
+    <a class="g-brand" href="/" aria-label="Home">
+      <img src="/logo.svg" alt="Sandeep Shenoy" width="30" height="30" />
+    </a>
+    <a class="g-back liquid-glass" href="/">
+      <svg class="back__ic" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Back</span>
+    </a>
+  </header>
+
+  <main class="theater-shell" aria-label="The Theater">
+    <!-- WebGL room (opaque, bloom). The video is a CSS3D iframe layered on top. -->
+    <canvas id="theaterCanvas" class="theater-canvas" aria-hidden="true"></canvas>
+    <div id="screenLayer" class="theater-screen-layer" aria-hidden="false"></div>
+    <div class="theater-vignette" aria-hidden="true"></div>
+
+    <section class="theater-intro" id="theaterIntro">
+      <p class="theater-kicker">Sandeep Shenoy</p>
+      <h1>The Theater</h1>
+      <p class="theater-hint">Slot in a cassette&nbsp;<span aria-hidden="true">→</span></p>
+    </section>
+
+    <!-- Cassette rack: pickable, scrollable menu on the right -->
+    <aside class="cassette-rack" id="cassetteRack" aria-label="Cassette library">
+      <div class="cassette-rack__head">
+        <span class="cassette-rack__title">Cassettes</span>
+        <span class="cassette-rack__count" id="cassetteCount"></span>
+      </div>
+      <div class="cassette-rack__list" id="cassetteList" role="listbox" aria-label="Films" tabindex="0"></div>
+    </aside>
+
+    <!-- Custom projection-booth controls, wired to the real player -->
+    <div class="booth" id="booth" hidden>
+      <button class="booth__btn" id="btnPrev" type="button" aria-label="Previous film" title="Previous">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14l-9-7 9-7zM7 5v14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="booth__btn" id="btnBack10" type="button" aria-label="Back 10 seconds" title="Back 10s">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.5 7l-5 5 5 5M18 7l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="booth__btn booth__btn--play" id="btnPlay" type="button" aria-label="Play" title="Play/Pause">
+        <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7V5z" fill="currentColor"/></svg>
+        <svg class="ic-pause is-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5h2.6v14H8.5zM12.9 5h2.6v14h-2.6z" fill="currentColor"/></svg>
+      </button>
+      <button class="booth__btn" id="btnFwd10" type="button" aria-label="Forward 10 seconds" title="Forward 10s">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.5 7l5 5-5 5M6 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="booth__btn" id="btnNext" type="button" aria-label="Next film" title="Next">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14l9-7-9-7zM17 5v14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <div class="booth__scrub" id="scrub" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+        <div class="booth__track"><div class="booth__buffer" id="scrubBuffer"></div><div class="booth__fill" id="scrubFill"></div><div class="booth__knob" id="scrubKnob"></div></div>
+      </div>
+      <div class="booth__time"><span id="tCur">0:00</span><span class="booth__time-sep">/</span><span id="tDur">0:00</span></div>
+
+      <button class="booth__btn booth__btn--vol" id="btnMute" type="button" aria-label="Mute" title="Mute">
+        <svg class="ic-vol" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4 4 0 010 7M18.5 6a7 7 0 010 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <svg class="ic-mute is-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M22 9l-6 6M16 9l6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+      <input class="booth__vol" id="vol" type="range" min="0" max="100" value="70" aria-label="Volume" />
+
+      <button class="booth__btn booth__btn--full" id="btnFull" type="button" aria-label="Fullscreen" title="Fullscreen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <div class="theater-loading" id="theaterLoading" role="status" aria-live="polite">Entering the theater</div>
+    <div class="theater-sound-note" id="soundNote" hidden>Tap to enable sound</div>
+  </main>
+
+  <script src="/data.js"></script>
+  <script src="/js/site.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="/js/theater.js"></script>
+</body>
+</html>

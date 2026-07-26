@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Toolkit - Sandeep Shenoy</title>
+  <meta name="description" content="Free browser tools built by Sandeep Shenoy." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script>document.documentElement.classList.add("pt");</script>
+  <script type="speculationrules">
+    { "prerender": [{ "urls": ["/"], "eagerness": "moderate" }] }
+  </script>
+</head>
+<body>
+  <!-- outside <main> so it stays put while the page content transitions -->
+  <div class="page-top">
+    <a class="nav__brand" href="../" aria-label="Home"><img src="../logo.svg" alt="Sandeep Shenoy" width="30" height="30" /></a>
+    <a class="back liquid-glass" href="../">
+      <svg class="back__ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Back</span>
+    </a>
+  </div>
+
+  <main class="page">
+    <header class="page-head">
+      <span class="eyebrow">Toolkit</span>
+      <h1>Small tools, free to use.</h1>
+      <p>Utilities I built because I kept needing them. No sign up required.</p>
+    </header>
+
+    <section class="tool-grid" id="toolGrid"></section>
+  </main>
+
+  <footer class="footer">
+    <img src="../logo.svg" alt="" width="22" height="22" />
+    <span>© <span data-year></span> Sandeep Shenoy</span>
+    <a href="../">Home ↑</a>
+  </footer>
+
+  <script src="../data.js"></script>
+  <script src="../js/lenis.min.js"></script>
+  <script src="../js/site.js"></script>
+  <script>
+  (function () {
+    var S = window.SITE || {}, U = window.Site;
+    var grid = document.getElementById("toolGrid");
+    (S.tools || []).forEach(function (t) {
+      var soon = !!t.soon;
+      var node = U.el(soon ? "div" : "a", "tool reveal" + (soon ? " tool--soon" : ""));
+      if (!soon) {
+        node.href = t.href || "#";
+        if (/^https?:/.test(t.href || "")) { node.target = "_blank"; node.rel = "noopener"; }
+      }
+      node.innerHTML =
+        '<div class="tool__icon">' + (t.icon || "◆") + '</div>' +
+        '<div><h3 class="tool__title">' + t.title + '</h3>' +
+        '<p class="tool__desc">' + t.desc + '</p></div>' +
+        '<span class="tool__tag">' + (soon ? "Coming soon" : (t.tag || "")) + '</span>';
+      grid.appendChild(node);
+    });
+    U.reveal(grid.querySelectorAll(".reveal"));
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+{
+    "events": [
+        {
+            "datetime": "???",
+            "img": "ut.webp",
+            "title": "Texas SciOly Regionals",
+            "description": "Rouse Science Olympiad participates annually in the Science Olympiad Regional tournament. The highest placing teams quality for States!",
+            "location": "UT Austin"
+        },
+        {
+            "datetime": "???",
+            "img": "am.webp",
+            "title": "Texas SciOly States",
+            "description": "The Texas Science Olympiad State Tournament is the culminating competition for all of regional's qualifying teams, hosted at Texas A&M University.",
+            "location": "Texas A&M University"
+        }
+    ],
+    "blog": [
+        {
+            "datetime": "1782450000",
+            "title": "We are officially LIVE! ",
+            "author": "admin",
+            "content": "Welcome to the **Rouse Science Olympiad site**\\! I am extremely excited to announce that this site is finally up and running\\!\n\nThis website will be your go-to place for team **updates**, event **info**, **announcements**, and **important** resources throughout the season. Whether you\u2019re interested in joining, a parent of a kid in Science Olympiad, or, heck, competing in Rouse\u2019s team *already*, we truly hope this site makes it easier to *stay up to date*\\!\n\nWe\u2019ll be updating this site quite often, so be sure to check back soon. Let\u2019s make this an *awesome* year for **SciOly**\\!\\!"
+        }
+    ],
+    "results": [
+        {
+            "datetime": 3074676026,
+            "event": "States",
+            "location": "Raider Way",
+            "rawdata": "Remote_Sensing,A,1\nMeteorology,B,10"
+        }
+    ],
+    "resources": [
+        {
+            "title": "Interest Form",
+            "link": "https:\/\/forms.gle\/TRo482vEsQmf17qH9",
+            "icon": "doc.png",
+            "header": "signup.png",
+            "description": "Show interest in Rouse SciOly!"
+        },
+        {
+            "title": "Science Olympiad",
+            "link": "https:\/\/soinc.org\/",
+            "icon": "scioly.png",
+            "header": "scioly.png",
+            "description": "Find helpful resources, build event kits, released tests, and more for almost all events!"
+        },
+        {
+            "title": "Student Center",
+            "link": "https:\/\/scioly.org\/",
+            "icon": "sosc.png",
+            "header": "sosc.png",
+            "description": "Participate in forums, find event rules, and write better, more efficient notes with resources!"
+        },
+        {
+            "title": "TAMU SciOly",
+            "link": "https:\/\/txscienceolympiad.tamu.edu\/ ",
+            "icon": "am.png",
+            "header": "am.png",
+            "description": "Find Texas-specific event rules, resources, and more directly from Texas A&M University!"
+        },
+        {
+            "title": "Science Olympiad TV",
+            "link": "https:\/\/www.youtube.com\/@ScienceOlympiadTV\/videos",
+            "icon": "youtube.png",
+            "header": "tv.png",
+            "description": "Get advice and information on tons of Science Olympiad events!"
+        },
+        {
+            "title": "SciOly Note Guide",
+            "link": "https:\/\/docs.google.com\/document\/d\/1BfcycC3s5NVB65WEjrUM2II-H5r-f33zNkJUbAt7GL8\/edit?usp=sharing",
+            "icon": "site.png",
+            "header": "notes.png",
+            "description": "Good-to-know information to know before you start making notes for Science Olympiad events!"
+        },
+        {
+            "title": "Duosmium",
+            "link": "https:\/\/www.duosmium.org\/",
+            "icon": "duosmium.png",
+            "header": "duosmium.png",
+            "description": "Find Rouse (and competitor) results from previous Science Olympiad competitions!"
+        }
+    ]
+}

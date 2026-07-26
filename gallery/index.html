@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Gallery - Sandeep Shenoy</title>
+  <meta name="description" content="A scroll-driven Three.js museum gallery for Sandeep Shenoy's artwork." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+
+  <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/gallery.css" />
+  <script>document.documentElement.classList.add("pt");</script>
+  <script type="speculationrules">
+    { "prerender": [{ "urls": ["/"], "eagerness": "moderate" }] }
+  </script>
+</head>
+<body class="gallery-page">
+  <header class="page-top gallery-top" id="top">
+    <a class="g-brand" href="/" aria-label="Home">
+      <img src="/logo.svg" alt="Sandeep Shenoy" width="30" height="30" />
+    </a>
+    <a class="g-back liquid-glass" href="/">
+      <svg class="back__ic" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Back</span>
+    </a>
+  </header>
+
+  <main class="gallery-shell" aria-label="The Gallery">
+    <canvas id="galleryCanvas" class="gallery-canvas" aria-hidden="true"></canvas>
+    <section class="gallery-intro" id="galleryIntro">
+      <p class="gallery-kicker">Sandeep Shenoy</p>
+      <h1>The Gallery</h1>
+      <p>Scroll to move</p>
+    </section>
+    <div class="gallery-loading" id="galleryLoading" role="status" aria-live="polite">Loading gallery</div>
+    <div class="gallery-progress" aria-hidden="true"><span id="galleryProgress"></span></div>
+  </main>
+
+  <div class="scroll-spacer" id="scrollSpacer" aria-hidden="true"></div>
+
+  <script src="/data.js"></script>
+  <script src="/js/site.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/",
+        "three/examples/jsm/": "https://unpkg.com/three@0.165.0/examples/jsm/",
+        "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.6/build/index.module.js",
+        "three-gpu-pathtracer": "https://unpkg.com/three-gpu-pathtracer@0.0.23/build/index.module.js"
+      }
+    }
+  </script>
+  <script type="module" src="/js/gallery.js"></script>
+</body>
+</html>

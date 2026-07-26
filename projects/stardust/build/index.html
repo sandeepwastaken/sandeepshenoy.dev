@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link id="stardust-stylesheet" rel="stylesheet" href="styles.css" />
+  <script>
+    (function(){
+      var v = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+      window.__stardust_v = v;
+      try{
+        var link = document.getElementById('stardust-stylesheet');
+        if(link){
+          var base = link.getAttribute('href').split('?')[0];
+          link.href = base + '?v=' + v;
+        }
+      }catch(e){
+      }
+    })();
+  </script>
+  <link rel="icon" type="image/x-icon" href="/favicon.png">
+  <title>Project Stardust Builder</title>
+</head>
+<body>
+  <div id="ui">
+    <button id="togglePanel">☰ Placeables</button>
+    <div id="panel" class="open">
+      <div class="panel-header">
+        <h3>Placeables</h3>
+        <div class="money">Budget Left: <span id="money">100</span></div>
+      </div>
+      <div id="itemsList"></div>
+      <div class="layerControl">
+        <label for="layerSlider">Layer: <span id="layerDisplay">1</span></label>
+        <input id="layerSlider" type="range" min="1" max="5" value="1" />
+      </div>
+      <div class="controls">
+        <div class="zoomLabel">Zoom:</div>
+        <button id="zoomIn">+</button>
+        <button id="zoomOut">−</button>
+      </div>
+      <div id="autosaveIndicator" class="autosave-indicator" aria-hidden="true">Autosaved</div>
+      <ul class="hint">
+        <li>Right-click drag = pan</li>
+        <li>Arrows = move</li>
+        <li>Left-click = place</li>
+        <li>Press E = face left (default)</li>
+        <li>Press Q = face right</li>
+        <li>Press P / O = layer up / down (1-5)</li>
+        <p></p>Some code has been AI assisted.</p>
+      </ul>
+    </div>
+  </div>
+  <div id="topRight">
+    <button id="resetBtn" class="topRightBtn">
+      <img src="restart.svg" alt="restart" class="btnIcon" />
+      <span>Reset</span>
+    </button>
+    <button id="makeRoomBtn" class="topRightBtn">
+      <img src="house.svg" alt="make room" class="btnIcon" />
+      <span>Make Room</span>
+    </button>
+    <button id="saveBtn" class="topRightBtn">
+      <img src="save.svg" alt="save" class="btnIcon" />
+      <span>Save</span>
+    </button>
+    <button id="loadBtn" class="topRightBtn">
+      <img src="load.svg" alt="load" class="btnIcon" />
+      <span>Load</span>
+    </button>
+    <button id="communityBtn" class="topRightBtn">
+      <img src="community.svg" alt="community" class="btnIcon" />
+      <span>Community</span>
+    </button>
+  </div>
+  <div id="reset-modal" class="reset-modal" aria-hidden="true">
+    <div class="overlay"></div>
+    <div class="box">
+      <div class="row message-row">
+        <div class="msg">Are you sure you want to reset your base?</div>
+      </div>
+      <div class="row actions-row">
+        <button id="resetCancel" class="btnCancel">No</button>
+        <button id="resetConfirm" class="btnConfirm">Yes</button>
+      </div>
+    </div>
+  </div>
+  <canvas id="isoCanvas"></canvas>
+  <script>
+    (function(){
+      try{
+        var params = {};
+        var sp = (location.search||'').replace(/^\?/,'');
+        sp.split('&').forEach(function(pair){
+          if(!pair) return;
+          var kv = pair.split('=');
+          try{ params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]||''); }catch(e){}
+        });
+        window.__stardust_params = params;
+      }catch(e){}
+    })();
+    (function(){
+      var v = window.__stardust_v || (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
+      var s = document.createElement('script');
+      s.src = 'script.js?v=' + v;
+      document.body.appendChild(s);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portify</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" type="image/svg+xml" href="portify.svg">
+</head>
+<body>
+
+<header>
+        <img src="portify.svg" alt="Portify logo" class="portify-fire">
+    Portify
+</header>
+
+<div class="main">
+    <div class="sidebar"></div>
+    <div class="playlist-area"></div>
+</div>
+
+
+<div id="now-playing" style="text-align:center;font-weight:bold;font-size:1.1em;padding:8px 0;color:var(--accent);"></div>
+<footer>
+    <img src="shuffle.svg" alt="shuffle" class="shuffle-left">
+    <img src="backward.svg" alt="skip-back">
+    <img src="play.svg" alt="play">
+    <img src="forward.svg" alt="skip-forward">
+</footer>
+<div class="song-progress-bar">
+    <span class="song-time song-current">0:00</span>
+    <div class="progress-container">
+        <div class="progress-line">
+            <div class="progress-fill" style="width: 30%;"></div>
+        </div>
+    </div>
+    <span class="song-time song-duration">4:20</span>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

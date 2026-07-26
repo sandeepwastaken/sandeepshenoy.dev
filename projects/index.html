@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Projects - Sandeep Shenoy</title>
+  <meta name="description" content="Websites, games and products built by Sandeep Shenoy." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script>document.documentElement.classList.add("pt");</script>
+  <script type="speculationrules">
+    { "prerender": [{ "urls": ["/"], "eagerness": "moderate" }] }
+  </script>
+</head>
+<body>
+  <!-- outside <main> so it stays put while the page content transitions -->
+  <div class="page-top">
+    <a class="nav__brand" href="../" aria-label="Home"><img src="../logo.svg" alt="Sandeep Shenoy" width="30" height="30" /></a>
+    <a class="back liquid-glass" href="../">
+      <svg class="back__ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Back</span>
+    </a>
+  </div>
+
+  <main class="page">
+    <header class="page-head">
+      <span class="eyebrow">Projects</span>
+      <h1>Things I've built &amp; made.</h1>
+      <p>Websites, games and products; the ones I'm proud to showcase.</p>
+    </header>
+
+    <section class="proj-grid" id="projGrid"></section>
+  </main>
+
+  <footer class="footer">
+    <img src="../logo.svg" alt="" width="22" height="22" />
+    <span>© <span data-year></span> Sandeep Shenoy</span>
+    <a href="../">Home ↑</a>
+  </footer>
+
+  <script src="../data.js"></script>
+  <script src="../js/lenis.min.js"></script>
+  <script src="../js/site.js"></script>
+  <script>
+  (function () {
+    var S = window.SITE || {}, U = window.Site;
+    var grid = document.getElementById("projGrid");
+    (S.projects || []).slice().sort(U.byDateDesc).forEach(function (p) {
+      var a = U.el("a", "proj reveal");
+      a.href = p.href || "#";
+      if (/^https?:/.test(p.href || "")) { a.target = "_blank"; a.rel = "noopener"; }
+      var bg = p.thumb
+        ? "background-image:url('" + p.thumb + "')"
+        : "background:radial-gradient(130% 130% at 25% 15%, " + (p.accent || "#333") + ", #0c0a12 60%)";
+      var tags = (p.tags || []).map(function (t) { return '<span class="tag">' + t + '</span>'; }).join("");
+      a.innerHTML =
+        '<div class="proj__thumb" style="' + bg + '"></div>' +
+        '<div class="proj__body">' +
+          '<div><h3 class="proj__title">' + p.title + '</h3>' +
+          '<p class="proj__meta">' + [p.blurb, p.role].filter(Boolean).join(" · ") + '</p></div>' +
+          '<span class="proj__date">' + U.prettyDate(p.date) + '</span>' +
+        '</div>' +
+        (tags ? '<div class="proj__tags">' + tags + '</div>' : "");
+      grid.appendChild(a);
+    });
+    U.reveal(grid.querySelectorAll(".reveal"));
+  })();
+  </script>
+</body>
+</html>

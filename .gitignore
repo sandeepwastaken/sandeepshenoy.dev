@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+**/.htpasswd
+api/.ratelimit
+**/private/logs/
+**/private/rate_limits/
+**/private/.DS_Store
+rso/archive/
+projects/gpt/keys/*
+!projects/gpt/keys/index.html
+!projects/gpt/keys/.htaccess

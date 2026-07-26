@@ -1,0 +1,35 @@
+RewriteEngine On
+Options -Indexes
+
+AddDefaultCharset UTF-8
+
+AddType 'text/plain; charset=UTF-8' .txt
+AddCharset UTF-8 .txt
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/?$ /$1/ [R=301,L]
+
+RewriteRule ^data/?$ /projects/research/data [R=301,L]
+
+DirectoryIndex index.html
+
+ErrorDocument 404 /404/
+
+AddType video/mp4 .mp4
+AddType video/quicktime .mov
+
+php_value max_execution_time 120
+
+<FilesMatch "\.(mp4|mov)$">
+  Header set Content-Disposition inline
+</FilesMatch>
+
+RewriteCond %{REQUEST_URI} ^/videos/([^/]+)\.(mp4|mov)$ [NC]
+RewriteCond %{HTTP_REFERER} !^.*\/player [NC]
+RewriteRule ^videos/(.*)$ /player?src=/videos/$1 [R=302,L]
+
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>

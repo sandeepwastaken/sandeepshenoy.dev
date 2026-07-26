@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Lateetud AI Assistant Overlay</title>
+  <link rel="icon" href="https://www.lateetud.com/wp-content/uploads/2026/04/cropped-favicon-32x32.png">
+  <link rel="preload" as="image" href="assets/background.png">
+  <link rel="stylesheet" href="assets/chat.css?v=20260723-2">
+  <script src="assets/chat.js?v=20260723-2" defer></script>
+</head>
+<body>
+<div class="lateetud-chat" id="widget" data-open="false">
+    <section class="chat-panel" aria-label="Lateetud AI Assistant">
+      <div class="chat-header">
+        <div class="assistant-id">
+          <div class="brand-mark" aria-hidden="true">
+            <img src="https://sandeepshenoy.dev/projects/lateetud/chatbot.png" alt="" />
+          </div>
+          <div class="assistant-title">
+            <strong>Lateetud AI Assistant</strong>
+            <span>Enterprise automation and AI guidance</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="clear-button" id="clearChat" type="button">Clear</button>
+          <button class="icon-button" id="panelClose" type="button" aria-label="Close chat">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="messages" id="messages">
+        <div class="message assistant" id="welcomeMessage"></div>
+        <div class="quick-actions" id="quickActions">
+          <button type="button">Explore healthcare automation</button>
+          <button type="button">Show case studies</button>
+          <button type="button">Contact Lateetud</button>
+        </div>
+      </div>
+      <form class="composer-wrap" id="chat">
+        <div class="composer-status" id="composerStatus" role="status" aria-live="polite"></div>
+        <div class="composer">
+          <input id="question" autocomplete="off" placeholder="Ask about Lateetud..." aria-label="Ask about Lateetud" />
+          <button class="send-button" id="send" type="submit" aria-label="Send message">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 2L11 13"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </section>
+    <button class="launcher" id="launcher" type="button" aria-label="Open Lateetud AI Assistant" aria-expanded="false">
+      <img class="chat-icon" src="https://sandeepshenoy.dev/projects/lateetud/chatbot.png" alt="" />
+      <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+</body>
+</html>
