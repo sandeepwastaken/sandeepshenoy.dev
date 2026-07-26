@@ -14,7 +14,7 @@ RewriteRule ^data/?$ /projects/research/data [R=301,L]
 
 DirectoryIndex index.html
 
-ErrorDocument 404 /404/
+ErrorDocument 404 /
 
 AddType video/mp4 .mp4
 AddType video/quicktime .mov
