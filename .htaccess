@@ -6,11 +6,11 @@ AddDefaultCharset UTF-8
 AddType 'text/plain; charset=UTF-8' .txt
 AddCharset UTF-8 .txt
 
+RewriteRule ^data/?$ /projects/research/data [R=301,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)/?$ /$1/ [R=301,L]
-
-RewriteRule ^data/?$ /projects/research/data [R=301,L]
+RewriteRule . / [R=302,L]
 
 DirectoryIndex index.html
 
