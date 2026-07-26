@@ -260,7 +260,7 @@ export const CONFIG = {
    * them rather than a handful, so this ceiling is about frame time and not
    * about memory.
    */
-  maxParticles: 11000,
+  maxParticles: 100000,
   // If the world ever does empty completely, it is reseeded from the fossil
   // record — but never more than once per this many seconds, so a dying world
   // cannot strobe.

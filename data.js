@@ -21,11 +21,11 @@ window.SITE = {
 
   projects: [
     {
-      title: "Flowize",
-      blurb: "Analytics dashboard",
+      title: "Particle Life",
+      blurb: "Dot-based simulation",
       role: "Product design + build",
-      href: "https://example.com/flowize",
-      thumb: "",
+      href: "/projects/particles",
+      thumb: "/images/thumbnails/particle.png",
       accent: "#6d5cff",
       date: "2025-05-10",
       tags: ["Web", "Dashboard"]
