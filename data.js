@@ -3,7 +3,9 @@
    Every page reads from window.SITE below. Add / remove / reorder
    items in these lists and the pages rebuild themselves.
 
-   Hello! This is a testing message.
+   Hello! This is a testing message. I'm adding this to test commits, or something. I don't know what I'm doing, but I hope it works.
+   Number of pushes by just updating this file: 2
+   This is stupid.
    ============================================================ */
 window.SITE = {
 
