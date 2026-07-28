@@ -2,6 +2,8 @@
    data.js — THE ONE FILE YOU EDIT TO CHANGE CONTENT.
    Every page reads from window.SITE below. Add / remove / reorder
    items in these lists and the pages rebuild themselves.
+
+   Hello! This is a testing message.
    ============================================================ */
 window.SITE = {
 
