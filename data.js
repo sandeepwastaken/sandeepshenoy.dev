@@ -23,12 +23,12 @@ window.SITE = {
     {
       title: "Particle Life",
       blurb: "Dot-based simulation",
-      role: "Product design + build",
+      role: "HTML + CSS + JS",
       href: "/projects/particles",
       thumb: "/images/thumbnails/particle.png",
       accent: "#6d5cff",
       date: "2025-05-10",
-      tags: ["Web", "Dashboard"]
+      tags: ["Emergence", "Simulation"]
     },
     {
       title: "Estato",
