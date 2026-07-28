@@ -527,6 +527,16 @@ function setLoaded(index) {
     c.classList.toggle("is-loaded", i === index);
     c.setAttribute("aria-selected", i === index ? "true" : "false");
   });
+  // prev/next in the booth can pick a tape that's off the end of the shelf —
+  // walk the rack to it so the lit spine is always where you can see it
+  const loaded = rackList.children[index];
+  if (loaded && loaded.scrollIntoView) {
+    loaded.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center"
+    });
+  }
 }
 
 /* ============================================================

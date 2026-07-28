@@ -3,6 +3,17 @@ import { Simulation } from "./simulation.js";
 import { UI } from "./ui.js";
 import { wrap } from "./utils.js";
 
+/** Ring colour per brush, matching the tool buttons in the panel. */
+const BRUSH_COLORS = {
+  attract: "rgb(120,180,255)",
+  repel: "rgb(255,120,120)",
+  stir: "rgb(190,150,255)",
+  feed: "rgb(140,220,150)",
+  seed: "rgb(255,205,120)",
+  erase: "rgb(255,255,255)",
+  zap: "rgb(255,230,80)"
+};
+
 /**
  * Canvas renderer.
  *
@@ -28,6 +39,9 @@ class Renderer {
     // followed through a crowded world. Held as the species object rather than
     // its id, because ids are reassigned when extinct lineages are retired.
     this.highlightSpecies = null;
+    // Cursor position in world space, kept current whenever the pointer is over
+    // the canvas so the brush ring can be drawn even before a drag starts.
+    this.pointerWorld = { x: 0, y: 0, inside: false };
     // Reused counting-sort scratch, so batching never allocates per frame.
     this.offsets = new Int32Array(64);
     this.cursor = new Int32Array(64);
@@ -36,18 +50,54 @@ class Renderer {
     this.resize();
   }
 
+  /**
+   * Panning is always available on the middle button or with shift held, no
+   * matter which tool is selected. Otherwise the left button drives the brush,
+   * which is the whole point of having tools: reaching for a modifier every
+   * time you want to push a colony out of the way defeats it.
+   */
+  isPanGesture(event) {
+    return this.simulation.brush.mode === "pan" || event.button === 1 || event.shiftKey;
+  }
+
   bindCamera() {
     const canvas = this.canvas;
+    const brush = this.simulation.brush;
 
     canvas.addEventListener("pointerdown", (event) => {
-      this.isDragging = true;
-      this.lastPointer.x = event.clientX;
-      this.lastPointer.y = event.clientY;
+      this.updatePointerWorld(event);
       canvas.setPointerCapture(event.pointerId);
-      canvas.classList.add("is-dragging");
+
+      if (this.isPanGesture(event)) {
+        this.isDragging = true;
+        this.lastPointer.x = event.clientX;
+        this.lastPointer.y = event.clientY;
+        canvas.classList.add("is-dragging");
+        return;
+      }
+
+      // Seed is a stamp, not a stroke: one colony per click, or a drag would
+      // bury the region in thousands of particles within a second.
+      if (brush.mode === "seed") {
+        this.simulation.seedAt(
+          this.pointerWorld.x,
+          this.pointerWorld.y,
+          this.highlightSpecies ? this.highlightSpecies.id : null
+        );
+        return;
+      }
+
+      brush.active = true;
+      brush.x = this.pointerWorld.x;
+      brush.y = this.pointerWorld.y;
     });
 
     canvas.addEventListener("pointermove", (event) => {
+      this.updatePointerWorld(event);
+      if (brush.active) {
+        brush.x = this.pointerWorld.x;
+        brush.y = this.pointerWorld.y;
+      }
       if (!this.isDragging) return;
       const world = CONFIG.worldSize;
       this.camera.x = wrap(this.camera.x - (event.clientX - this.lastPointer.x) / this.camera.zoom, world);
@@ -56,10 +106,15 @@ class Renderer {
       this.lastPointer.y = event.clientY;
     });
 
+    canvas.addEventListener("pointerleave", () => {
+      this.pointerWorld.inside = false;
+    });
+
     const endDrag = (event) => {
+      brush.active = false;
+      if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
       if (!this.isDragging) return;
       this.isDragging = false;
-      canvas.releasePointerCapture(event.pointerId);
       canvas.classList.remove("is-dragging");
     };
     canvas.addEventListener("pointerup", endDrag);
@@ -107,12 +162,144 @@ class Renderer {
     };
   }
 
+  /** Cursor in world space, wrapped onto the torus like everything else. */
+  updatePointerWorld(event) {
+    const point = this.screenToWorld(event.clientX, event.clientY);
+    const world = CONFIG.worldSize;
+    this.pointerWorld.x = wrap(point.x, world);
+    this.pointerWorld.y = wrap(point.y, world);
+    this.pointerWorld.inside = true;
+  }
+
   draw() {
     this.resize();
     const ctx = this.ctx;
     ctx.fillStyle = "#07090c";
     ctx.fillRect(0, 0, this.width, this.height);
+    this.drawConnections(ctx);
     this.drawParticles(ctx);
+    this.drawBrush(ctx);
+  }
+
+  /**
+   * The brush's reach, as a ring on the world. Drawn from the same wrapped
+   * world coordinate the physics uses, so the ring lands exactly where the
+   * force does even when the cursor is sitting across the torus seam.
+   */
+  drawBrush(ctx) {
+    const brush = this.simulation.brush;
+    if (brush.mode === "pan" || !this.pointerWorld.inside) return;
+
+    const scale = this.camera.zoom * this.dpr;
+    const tileSize = CONFIG.worldSize * scale;
+    const radius = brush.radius * scale;
+    if (radius < 2) return;
+
+    let screenX = (this.pointerWorld.x - this.camera.x) * scale + this.width / 2;
+    let screenY = (this.pointerWorld.y - this.camera.y) * scale + this.height / 2;
+    // Pick the tile nearest the viewport centre, so the ring follows the cursor
+    // across the seam instead of jumping to the far side of the map.
+    screenX -= Math.round((screenX - this.width / 2) / tileSize) * tileSize;
+    screenY -= Math.round((screenY - this.height / 2) / tileSize) * tileSize;
+
+    ctx.save();
+    ctx.lineWidth = Math.max(1, this.dpr);
+    ctx.strokeStyle = BRUSH_COLORS[brush.mode] || "rgba(255,255,255,0.5)";
+    ctx.globalAlpha = brush.active ? 0.95 : 0.45;
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    // A dot at the centre, so a large ring still reads as "this is a cursor".
+    ctx.globalAlpha = brush.active ? 0.8 : 0.35;
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, Math.max(1.5, 2 * this.dpr), 0, Math.PI * 2);
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  drawConnections(ctx) {
+    const simulation = this.simulation;
+    const pool = simulation.pool;
+    const count = pool.count;
+    if (count === 0) return;
+
+    const px = pool.x;
+    const py = pool.y;
+    const mass = pool.mass;
+    const speciesIds = pool.species;
+    const species = simulation.speciesManager.species;
+    const world = CONFIG.worldSize;
+    const halfWorld = world * 0.5;
+    const scale = this.camera.zoom * this.dpr;
+    const tileSize = world * scale;
+    const originX = (0 - this.camera.x) * scale + this.width / 2;
+    const originY = (0 - this.camera.y) * scale + this.height / 2;
+    const firstTileX = Math.floor(-originX / tileSize);
+    const firstTileY = Math.floor(-originY / tileSize);
+    const tilesX = Math.ceil((this.width - originX - firstTileX * tileSize) / tileSize);
+    const tilesY = Math.ceil((this.height - originY - firstTileY * tileSize) / tileSize);
+    const margin = Math.max(8, simulation.settings.interactionRadius * scale);
+    const highlight = this.highlightSpecies;
+
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    for (let i = 0; i < count; i++) {
+      for (let slot = 0; slot < 2; slot++) {
+        const j = slot === 0 ? pool.link[i] : pool.linkB[i];
+        if (j <= i || j >= count) continue;
+        if (pool.link[j] !== i && pool.linkB[j] !== i) continue;
+
+        const speciesI = species[speciesIds[i]];
+        const speciesJ = species[speciesIds[j]];
+        if (!speciesI || !speciesJ) continue;
+
+        let dx = px[j] - px[i];
+        let dy = py[j] - py[i];
+        if (dx > halfWorld) dx -= world; else if (dx < -halfWorld) dx += world;
+        if (dy > halfWorld) dy -= world; else if (dy < -halfWorld) dy += world;
+
+        const phase = slot === 0 ? pool.linkPhase[i] : pool.linkPhaseB[i];
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const normalX = -dy / distance;
+        const normalY = dx / distance;
+        const bend = Math.sin(phase * 1.45) * Math.min(6, distance * 0.12) * scale;
+        const lineWidth = Math.max(0.75, (0.8 + Math.sqrt(Math.max(mass[i], mass[j])) * 0.28) * this.dpr);
+        const alpha = highlight && speciesI !== highlight && speciesJ !== highlight ? 0.08 : 0.46;
+
+        ctx.strokeStyle = speciesI.color;
+        ctx.globalAlpha = alpha;
+        ctx.lineWidth = lineWidth;
+
+        for (let tileY = 0; tileY <= tilesY; tileY++) {
+          const offsetY = originY + (firstTileY + tileY) * tileSize;
+          for (let tileX = 0; tileX <= tilesX; tileX++) {
+            const offsetX = originX + (firstTileX + tileX) * tileSize;
+            const x1 = px[i] * scale + offsetX;
+            const y1 = py[i] * scale + offsetY;
+            const x2 = (px[i] + dx) * scale + offsetX;
+            const y2 = (py[i] + dy) * scale + offsetY;
+            if (
+              (x1 < -margin && x2 < -margin) ||
+              (x1 > this.width + margin && x2 > this.width + margin) ||
+              (y1 < -margin && y2 < -margin) ||
+              (y1 > this.height + margin && y2 > this.height + margin)
+            ) {
+              continue;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.quadraticCurveTo((x1 + x2) * 0.5 + normalX * bend, (y1 + y2) * 0.5 + normalY * bend, x2, y2);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    ctx.restore();
   }
 
   drawParticles(ctx) {
@@ -159,6 +346,7 @@ class Renderer {
 
     const px = pool.x;
     const py = pool.y;
+    const mass = pool.mass;
 
     const highlight = this.highlightSpecies;
 
@@ -183,11 +371,18 @@ class Renderer {
             const screenY = py[i] * scale + offsetY;
             if (screenY < -margin || screenY > this.height + margin) continue;
 
-            if (useRects) {
-              ctx.rect(screenX - radius, screenY - radius, diameter, diameter);
+            const m = mass[i];
+            if (m <= 1) {
+              if (useRects) {
+                ctx.rect(screenX - radius, screenY - radius, diameter, diameter);
+              } else {
+                ctx.moveTo(screenX + radius, screenY);
+                ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
+              }
             } else {
-              ctx.moveTo(screenX + radius, screenY);
-              ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
+              const r = radius * Math.sqrt(m);
+              ctx.moveTo(screenX + r, screenY);
+              ctx.arc(screenX, screenY, r, 0, Math.PI * 2);
             }
           }
         }

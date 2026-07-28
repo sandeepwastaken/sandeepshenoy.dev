@@ -1,5 +1,109 @@
 import { CONFIG } from "./config.js";
-import { clamp, random, randomRange, randomSigned, rgbColor, wrapHue } from "./utils.js";
+import { clamp, random, randomRange, randomSigned, randomSparse, rgbColor, wrapHue } from "./utils.js";
+
+/**
+ * The channels that describe one directed species-to-species relationship.
+ *
+ * Each is a full NxN matrix with the same layout and the same stride, kept as
+ * separate Float32Arrays rather than interleaved into one. Interleaving would
+ * fetch a pair's values in a single cache line, but at realistic species
+ * counts every matrix is a couple of kilobytes and they sit in L1 together
+ * anyway — so the simpler layout costs nothing and keeps every routine that
+ * walks the matrix (drift, mutation, compaction, the viewer) a plain loop over
+ * this list.
+ *
+ * `sparse` channels are drawn cubed, so most pairs are near-neutral and the
+ * strong relationships are rare enough to read as individual characters. See
+ * `randomSparse`.
+ */
+export const CHANNELS = [
+  {
+    key: "values",
+    label: "Force",
+    note: "Radial attraction and repulsion. Blue pulls together, red pushes apart.",
+    sparse: false,
+    crossMin: -1,
+    crossMax: 1,
+    // Self-affinity is skewed positive: a world where most species repel their
+    // own kind never clumps at all, and there is then nothing for selection to
+    // act on. See CONFIG.selfAffinityMin.
+    get selfMin() { return CONFIG.selfAffinityMin; },
+    get selfMax() { return CONFIG.selfAffinityMax; }
+  },
+  {
+    key: "spin",
+    label: "Spin",
+    note: "Force at right angles to the separation. Opposite signs swim, matching signs orbit.",
+    sparse: true,
+    crossMin: -1,
+    crossMax: 1,
+    selfMin: -1,
+    selfMax: 1
+  },
+  {
+    key: "trophic",
+    label: "Feeding",
+    note: "Who eats whom, independent of who chases whom. Negative means feeding them instead.",
+    sparse: true,
+    crossMin: -1,
+    crossMax: 1,
+    // Cannibalism exists but is deliberately weak: a species that can eat its
+    // own kind at full strength simply consumes itself faster than it breeds.
+    selfMin: -0.3,
+    selfMax: 0.3
+  },
+  {
+    key: "align",
+    label: "Alignment",
+    note: "Velocity matching. High values give a structure rigidity of motion.",
+    sparse: true,
+    crossMin: -1,
+    crossMax: 1,
+    // Matching your own kind is the common case, so the diagonal leans positive.
+    selfMin: 0,
+    selfMax: 1
+  },
+  {
+    key: "adopt",
+    label: "Adoptability",
+    note: "Trait overwrite pressure. Positive values make neighbours act more like the source; negative values oppose it.",
+    sparse: true,
+    crossMin: -1,
+    crossMax: 1,
+    selfMin: -1,
+    selfMax: 1
+  },
+  {
+    key: "clump",
+    label: "Clumpability",
+    note: "Same-species stacking. The diagonal controls whether a species merges into super-particles or breaks them.",
+    sparse: true,
+    crossMin: -1,
+    crossMax: 1,
+    selfMin: -1,
+    selfMax: 1
+  },
+  {
+    key: "connect",
+    label: "Chainability",
+    note: "Bond formation. Positive values grow end-to-end strings; negative values break nearby bonds.",
+    sparse: true,
+    crossMin: -1,
+    crossMax: 1,
+    selfMin: -0.45,
+    selfMax: 1
+  }
+];
+
+/** Draw one fresh value for a channel, on or off the diagonal. */
+function sampleChannel(channel, isSelf) {
+  const min = isSelf ? channel.selfMin : channel.crossMin;
+  const max = isSelf ? channel.selfMax : channel.crossMax;
+  if (!channel.sparse) return randomRange(min, max);
+  // Cubed within the wider half of the range, then clamped back into it, so a
+  // lopsided range (the trophic diagonal) still concentrates around zero.
+  return clamp(randomSparse(Math.max(Math.abs(min), Math.abs(max))), min, max);
+}
 
 /**
  * Owns the species registry and the NxN interaction matrix.
@@ -44,7 +148,15 @@ export class SpeciesManager {
     // clock: every series records which sample its first entry belongs to.
     this.sampleIndex = 0;
     this.stride = 16;
-    this.values = new Float32Array(this.stride * this.stride);
+    for (const channel of CHANNELS) this[channel.key] = new Float32Array(this.stride * this.stride);
+    // Per-species interaction reach, as a fraction of the global radius. One
+    // entry per row rather than per pair: reach is a property of a body plan,
+    // not of a relationship, and a single array keeps the physics loop's
+    // per-species lookup tables trivial to build.
+    this.reach = new Float32Array(this.stride).fill(1);
+    this.adoptability = new Float32Array(this.stride);
+    this.clumpability = new Float32Array(this.stride);
+    this.connection = new Float32Array(this.stride);
     this.mutationCount = 0;
   }
 
@@ -60,6 +172,21 @@ export class SpeciesManager {
     this.values[row * this.stride + column] = value;
   }
 
+  getChannel(key, row, column) {
+    return this[key][row * this.stride + column];
+  }
+
+  setChannel(key, row, column, value) {
+    this[key][row * this.stride + column] = value;
+  }
+
+  /** Clamp a channel value into the range that channel is allowed to occupy. */
+  clampChannel(channel, value, isSelf) {
+    return isSelf
+      ? clamp(value, channel.selfMin, channel.selfMax)
+      : clamp(value, channel.crossMin, channel.crossMax);
+  }
+
   reset(elapsedSeconds = 0) {
     this.species = [];
     this.fossils = [];
@@ -69,7 +196,11 @@ export class SpeciesManager {
     this.cladeCounts = [];
     this.byName = new Map();
     this.sampleIndex = 0;
-    this.values.fill(0);
+    for (const channel of CHANNELS) this[channel.key].fill(0);
+    this.reach.fill(1);
+    this.adoptability.fill(0);
+    this.clumpability.fill(0);
+    this.connection.fill(0);
 
     // Six founders, evenly spaced hues, completely random interaction values.
     const hueStep = 360 / CONFIG.initialSpeciesCount;
@@ -134,34 +265,54 @@ export class SpeciesManager {
     return record;
   }
 
-  /** Grow the flat matrix, copying existing rows into the wider stride. */
+  /** Grow every channel matrix, copying existing rows into the wider stride. */
   ensureStride(required) {
     if (required <= this.stride) return;
     const stride = Math.max(required, this.stride * 2);
-    const values = new Float32Array(stride * stride);
-    for (let row = 0; row < this.species.length; row++) {
-      for (let column = 0; column < this.species.length; column++) {
-        values[row * stride + column] = this.values[row * this.stride + column];
+    const count = this.species.length;
+
+    for (const channel of CHANNELS) {
+      const source = this[channel.key];
+      const grown = new Float32Array(stride * stride);
+      for (let row = 0; row < count; row++) {
+        for (let column = 0; column < count; column++) {
+          grown[row * stride + column] = source[row * this.stride + column];
+        }
       }
+      this[channel.key] = grown;
     }
+
+    const reach = new Float32Array(stride).fill(1);
+    reach.set(this.reach.subarray(0, Math.min(this.reach.length, stride)));
+    this.reach = reach;
+    const adoptability = new Float32Array(stride);
+    adoptability.set(this.adoptability.subarray(0, Math.min(this.adoptability.length, stride)));
+    this.adoptability = adoptability;
+    const clumpability = new Float32Array(stride);
+    clumpability.set(this.clumpability.subarray(0, Math.min(this.clumpability.length, stride)));
+    this.clumpability = clumpability;
+    const connection = new Float32Array(stride);
+    connection.set(this.connection.subarray(0, Math.min(this.connection.length, stride)));
+    this.connection = connection;
     this.stride = stride;
-    this.values = values;
   }
 
   /**
-   * Random row + column for a brand new (non-descendant) species.
-   *
-   * Cross-species values span the full range. The diagonal — how a species
-   * feels about its own kind — is drawn from a range skewed positive, because
-   * a world where most species repel themselves never clumps at all: it just
-   * spreads into evenly spaced dust with nothing for selection to work on.
+   * Random row + column on every channel, for a brand new (non-descendant)
+   * species. Existing relationships between older species are untouched.
    */
   randomizeRowAndColumn(id) {
-    for (let other = 0; other < id; other++) {
-      this.setValue(id, other, randomRange(-1, 1));
-      this.setValue(other, id, randomRange(-1, 1));
+    for (const channel of CHANNELS) {
+      for (let other = 0; other < id; other++) {
+        this.setChannel(channel.key, id, other, sampleChannel(channel, false));
+        this.setChannel(channel.key, other, id, sampleChannel(channel, false));
+      }
+      this.setChannel(channel.key, id, id, sampleChannel(channel, true));
     }
-    this.setValue(id, id, randomRange(CONFIG.selfAffinityMin, CONFIG.selfAffinityMax));
+    this.reach[id] = randomRange(CONFIG.reachMin, CONFIG.reachMax);
+    this.adoptability[id] = randomRange(-1, 1);
+    this.clumpability[id] = randomRange(-1, 1);
+    this.connection[id] = randomRange(-0.45, 1);
   }
 
   /**
@@ -179,37 +330,68 @@ export class SpeciesManager {
    */
   driftTraits(seconds, rateScale = 1) {
     if (seconds <= 0 || rateScale <= 0) return;
-    const step = CONFIG.traitDriftRate * rateScale * Math.sqrt(seconds);
-    const hueStep = CONFIG.hueDriftRate * rateScale * Math.sqrt(seconds);
+    const elapsed = Math.sqrt(seconds);
+    const step = CONFIG.traitDriftRate * rateScale * elapsed;
+    const reachStep = CONFIG.reachDriftRate * rateScale * elapsed;
+    const hueStep = CONFIG.hueDriftRate * rateScale * elapsed;
     const count = this.species.length;
 
-    for (let row = 0; row < count; row++) {
-      for (let column = 0; column < count; column++) {
-        const value = this.getValue(row, column) + randomSigned(step);
-        this.setValue(
-          row,
-          column,
-          row === column
-            ? clamp(value, CONFIG.selfAffinityMin, CONFIG.selfAffinityMax)
-            : clamp(value, -1, 1)
-        );
+    for (const channel of CHANNELS) {
+      const matrix = this[channel.key];
+      for (let row = 0; row < count; row++) {
+        const base = row * this.stride;
+        for (let column = 0; column < count; column++) {
+          const value = matrix[base + column] + randomSigned(step);
+          matrix[base + column] = this.clampChannel(channel, value, row === column);
+        }
       }
+    }
 
+    const adoptStep = CONFIG.adoptDriftRate * rateScale * elapsed;
+    const clumpStep = CONFIG.clumpDriftRate * rateScale * elapsed;
+    const connectionStep = CONFIG.connectionDriftRate * rateScale * elapsed;
+    for (let row = 0; row < count; row++) {
+      this.reach[row] = clamp(this.reach[row] + randomSigned(reachStep), CONFIG.reachMin, CONFIG.reachMax);
+      this.adoptability[row] = clamp(this.adoptability[row] + randomSigned(adoptStep), -1, 1);
+      this.clumpability[row] = clamp(this.clumpability[row] + randomSigned(clumpStep), -1, 1);
+      this.connection[row] = clamp(this.connection[row] + randomSigned(connectionStep), -1, 1);
       const species = this.species[row];
       species.hue = wrapHue(species.hue + randomSigned(hueStep));
       species.color = rgbColor(species.hue, species.saturation, species.lightness);
     }
   }
 
-  randomizeMatrix() {
-    for (let row = 0; row < this.species.length; row++) {
-      for (let column = 0; column < this.species.length; column++) {
-        const value =
-          row === column
-            ? randomRange(CONFIG.selfAffinityMin, CONFIG.selfAffinityMax)
-            : randomRange(-1, 1);
-        this.setValue(row, column, value);
+  /**
+   * Shift every relationship on one channel by a fixed amount at once, clamped
+   * into that channel's range. Ten clicks at ±0.1 is enough to walk any cell
+   * from one end of its range to the other.
+   */
+  shiftMatrix(delta, channelKey = "values") {
+    const channel = CHANNELS.find((item) => item.key === channelKey);
+    if (!channel) return;
+    const matrix = this[channel.key];
+    const count = this.species.length;
+    for (let row = 0; row < count; row++) {
+      const base = row * this.stride;
+      for (let column = 0; column < count; column++) {
+        matrix[base + column] = this.clampChannel(channel, matrix[base + column] + delta, row === column);
       }
+    }
+  }
+
+  /** Redraw one channel, or every channel when no key is given. */
+  randomizeMatrix(channelKey = null) {
+    const targets = channelKey ? CHANNELS.filter((item) => item.key === channelKey) : CHANNELS;
+    const count = this.species.length;
+    for (const channel of targets) {
+      for (let row = 0; row < count; row++) {
+        for (let column = 0; column < count; column++) {
+          this.setChannel(channel.key, row, column, sampleChannel(channel, row === column));
+        }
+      }
+    }
+    if (!channelKey) {
+      for (let row = 0; row < count; row++) this.reach[row] = randomRange(CONFIG.reachMin, CONFIG.reachMax);
     }
   }
 
@@ -238,14 +420,39 @@ export class SpeciesManager {
     });
 
     const childId = child.id;
-    for (let other = 0; other < childId; other++) {
-      // Row: how the child feels about everyone else.
-      this.setValue(childId, other, clamp(this.getValue(parentId, other) + randomSigned(spread), -1, 1));
-      // Column: how everyone else feels about the child.
-      this.setValue(other, childId, clamp(this.getValue(other, parentId) + randomSigned(spread), -1, 1));
+    for (const channel of CHANNELS) {
+      for (let other = 0; other < childId; other++) {
+        // Row: how the child feels about everyone else.
+        const toward = this.getChannel(channel.key, parentId, other) + randomSigned(spread);
+        this.setChannel(channel.key, childId, other, this.clampChannel(channel, toward, false));
+        // Column: how everyone else feels about the child. Inherited from how
+        // they felt about the parent — a descendant is met as a relative.
+        const from = this.getChannel(channel.key, other, parentId) + randomSigned(spread);
+        this.setChannel(channel.key, other, childId, this.clampChannel(channel, from, false));
+      }
+      // The diagonal is inherited from the parent's own diagonal.
+      const self = this.getChannel(channel.key, parentId, parentId) + randomSigned(spread);
+      this.setChannel(channel.key, childId, childId, this.clampChannel(channel, self, true));
     }
-    // Self-affinity is inherited from the parent's self-affinity.
-    this.setValue(childId, childId, clamp(this.getValue(parentId, parentId) + randomSigned(spread), -1, 1));
+    // Reach mutates on the same roll but at a quarter of the spread, so a
+    // radiation stays recognisably built at its ancestor's scale.
+    this.reach[childId] = clamp(
+      this.reach[parentId] + randomSigned(spread * 0.25),
+      CONFIG.reachMin,
+      CONFIG.reachMax
+    );
+    this.adoptability[childId] = clamp(
+      this.adoptability[parentId] + randomSigned(spread * 0.5),
+      -1, 1
+    );
+    this.clumpability[childId] = clamp(
+      this.clumpability[parentId] + randomSigned(spread * 0.5),
+      -1, 1
+    );
+    this.connection[childId] = clamp(
+      this.connection[parentId] + randomSigned(spread * 0.5),
+      -1, 1
+    );
 
     this.mutationCount++;
     return child;
@@ -296,33 +503,71 @@ export class SpeciesManager {
 
     let stride = 16;
     while (stride < survivors.length) stride *= 2;
-    const values = new Float32Array(stride * stride);
+
+    for (const channel of CHANNELS) {
+      const source = this[channel.key];
+      const packed = new Float32Array(stride * stride);
+      for (let row = 0; row < previous.length; row++) {
+        const newRow = remap[row];
+        if (newRow < 0) continue;
+        for (let column = 0; column < previous.length; column++) {
+          const newColumn = remap[column];
+          if (newColumn < 0) continue;
+          packed[newRow * stride + newColumn] = source[row * this.stride + column];
+        }
+      }
+      this[channel.key] = packed;
+    }
+
+    const reach = new Float32Array(stride).fill(1);
+    const adoptability = new Float32Array(stride);
+    const clumpability = new Float32Array(stride);
+    const connection = new Float32Array(stride);
     for (let row = 0; row < previous.length; row++) {
-      const newRow = remap[row];
-      if (newRow < 0) continue;
-      for (let column = 0; column < previous.length; column++) {
-        const newColumn = remap[column];
-        if (newColumn < 0) continue;
-        values[newRow * stride + newColumn] = this.values[row * this.stride + column];
+      if (remap[row] >= 0) {
+        reach[remap[row]] = this.reach[row];
+        adoptability[remap[row]] = this.adoptability[row];
+        clumpability[remap[row]] = this.clumpability[row];
+        connection[remap[row]] = this.connection[row];
       }
     }
+    this.reach = reach;
+    this.adoptability = adoptability;
+    this.clumpability = clumpability;
+    this.connection = connection;
 
     for (let index = 0; index < survivors.length; index++) survivors[index].id = index;
     this.species = survivors;
     this.stride = stride;
-    this.values = values;
     return remap;
   }
 
+  /**
+   * Freeze a lineage's opinions on the way out, keyed by the *names* of the
+   * species it knew — ids are about to be renumbered, so they are useless to a
+   * fossil that might be revived long after this. Every channel is kept, so a
+   * revived species comes back with its whole character intact and not just its
+   * attractions.
+   */
   snapshotTraits(id, registry) {
-    const toward = {};
-    const from = {};
-    for (let other = 0; other < registry.length; other++) {
-      if (other === id) continue;
-      toward[registry[other].name] = this.getValue(id, other);
-      from[registry[other].name] = this.getValue(other, id);
+    const channels = {};
+    for (const channel of CHANNELS) {
+      const toward = {};
+      const from = {};
+      for (let other = 0; other < registry.length; other++) {
+        if (other === id) continue;
+        toward[registry[other].name] = this.getChannel(channel.key, id, other);
+        from[registry[other].name] = this.getChannel(channel.key, other, id);
+      }
+      channels[channel.key] = { self: this.getChannel(channel.key, id, id), toward, from };
     }
-    return { self: this.getValue(id, id), toward, from };
+    return {
+      channels,
+      reach: this.reach[id],
+      adoptability: this.adoptability[id],
+      clumpability: this.clumpability[id],
+      connection: this.connection[id]
+    };
   }
 
   /**
@@ -360,15 +605,25 @@ export class SpeciesManager {
     fossil.hasLived = false;
     this.species.push(fossil);
 
-    const traits = fossil.traits;
-    for (let other = 0; other < id; other++) {
-      const name = this.species[other].name;
-      const toward = traits && traits.toward[name];
-      const from = traits && traits.from[name];
-      this.setValue(id, other, toward === undefined ? randomRange(-1, 1) : toward);
-      this.setValue(other, id, from === undefined ? randomRange(-1, 1) : from);
+    const traits = fossil.traits && fossil.traits.channels;
+    for (const channel of CHANNELS) {
+      const record = traits && traits[channel.key];
+      for (let other = 0; other < id; other++) {
+        const name = this.species[other].name;
+        const toward = record && record.toward[name];
+        const from = record && record.from[name];
+        this.setChannel(channel.key, id, other, toward === undefined ? sampleChannel(channel, false) : toward);
+        this.setChannel(channel.key, other, id, from === undefined ? sampleChannel(channel, false) : from);
+      }
+      this.setChannel(channel.key, id, id, record ? record.self : sampleChannel(channel, true));
     }
-    this.setValue(id, id, traits ? traits.self : randomRange(CONFIG.selfAffinityMin, CONFIG.selfAffinityMax));
+    this.reach[id] =
+      fossil.traits && fossil.traits.reach !== undefined
+        ? fossil.traits.reach
+        : randomRange(CONFIG.reachMin, CONFIG.reachMax);
+    this.adoptability[id] = fossil.traits?.adoptability ?? randomRange(-1, 1);
+    this.clumpability[id] = fossil.traits?.clumpability ?? randomRange(-1, 1);
+    this.connection[id] = fossil.traits?.connection ?? randomRange(-0.45, 1);
     return fossil;
   }
 

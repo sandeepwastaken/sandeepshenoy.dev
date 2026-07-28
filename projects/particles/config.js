@@ -21,6 +21,21 @@ export const CONFIG = {
   initialLightness: 58,
   initialParticlesPerSpecies: 800,
   initialEnergy: 130,
+  /**
+   * Founders are seeded as a handful of patches each, plus a scattering of
+   * drifters, rather than sprinkled uniformly.
+   *
+   * A uniform sprinkle is the worst of both worlds: every species starts
+   * perfectly mixed with every other, so nothing has the local coherence needed
+   * to condense into a structure before it is stirred back into grain. Pure
+   * segregated colonies are the opposite failure — they never meet, and
+   * inter-species structure is where all the interesting shapes live. Patches
+   * plus drifters give both: coherent cores that can form something, and enough
+   * loose population that the cores find each other within the first minute.
+   */
+  initialPatchesPerSpecies: 5,
+  initialPatchRadiusRatio: 0.085,
+  initialDrifterFraction: 0.22,
   // Cross-species affinities are drawn from the full [-1, 1] range, but a
   // species' feeling about *itself* is drawn from a range skewed positive.
   // Fully random self-affinity makes most worlds mutually repulsive, which is
@@ -46,7 +61,88 @@ export const CONFIG = {
   coreRepulsion: 1600,
   forceScale: 1000,
   maxForce: 9000,
-  maxVelocity: 320,
+  maxVelocity: 300,
+
+  /**
+   * --- Interaction channels ----------------------------------------------
+   *
+   * A species pair is described by several independent numbers, not one. The old
+   * world had only the radial force, which meant a single value had to be both
+   * "how I move relative to you" and "whether I eat you" — so every cohesive
+   * relationship was also a predatory one, and any structure that held together
+   * was simultaneously digesting itself.
+   *
+   *   force    radial attraction / repulsion  (the classic Particle-Life term)
+   *   spin     force *perpendicular* to the separation, which is what makes
+   *            self-propelled swimmers and rotors possible at all
+   *   trophic  who feeds on whom, now free to disagree with force
+   *   align    velocity matching, which gives a structure rigidity of motion
+   *   connect  end-to-end bond formation for chains and rings
+   *
+   * `spinScale`, `alignScale` and the predation constants below convert a
+   * channel's [-1, 1] value into world units.
+   */
+  /**
+   * Peak tangential force at |spin| = 1.
+   *
+   * Perpendicular forces do not obey Newton's third law, so a pair does not
+   * conserve momentum — which is the entire point. That broken symmetry is the
+   * mathematical source of self-propulsion: a bonded pair with opposite spins
+   * translates (a swimmer), one with equal spins orbits (a rotor). Kept below
+   * `forceScale` so radial structure still dominates and the spin decorates it
+   * rather than tearing it apart.
+   */
+  spinScale: 620,
+  /**
+   * Velocity-matching strength at |align| = 1, as a force per unit of velocity
+   * difference. This is the closest thing the world has to a *bond*: it costs
+   * no persistent state, but it means a member knocked out of a moving
+   * structure is dragged back into the group's motion instead of being lost.
+   * Without it, every motile structure is a coincidence that survives exactly
+   * until the first collision.
+   *
+   * The accumulated alignment is averaged over neighbours before it is applied,
+   * so a particle deep inside a crowd is not flung about by sheer neighbour
+   * count the way an unnormalised sum would do.
+   */
+  alignScale: 4.2,
+
+  /**
+   * Per-species interaction reach, as a fraction of the global radius.
+   *
+   * Every species used to interact at exactly one distance, so every structure
+   * in the world came out at the same grain no matter what the matrix said.
+   * A short-reach species builds tight, hard, dense bodies; a long-reach one
+   * builds diffuse halos — and the two can nest, which is where multi-scale
+   * structure comes from.
+   *
+   * The floor is not cosmetic. The core radius scales with reach, and the
+   * timestep is only stable while a particle cannot cross its own core in one
+   * step: `reachMin * coreRadiusRatio * interactionRadius / maxVelocity` must
+   * stay above `maxTimestep`. At the defaults that is 6.3 / 300 = 0.021s
+   * against a 0.0167s step — comfortable, but it is why reach cannot go lower
+   * without also slowing the world down.
+   */
+  reachMin: 0.7,
+  reachMax: 1,
+  adoptScale: 0.7,
+  adoptDriftRate: 0.005,
+  clumpMergeRadius: 0.55,
+  clumpMergeChance: 0.4,
+  clumpSplitChance: 0.2,
+  clumpMaxMass: 5,
+  clumpMassCost: 0.5,
+  clumpDriftRate: 0.005,
+  connectionDriftRate: 0.005,
+  connectionRadius: 1.05,
+  connectionRestRadius: 0.18,
+  connectionBreakRadius: 4.2,
+  connectionSpring: 14000,
+  connectionWobble: 620,
+  connectionDamping: 2.4,
+  connectionChance: 18,
+  connectionBreakChance: 2.2,
+  loopSeekStrength: 0.015,
   /**
    * Friction is expressed as a velocity half-life in seconds, which is both
    * frame-rate independent and physically meaningful: it is the time an
@@ -157,6 +253,40 @@ export const CONFIG = {
    * a pile of its own, so blobs grow shells, membranes and chains.
    */
   kinCompetition: 0.34,
+  /**
+   * Niche overlap — how much of your food you lose by being surrounded only by
+   * your own kind.
+   *
+   *   efficiency = 1 - nicheOverlap * (1 - fraction of neighbours that are foreign)
+   *
+   * This is the term that kills the monoculture lattice, and it is worth being
+   * precise about why that state was so hard to dislodge. A single species with
+   * positive self-affinity settles at the spacing where its attraction balances
+   * the hard core — roughly ten neighbours inside the radius, which is under
+   * `comfortableNeighbors`, so it paid no crowding penalty at all. An evenly
+   * spaced grid was, quite literally, the cheapest way to exist. Nothing in the
+   * energy budget could tell the difference between that and a structure.
+   *
+   * Now it can. Grazing efficiency is a function of who your neighbours *are*:
+   * a particle buried in its own kind feeds at `1 - nicheOverlap`, one sitting
+   * on a boundary between two lineages feeds at full rate. The uniform lattice
+   * becomes the *worst*-fed configuration in the world rather than the best,
+   * and membranes, shells, chains and mixed colonies — the shapes worth looking
+   * at — become the fittest ones instead of a lucky accident.
+   *
+   * A particle with no neighbours at all counts as fully overlapped, so this
+   * does not simply push the world into evenly spaced dust instead.
+   *
+   * Scored against the world's average mixedness, so the term is zero-sum: it
+   * redistributes food towards boundaries without changing how much of it there
+   * is, and the food economy's equilibrium is untouched at any setting. Turning
+   * it up sharpens the advantage of living on an interface; it does not shrink
+   * the world. Measured against a fixed seed, the largest species' share of the
+   * world after 90 seconds falls from about 0.9 at zero to well under that
+   * here — the difference between "one species owns the map" and "several
+   * coexist".
+   */
+  nicheOverlap: 0.5,
   motionCost: 0.004,
   baseEnergyDrain: 5,
   energyGain: 1,
@@ -207,6 +337,12 @@ export const CONFIG = {
    * notice it only by looking away and looking back.
    */
   traitDriftRate: 0.015,
+  /**
+   * Reach drifts too, but at a fraction of the rate: it is the one trait that
+   * changes the *scale* a lineage builds at, and a body plan that rescales as
+   * fast as its affinities change never gets to be a body plan.
+   */
+  reachDriftRate: 0.004,
   /** Colour follows character, but far more slowly, so species stay findable. */
   hueDriftRate: 0.35,
   /** Drift is applied on the statistics tick rather than every frame. */
@@ -235,6 +371,24 @@ export const CONFIG = {
    * appears" rather than "how fast the species list explodes".
    */
   minSpeciationIntervalSeconds: 2.5,
+
+  /**
+   * --- Player tools ------------------------------------------------------
+   *
+   * The cursor is a force in the world, not a camera accessory. Structures here
+   * are fragile in the way weather is fragile, and being able to shove one out
+   * of the path of an oncoming colony — or stir a stalled region until
+   * something new nucleates — is the difference between watching a simulation
+   * and playing with one.
+   */
+  brushRadius: 150,
+  brushStrength: 2600,
+  brushRadiusMin: 40,
+  brushRadiusMax: 520,
+  /** A Feed brush drop, as a multiplier on ground richness, and how fast it fades. */
+  brushFeedRichness: 2.6,
+  brushFeedHalfLife: 9,
+  brushFeedMax: 12,
 
   // --- Environmental pressure -------------------------------------------
   // Slow drifts that stop the ecosystem from ever settling permanently.

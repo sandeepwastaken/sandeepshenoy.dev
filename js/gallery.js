@@ -24,20 +24,34 @@ const SITE = window.SITE || {};
 const Site = window.Site || {};
 const pieces = SITE.gallery || [];
 
+/* Phones get their own walk: a portrait frustum is so narrow horizontally
+   that the desktop framing buries your nose in the wall, and 820px of
+   swiping per bay is a lot of thumb. */
+const touchLike = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+const isPortrait = () => window.innerWidth / window.innerHeight < 0.92;
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
 const CONFIG = {
   introTiles: 1.8,
   minIntroDistance: 14,
   maxTiles: 14,                  // safety cap on hall length
   scrollPixelsPerTile: 820,
+  scrollPixelsPerTileNarrow: 520,
   cameraHeight: 1.65,
   cameraDepth: 5.8,
+  cameraDepthNarrow: 7,          // step back from the wall so a piece fits
   cameraLerp: 0.09,
+  fov: 46,
+  fovNarrow: 52,
+  lookAhead: 2.8,
+  lookAheadNarrow: 0.2,          // and square up to it instead of walking past
   artPadding: 0.88,
   endPadTiles: 0.45,
-  // path tracer — experimental, off by default: the synchronous BVH build
-  // freezes the page for seconds and the converted scene renders black.
-  // Flip to true to experiment; the raster path never depends on it.
-  ptEnabled: true,
+  // path tracer — experimental: the synchronous BVH build freezes the page
+  // for seconds and the converted scene renders black. The raster path never
+  // depends on it, and phones never attempt it — a mobile GPU has nothing
+  // spare while the page is also scrolling.
+  ptEnabled: !touchLike,
   ptIdleMs: 450,                 // stillness before refinement kicks in
   ptMaxSamples: 220,
   ptBounces: 4
@@ -62,7 +76,10 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
   powerPreference: "high-performance"
 });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
+// phones render at a lower ceiling: a 3x DPR panel is 9x the fragments for
+// no visible gain on a hall this soft, and it costs the scroll its framerate
+const pixelRatioCap = () => Math.min(window.devicePixelRatio || 1, touchLike ? 1.35 : 1.7);
+renderer.setPixelRatio(pixelRatioCap());
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -79,7 +96,7 @@ const envTexture = makeDuskEquirect();
 scene.environment = envTexture;
 scene.environmentIntensity = 0.42;
 
-const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.05, 900);
+const camera = new THREE.PerspectiveCamera(CONFIG.fov, window.innerWidth / window.innerHeight, 0.05, 900);
 camera.position.set(0, CONFIG.cameraHeight, CONFIG.cameraDepth);
 
 const composer = new EffectComposer(renderer);
@@ -107,6 +124,8 @@ const state = {
   targetX: 0,
   cameraX: 0,
   maxScroll: 1,
+  scrollPerTile: CONFIG.scrollPixelsPerTile,
+  lookAhead: CONFIG.lookAhead,
   lastScrollAt: performance.now(),
   loaded: false
 };
@@ -155,8 +174,7 @@ async function init() {
 
     state.endX = state.titleDistance + hallTiles * state.moduleWidth
                + state.moduleWidth * CONFIG.endPadTiles - state.moduleWidth * 0.5;
-    state.maxScroll = Math.ceil((state.endX / state.moduleWidth) * CONFIG.scrollPixelsPerTile);
-    spacer.style.height = `${state.maxScroll + window.innerHeight}px`;
+    layout();
 
     loading.classList.add("is-hidden");
     state.loaded = true;
@@ -167,6 +185,37 @@ async function init() {
     console.error(error);
     loading.textContent = "Gallery model failed to load";
   }
+}
+
+/* ---------- framing ----------
+   One place decides how wide the lens is, how far down the hall the camera
+   looks, and how much page there is to scroll. A portrait phone gets a wider
+   lens that squares up to the wall — at desktop framing its frustum is so
+   narrow horizontally that you walk the hall with your nose on the plaster —
+   and a shorter track, so a bay is a swipe rather than a marathon. */
+function layout() {
+  const narrow = isPortrait();
+  const perTile = narrow ? CONFIG.scrollPixelsPerTileNarrow : CONFIG.scrollPixelsPerTile;
+  const walked = state.maxScroll > 1 ? Math.min(1, window.scrollY / state.maxScroll) : 0;
+
+  state.scrollPerTile = perTile;
+  state.lookAhead = narrow ? CONFIG.lookAheadNarrow : CONFIG.lookAhead;
+
+  camera.fov = narrow ? CONFIG.fovNarrow : CONFIG.fov;
+  camera.position.z = narrow ? CONFIG.cameraDepthNarrow : CONFIG.cameraDepth;
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setPixelRatio(pixelRatioCap());
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+  bloomPass.setSize(window.innerWidth, window.innerHeight);
+
+  state.maxScroll = Math.max(1, Math.ceil((state.endX / state.moduleWidth) * perTile));
+  spacer.style.setProperty("--gallery-track", `${state.maxScroll}px`);
+  // rotating the phone changes the track length — keep the visitor standing
+  // where they were in the hall instead of teleporting them
+  if (walked > 0) window.scrollTo(0, Math.round(walked * state.maxScroll));
 }
 
 /* ---------- static hall: one bay per artwork, placed once ---------- */
@@ -572,7 +621,7 @@ function exitPathTracing() {
 /* ---------- main loop ---------- */
 function animate() {
   const dt = Math.min(clock.getDelta(), 0.04);
-  const scrollX = window.scrollY / CONFIG.scrollPixelsPerTile * state.moduleWidth;
+  const scrollX = window.scrollY / state.scrollPerTile * state.moduleWidth;
   state.targetX = Math.min(scrollX, state.endX);
   const before = state.cameraX;
   state.cameraX += (state.targetX - state.cameraX) * (1 - Math.pow(1 - CONFIG.cameraLerp, dt * 60));
@@ -581,7 +630,13 @@ function animate() {
 
   camera.position.x = state.cameraX;
   camera.position.y = CONFIG.cameraHeight + Math.sin(state.cameraX * 0.05) * 0.03;
-  camera.lookAt(state.cameraX + 2.8, CONFIG.cameraHeight - 0.08, 0);
+  // the intro keeps the desktop's long look down the hall — it's what frames
+  // the island — then squares up to the wall as you step into the first bay
+  // (on a wide screen both ends of the lerp are the same number, so nothing
+  // changes there)
+  const settled = clamp01((state.cameraX - state.titleDistance * 0.25) / (state.titleDistance * 0.75));
+  const lookAhead = CONFIG.lookAhead + (state.lookAhead - CONFIG.lookAhead) * settled;
+  camera.lookAt(state.cameraX + lookAhead, CONFIG.cameraHeight - 0.08, 0);
 
   // low dusk sun rides with you → every pillar drags a long real shadow
   // (height matched to the visible beam slope so light and shadow agree)
@@ -640,7 +695,24 @@ function updateOverlay() {
 
 window.addEventListener("scroll", () => { state.lastScrollAt = performance.now(); }, { passive: true });
 
+/* Opening a piece is a TAP, not a pointerdown: on touch every scroll starts
+   with a finger on an artwork, and firing on the press threw the lightbox
+   open the moment you tried to walk. */
+const TAP = { x: 0, y: 0, t: 0, id: -1 };
 window.addEventListener("pointerdown", (event) => {
+  TAP.x = event.clientX;
+  TAP.y = event.clientY;
+  TAP.t = performance.now();
+  TAP.id = event.pointerId;
+}, { passive: true });
+
+window.addEventListener("pointerup", (event) => {
+  if (event.pointerId !== TAP.id) return;
+  TAP.id = -1;
+  const moved = Math.hypot(event.clientX - TAP.x, event.clientY - TAP.y);
+  if (moved > 10 || performance.now() - TAP.t > 600) return;   // that was a drag
+  if (event.target && event.target.closest && event.target.closest("a, button")) return;
+
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
@@ -648,15 +720,13 @@ window.addEventListener("pointerdown", (event) => {
     .filter((h) => h.object.visible);
   if (!hits.length || !lightbox) return;
   lightbox.open(hits[0].object.userData.pieceIndex || 0);
-});
+}, { passive: true });
 
+// Safe to run on a phone's address-bar resizes too: the track length no
+// longer depends on viewport height (the spacer's tail is 100dvh in CSS),
+// so re-laying-out keeps the visitor exactly where they were standing.
 window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  composer.setSize(window.innerWidth, window.innerHeight);
-  bloomPass.setSize(window.innerWidth, window.innerHeight);
+  layout();
   if (pathTracer && ptSceneBuilt) pathTracer.reset();
   state.lastScrollAt = performance.now();
 });

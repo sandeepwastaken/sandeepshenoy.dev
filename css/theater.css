@@ -359,28 +359,85 @@ body.theater-page {
 }
 .theater-sound-note:hover { border-color: var(--beam); }
 
-/* ───────────── responsive ───────────── */
+/* ───────────── responsive ─────────────
+   On a phone the shelf lies down: a rail of tapes along the bottom edge,
+   directly above the booth bar, sized by its own content instead of a fixed
+   height that used to guillotine every title. */
 @media (max-width: 760px) {
   .g-back span { display: none; }
   .g-back { width: 42px; height: 42px; padding: 0; justify-content: center; }
   .theater-intro { bottom: auto; top: 78px; }
-  .cassette-rack {
-    top: auto; bottom: 88px; right: 0; left: 0;
-    width: auto; height: 116px;
+  /* the rack is below the copy now, so the nudge points down at it */
+  .theater-hint span { animation-name: hintNudgeDown; }
+  @keyframes hintNudgeDown {
+    0%, 100% { transform: rotate(90deg) translateX(0); }
+    50%      { transform: rotate(90deg) translateX(5px); }
   }
-  .cassette-rack__head { padding: 0 14px 8px; }
+
+  .cassette-rack {
+    top: auto; right: 0; left: 0;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    width: auto; height: auto;
+  }
+  /* tapes have to hold their own against whatever the film is showing */
+  .cassette-rack::before {
+    content: "";
+    position: absolute; inset: -22px 0 -26px;
+    background: linear-gradient(to top, rgba(0,0,0,.78), rgba(0,0,0,.44) 58%, transparent);
+    pointer-events: none;
+  }
+  .cassette-rack__head { position: relative; padding: 0 16px 9px; }
+  .cassette-rack__title { font-size: 1.02rem; }
+
   .cassette-rack__list {
+    position: relative;
     flex-direction: row;
     overflow-x: auto; overflow-y: hidden;
-    padding: 4px 14px 10px;
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
-            mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+    gap: 9px;
+    padding: 2px 16px 10px;
+    scroll-snap-type: x proximity;
+    scroll-padding: 0 16px;
+    overscroll-behavior-x: contain;       /* don't hand a flick to the page */
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 18px), transparent);
+            mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 18px), transparent);
   }
-  .cassette { width: 150px; transform: none; }
-  .cassette:hover, .cassette:focus-visible, .cassette.is-loaded { transform: translateY(-3px); }
-  .booth { width: calc(100vw - 16px); gap: 2px; padding: 6px 8px; }
+
+  /* a tape stands up: label stripe on top, window, then the title block */
+  .cassette {
+    width: 132px;
+    flex-direction: column;
+    border-radius: 6px;
+    transform: none;
+    scroll-snap-align: start;
+  }
+  .cassette__spine { flex: 0 0 2px; width: 100%; }
+  .cassette__body { padding: 0; }
+  .cassette__win { border-radius: 0; }
+  .cassette__meta { padding: 7px 9px 8px; }
+  /* two lines, not one: at 132px wide a single line clips every film to
+     the same "The Backrooms …" and you can't tell the tapes apart */
+  .cassette__title { font-size: .78rem; }
+  .cassette__sub { margin-top: 2px; font-size: .6rem; }
+  .cassette.is-loaded { transform: none; }
+
+  .booth {
+    width: calc(100vw - 16px); gap: 2px; padding: 6px 8px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
   .booth__vol, .booth__btn--vol { display: none; }
   .booth__time { min-width: 70px; font-size: .72rem; }
+}
+
+/* hover belongs to devices that have one — on a phone the tape you last
+   tapped would otherwise stay stuck in its hover state */
+@media (hover: none) {
+  .cassette:hover { transform: none; background: #0e0e0f; border-color: var(--theater-line); }
+  .cassette:hover .cassette__spine { background: #2b2b2d; }
+  .cassette.is-loaded:hover { background: #16161a; border-color: rgba(232,185,136,.5); }
+  .cassette.is-loaded:hover .cassette__spine { background: var(--beam); }
+  /* the press is the feedback instead */
+  .cassette:active { transform: scale(.97); }
 }
 
 @media (prefers-reduced-motion: reduce) {

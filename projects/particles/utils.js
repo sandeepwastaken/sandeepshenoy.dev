@@ -43,6 +43,22 @@ export function randomSigned(amount = 1) {
   return (random() * 2 - 1) * amount;
 }
 
+/**
+ * Signed draw from [-amount, amount], cubed — so most values land near zero and
+ * strong ones are rare.
+ *
+ * Channels like spin and predation want to be *sparse*. Drawn uniformly, every
+ * species pair in the world ends up with a meaningful relationship on every
+ * channel at once, which averages out into undifferentiated churn: if everyone
+ * eats everyone and everyone spins, nobody is a predator and nothing is a
+ * rotor. A cubic draw keeps most pairs near-neutral so the handful of genuinely
+ * strong relationships stand out as characters.
+ */
+export function randomSparse(amount = 1) {
+  const unit = random() * 2 - 1;
+  return unit * unit * unit * amount;
+}
+
 /** Base64 of a typed array's bytes — compact enough for save files. */
 export function encodeTypedArray(array) {
   const bytes = new Uint8Array(array.buffer, array.byteOffset, array.byteLength);

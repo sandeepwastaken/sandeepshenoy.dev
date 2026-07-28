@@ -1,6 +1,10 @@
 import { CONFIG } from "./config.js";
 import { exportHistory, loadWorld, saveWorld } from "./persistence.js";
+import { CHANNELS } from "./species.js";
 import { formatInteger, formatSeconds } from "./utils.js";
+
+/** Tool order in the panel, which is also the order of the 1-7 shortcuts. */
+const TOOLS = ["pan", "attract", "repel", "stir", "feed", "seed", "erase", "zap"];
 
 /**
  * Control panel, statistics, interaction-matrix viewer and population graph.
@@ -31,7 +35,11 @@ export class UI {
     this.followLive = true;
     this.renderedGraph = "";
     this.renderedChronicle = 0;
+    // Which channel the matrix viewer is showing and the shift buttons act on.
+    this.activeChannel = CHANNELS[0];
+    this.buildChannelRow();
     this.bind();
+    this.simulation.refreshBrush();
     this.syncControls();
   }
 
@@ -57,6 +65,16 @@ export class UI {
     });
     elements.resetCameraButton.addEventListener("click", () => this.renderer.resetCamera());
 
+    // Both shift buttons act on whichever channel the viewer is showing.
+    elements.increaseAttractionButton.addEventListener("click", () => {
+      simulation.shiftMatrix(0.1, this.activeChannel.key);
+    });
+    elements.increaseRepelButton.addEventListener("click", () => {
+      simulation.shiftMatrix(-0.1, this.activeChannel.key);
+    });
+
+    this.bindTools();
+
     elements.newSpeciesButton.addEventListener("click", () => {
       simulation.introduceRandomSpecies();
       this.invalidateSpeciesViews();
@@ -71,6 +89,19 @@ export class UI {
     this.bindSlider("rareAdvantageControl", "rareAdvantage");
     this.bindSlider("traitDriftControl", "traitDrift");
     this.bindSlider("birthThresholdControl", "birthThreshold");
+    this.bindSlider("noiseControl", "noise");
+    this.bindSlider("spinControl", "spin");
+    this.bindSlider("alignmentControl", "alignment");
+    this.bindSlider("predationControl", "predation");
+    this.bindSlider("nicheOverlapControl", "nicheOverlap");
+    this.bindSlider("adoptabilityControl", "adoptability");
+    this.bindSlider("clumpabilityControl", "clumpability");
+    this.bindSlider("connectionControl", "connection");
+
+    // The brush lives on the simulation rather than in settings, because it is
+    // a held tool and not a property of the world.
+    this.bindBrushSlider("brushRadiusControl", "radius");
+    this.bindBrushSlider("brushPowerControl", "power");
 
     // Delegated, so it survives every rebuild of the grid.
     elements.matrixView.addEventListener("mouseover", (event) => {
@@ -115,6 +146,87 @@ export class UI {
     elements.graphToggle.addEventListener("change", () => {
       elements.graphPanel.classList.toggle("is-hidden", !elements.graphToggle.checked);
     });
+  }
+
+  /**
+   * Tool selection, by click or by the number keys. The keyboard shortcuts are
+   * deliberately unmodified digits: reaching for the panel to swap between
+   * Attract and Repel while chasing a structure across the world is exactly the
+   * friction that stops anyone from using the tools at all.
+   */
+  bindTools() {
+    const brush = this.simulation.brush;
+    const buttons = Array.from(this.elements.toolRow.querySelectorAll(".tool-button"));
+
+    const select = (tool) => {
+      if (!TOOLS.includes(tool)) return;
+      brush.mode = tool;
+      brush.active = false;
+      this.simulation.refreshBrush();
+      for (const button of buttons) {
+        const isActive = button.dataset.tool === tool;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-checked", isActive ? "true" : "false");
+      }
+      // The canvas cursor is the fastest feedback that a tool is armed.
+      this.renderer.canvas.classList.toggle("has-tool", tool !== "pan");
+    };
+
+    for (const button of buttons) {
+      button.addEventListener("click", () => select(button.dataset.tool));
+    }
+
+    window.addEventListener("keydown", (event) => {
+      // Never steal a digit from a field the user is actually typing into.
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+      const index = Number(event.key) - 1;
+      if (Number.isInteger(index) && index >= 0 && index < TOOLS.length) {
+        select(TOOLS[index]);
+        event.preventDefault();
+      }
+    });
+
+    this.selectTool = select;
+  }
+
+  /**
+   * One button per interaction channel, driving both the matrix viewer and the
+   * two shift buttons underneath it.
+   */
+  buildChannelRow() {
+    const row = this.elements.channelRow;
+    const fragment = document.createDocumentFragment();
+    this.channelButtons = [];
+
+    for (const channel of CHANNELS) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "tool-button";
+      button.setAttribute("role", "radio");
+      button.textContent = channel.label;
+      button.title = channel.note;
+      button.addEventListener("click", () => this.selectChannel(channel));
+      this.channelButtons.push({ channel, button });
+      fragment.appendChild(button);
+    }
+
+    row.innerHTML = "";
+    row.appendChild(fragment);
+    this.selectChannel(this.activeChannel);
+  }
+
+  selectChannel(channel) {
+    this.activeChannel = channel;
+    for (const entry of this.channelButtons) {
+      const isActive = entry.channel === channel;
+      entry.button.classList.toggle("is-active", isActive);
+      entry.button.setAttribute("aria-checked", isActive ? "true" : "false");
+    }
+    // Force a full repaint: every cell now holds a value from a different
+    // matrix, so the paint-diff cache is meaningless.
+    this.renderedMatrixSize = 0;
   }
 
   /** Drag to pan, wheel to zoom about the cursor, button to rejoin the present. */
@@ -231,8 +343,19 @@ export class UI {
     });
   }
 
+  /** Same, for the held brush rather than for the world. */
+  bindBrushSlider(elementKey, brushKey) {
+    const input = this.elements[elementKey];
+    input.addEventListener("input", () => {
+      this.simulation.brush[brushKey] = Number(input.value);
+      this.simulation.refreshBrush();
+      this.syncControls();
+    });
+  }
+
   syncControls() {
     const settings = this.simulation.settings;
+    const brush = this.simulation.brush;
     const elements = this.elements;
     elements.speedValue.value = `${settings.timeScale.toFixed(2)}x`;
     elements.mutationRateValue.value = `${(settings.mutationRate * 100).toFixed(3)}%`;
@@ -242,6 +365,16 @@ export class UI {
     elements.rareAdvantageValue.value = settings.rareAdvantage.toFixed(1);
     elements.traitDriftValue.value = settings.traitDrift === 0 ? "off" : `${settings.traitDrift.toFixed(1)}x`;
     elements.birthThresholdValue.value = Math.round(settings.birthThreshold);
+    elements.noiseValue.value = Math.round(settings.noise);
+    elements.spinValue.value = settings.spin === 0 ? "off" : `${settings.spin.toFixed(2)}x`;
+    elements.alignmentValue.value = settings.alignment === 0 ? "off" : `${settings.alignment.toFixed(2)}x`;
+    elements.predationValue.value = settings.predation === 0 ? "off" : `${settings.predation.toFixed(2)}x`;
+    elements.nicheOverlapValue.value = settings.nicheOverlap.toFixed(2);
+    elements.adoptabilityValue.value = settings.adoptability === 0 ? "off" : `${settings.adoptability.toFixed(2)}x`;
+    elements.clumpabilityValue.value = settings.clumpability === 0 ? "off" : `${settings.clumpability.toFixed(2)}x`;
+    elements.connectionValue.value = settings.connection === 0 ? "off" : `${settings.connection.toFixed(2)}x`;
+    elements.brushRadiusValue.value = Math.round(brush.radius);
+    elements.brushPowerValue.value = Math.round(brush.power);
   }
 
   update(fps) {
@@ -454,10 +587,11 @@ export class UI {
       all.length <= MATRIX_MAX_SPECIES
         ? all
         : all.slice().sort((a, b) => b.population - a.population).slice(0, size);
+    const channel = this.activeChannel;
     this.elements.matrixNote.textContent =
       all.length > size
-        ? `Showing the ${size} most populous of ${all.length} species. Each row is how that species feels about the one in each column. Blue attracts, red repels.`
-        : "Each row is how that species feels about the one in each column. Blue attracts, red repels.";
+        ? `${channel.note} Showing the ${size} most populous of ${all.length} species.`
+        : channel.note;
 
     if (size !== this.renderedMatrixSize) {
       this.buildMatrixGrid(view, size);
@@ -490,16 +624,21 @@ export class UI {
       const rowId = species[row].id;
       for (let column = 0; column < size; column++) {
         const index = row * size + column;
-        const value = manager.getValue(rowId, species[column].id);
+        const value = manager.getChannel(channel.key, rowId, species[column].id);
         if (value === painted[index]) continue;
         painted[index] = value;
 
+        // Normalised against the channel's own range, so a channel that only
+        // spans [-0.3, 0.3] still uses the full colour scale rather than
+        // rendering as an almost uniformly neutral grid.
+        const extent = Math.max(Math.abs(channel.crossMin), Math.abs(channel.crossMax)) || 1;
+        const unit = Math.max(-1, Math.min(1, value / extent));
         const cell = cells[index];
-        const neutral = Math.round((1 - Math.abs(value)) * 200 + 45);
+        const neutral = Math.round((1 - Math.abs(unit)) * 200 + 45);
         cell.style.background =
-          value >= 0
-            ? `rgb(${neutral},${Math.round(95 + value * 120)},${Math.round(155 + value * 85)})`
-            : `rgb(${Math.round(155 + -value * 85)},${neutral},${neutral})`;
+          unit >= 0
+            ? `rgb(${neutral},${Math.round(95 + unit * 120)},${Math.round(155 + unit * 85)})`
+            : `rgb(${Math.round(155 + -unit * 85)},${neutral},${neutral})`;
       }
     }
   }
@@ -511,8 +650,8 @@ export class UI {
     const row = species[cell.cellRow];
     const column = species[cell.cellColumn];
     if (!row || !column) return;
-    const value = this.simulation.speciesManager.getValue(row.id, column.id);
-    cell.title = `${row.name} → ${column.name}: ${value.toFixed(2)}`;
+    const value = this.simulation.speciesManager.getChannel(this.activeChannel.key, row.id, column.id);
+    cell.title = `${row.name} → ${column.name} · ${this.activeChannel.label}: ${value.toFixed(2)}`;
   }
 
   /** One header row, then one header cell plus `size` value cells per row. */
@@ -642,6 +781,7 @@ function collectElements() {
   const ids = [
     "particleCount", "speciesCount", "mutationCount", "fps",
     "pauseButton", "resetButton", "randomizeButton", "resetCameraButton",
+    "increaseAttractionButton", "increaseRepelButton",
     "speedControl", "speedValue",
     "mutationRateControl", "mutationRateValue",
     "radiusControl", "radiusValue",
@@ -650,6 +790,17 @@ function collectElements() {
     "rareAdvantageControl", "rareAdvantageValue",
     "traitDriftControl", "traitDriftValue",
     "birthThresholdControl", "birthThresholdValue",
+    "noiseControl", "noiseValue",
+    "spinControl", "spinValue",
+    "alignmentControl", "alignmentValue",
+    "predationControl", "predationValue",
+    "nicheOverlapControl", "nicheOverlapValue",
+    "adoptabilityControl", "adoptabilityValue",
+    "clumpabilityControl", "clumpabilityValue",
+    "connectionControl", "connectionValue",
+    "toolRow", "channelRow",
+    "brushRadiusControl", "brushRadiusValue",
+    "brushPowerControl", "brushPowerValue",
     "newSpeciesButton",
     "matrixToggle", "graphToggle", "matrixPanel", "graphPanel",
     "matrixView", "matrixNote", "populationGraph", "speciesList",

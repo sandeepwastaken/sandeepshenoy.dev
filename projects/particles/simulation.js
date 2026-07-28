@@ -1,13 +1,18 @@
 import { CONFIG } from "./config.js";
 import { ParticlePool } from "./particle.js";
 import { stepPhysics } from "./physics.js";
-import { SpeciesManager } from "./species.js";
+import { CHANNELS, SpeciesManager } from "./species.js";
 import { SpatialGrid } from "./spatialGrid.js";
 import { Chronicle } from "./chronicle.js";
 import { decodeTypedArray, encodeTypedArray, random, randomRange, randomState, rgbColor, seedRandom, setRandomState, wrap } from "./utils.js";
 
-/** Bumped whenever the save layout changes in a way older files cannot satisfy. */
-const SAVE_VERSION = 1;
+/**
+ * Bumped whenever the save layout changes in a way older files cannot satisfy.
+ * Version 2 added the spin, feeding and alignment channels and the per-species
+ * reach trait — a version 1 world has no values for any of them, and inventing
+ * some on load would restore a world that behaves nothing like the saved one.
+ */
+const SAVE_VERSION = 5;
 
 /** Resolution of the cached resource field. Hotspots are broad and slow, so a
  *  coarse grid is indistinguishable from evaluating them exactly. */
@@ -77,6 +82,16 @@ export class Simulation {
     this.settings = {
       interactionRadius: CONFIG.interactionRadius,
       noise: CONFIG.noise,
+      // Global multipliers on the three channels layered over the radial force.
+      // At zero each one is skipped entirely in the hot loop, so turning a
+      // channel off is also the cheapest the world can run.
+      spin: 1,
+      alignment: 1,
+      predation: 1,
+      nicheOverlap: CONFIG.nicheOverlap,
+      adoptability: 1,
+      clumpability: 1,
+      connection: 1,
       energyGain: CONFIG.energyGain,
       energyLoss: CONFIG.energyLoss,
       baseEnergyDrain: CONFIG.baseEnergyDrain,
@@ -85,6 +100,24 @@ export class Simulation {
       rareAdvantage: CONFIG.rareAdvantageStrength,
       traitDrift: 1,
       timeScale: CONFIG.timeScale
+    };
+
+    /**
+     * The cursor, as a force in the world. Owned here rather than by the
+     * climate so that resetting or loading a world does not drop the tool the
+     * user is holding; `createClimate` only ever borrows a reference to it.
+     */
+    this.brush = {
+      active: false,
+      mode: "pan",
+      x: 0,
+      y: 0,
+      radius: CONFIG.brushRadius,
+      // `power` is what the slider sets; `strength` and `swirl` are what the
+      // physics loop reads, derived from power and mode by `refreshBrush`.
+      power: CONFIG.brushStrength,
+      strength: 0,
+      swirl: false
     };
 
     this.climate = this.createClimate();
@@ -118,13 +151,34 @@ export class Simulation {
     this.speciesManager.reset(0);
     this.climate = this.createClimate();
 
-    // Every species is scattered over the whole world rather than given its own
-    // colony. Mixing is what lets inter-species structure — membranes, chains,
-    // rings, chases — form at all; segregated colonies just become monocultures.
     for (const species of this.speciesManager.species) {
-      this.scatterSpecies(species.id, CONFIG.initialParticlesPerSpecies);
+      this.seedSpecies(species.id, CONFIG.initialParticlesPerSpecies);
     }
     this.speciesManager.recordPopulation(this.pool, 0);
+  }
+
+  /**
+   * Seed a species as a few patches plus a scattering of drifters.
+   *
+   * The world used to open with every species sprinkled uniformly, on the
+   * reasoning that mixing is what produces inter-species structure. That is
+   * true, but a perfect mix is not a mix — it is a homogeneous soup, and no
+   * region of it is ever coherent enough to condense into anything before it is
+   * stirred flat again. Patches give each lineage somewhere to actually build,
+   * the drifters guarantee the patches find each other, and the boundaries
+   * where they meet are exactly where the niche-overlap term pays best.
+   */
+  seedSpecies(speciesId, count) {
+    const world = CONFIG.worldSize;
+    const drifters = Math.round(count * CONFIG.initialDrifterFraction);
+    const patchCount = Math.max(1, CONFIG.initialPatchesPerSpecies);
+    const perPatch = Math.floor((count - drifters) / patchCount);
+    const spread = world * CONFIG.initialPatchRadiusRatio;
+
+    for (let patch = 0; patch < patchCount; patch++) {
+      this.spawnColony(speciesId, random() * world, random() * world, perPatch, spread, 0);
+    }
+    this.scatterSpecies(speciesId, drifters);
   }
 
   /** Sprinkle a species uniformly across the entire world. */
@@ -169,12 +223,20 @@ export class Simulation {
     }
     return {
       hotspots,
+      // Temporary richness dropped by the Feed brush. Each entry decays on its
+      // own half-life and is folded into the same cached field the permanent
+      // hotspots are, so feeding the world costs the physics loop nothing.
+      drops: [],
+      brush: this.brush,
       windX: 0,
       windY: 0,
       resourcePulse: 1,
       // The world's shared larder: starts full so the founders get a good run.
       foodStock: CONFIG.foodStockMax,
       foodShare: 1,
+      // The world's average mixedness, written by the physics pass and used as
+      // the baseline that makes niche overlap zero-sum.
+      meanForeignFraction: 0,
       speciesDemand: new Float32Array(64),
       richnessField: new Float32Array(RICHNESS_COLS * RICHNESS_COLS).fill(1),
       richnessCols: RICHNESS_COLS,
@@ -202,6 +264,16 @@ export class Simulation {
       hotspot.y = wrap(hotspot.baseY + Math.sin(time * drift * 0.83 + hotspot.phase * 1.31) * hotspot.orbit, world);
     }
 
+    // Hand-placed food fades on its own half-life; expired drops are dropped.
+    if (climate.drops.length > 0) {
+      const decay = Math.pow(0.5, dt / CONFIG.brushFeedHalfLife);
+      for (let index = climate.drops.length - 1; index >= 0; index--) {
+        const drop = climate.drops[index];
+        drop.strength *= decay;
+        if (drop.strength < 0.02) climate.drops.splice(index, 1);
+      }
+    }
+
     climate.richnessAge += dt;
     if (climate.richnessAge >= RICHNESS_REFRESH_SECONDS) {
       climate.richnessAge = 0;
@@ -209,6 +281,236 @@ export class Simulation {
     }
 
     this.updateFoodMarket(dt);
+  }
+
+  /** Recompute the derived force terms after the mode or the power changes. */
+  refreshBrush() {
+    const brush = this.brush;
+    brush.swirl = brush.mode === "stir";
+    if (brush.mode === "attract" || brush.mode === "stir") brush.strength = brush.power;
+    else if (brush.mode === "repel") brush.strength = -brush.power;
+    // Feed, Seed and Erase change the world's contents rather than push it, so
+    // they exert no force at all — see `applyBrush`.
+    else brush.strength = 0;
+  }
+
+  /**
+   * Per-tick work for the brushes that change the world rather than push it.
+   * The force brushes are applied inside the physics integration, where the
+   * particle's position is already in a register; these two are not, because
+   * they add and remove particles and so cannot run mid-step.
+   */
+  applyBrush(dt) {
+    const brush = this.brush;
+    if (!brush.active) return;
+
+    if (brush.mode === "erase") {
+      const pool = this.pool;
+      const species = this.speciesManager.species;
+      const world = CONFIG.worldSize;
+      const halfWorld = world * 0.5;
+      const radiusSquared = brush.radius * brush.radius;
+      for (let i = pool.count - 1; i >= 0; i--) {
+        let dx = pool.x[i] - brush.x;
+        let dy = pool.y[i] - brush.y;
+        if (dx > halfWorld) dx -= world; else if (dx < -halfWorld) dx += world;
+        if (dy > halfWorld) dy -= world; else if (dy < -halfWorld) dy += world;
+        if (dx * dx + dy * dy >= radiusSquared) continue;
+        species[pool.species[i]].deaths++;
+        this.deaths++;
+        pool.remove(i);
+      }
+      return;
+    }
+
+    if (brush.mode === "zap") {
+      const pool = this.pool;
+      const world = CONFIG.worldSize;
+      const halfWorld = world * 0.5;
+      const radiusSquared = brush.radius * brush.radius;
+      const zapRadius = brush.radius * 0.5;
+      const zapRadiusSq = zapRadius * zapRadius;
+      const nearby = [];
+      for (let i = 0; i < pool.count; i++) {
+        let dx = pool.x[i] - brush.x;
+        let dy = pool.y[i] - brush.y;
+        if (dx > halfWorld) dx -= world; else if (dx < -halfWorld) dx += world;
+        if (dy > halfWorld) dy -= world; else if (dy < -halfWorld) dy += world;
+        if (dx * dx + dy * dy < radiusSquared) nearby.push(i);
+      }
+      const rest = this.settings.interactionRadius * CONFIG.connectionRestRadius;
+      let formed = 0;
+      for (let a = 0; a < nearby.length && formed < 8; a++) {
+        const i = nearby[a];
+        if (pool.link[i] >= 0 && pool.linkB[i] >= 0) continue;
+        for (let b = a + 1; b < nearby.length && formed < 8; b++) {
+          const j = nearby[b];
+          if (pool.link[j] >= 0 && pool.linkB[j] >= 0) continue;
+          let dx = pool.x[j] - pool.x[i];
+          let dy = pool.y[j] - pool.y[i];
+          if (dx > halfWorld) dx -= world; else if (dx < -halfWorld) dx += world;
+          if (dy > halfWorld) dy -= world; else if (dy < -halfWorld) dy += world;
+          if (dx * dx + dy * dy > zapRadiusSq) continue;
+          if (pool.link[i] === j || pool.linkB[i] === j) continue;
+          const slotI = pool.link[i] < 0 ? 0 : pool.linkB[i] < 0 ? 1 : -1;
+          const slotJ = pool.link[j] < 0 ? 0 : pool.linkB[j] < 0 ? 1 : -1;
+          if (slotI < 0 || slotJ < 0) continue;
+          const phase = Math.random() * Math.PI * 2;
+          if (slotI === 0) { pool.link[i] = j; pool.linkRest[i] = rest; pool.linkPhase[i] = phase; }
+          else { pool.linkB[i] = j; pool.linkRestB[i] = rest; pool.linkPhaseB[i] = phase; }
+          if (slotJ === 0) { pool.link[j] = i; pool.linkRest[j] = rest; pool.linkPhase[j] = phase; }
+          else { pool.linkB[j] = i; pool.linkRestB[j] = rest; pool.linkPhaseB[j] = phase; }
+          formed++;
+        }
+      }
+      return;
+    }
+
+    if (brush.mode === "feed") {
+      // One drop per brush radius, rather than one per frame: holding the
+      // button down should enrich a region, not stack sixty overlapping
+      // hotspots on the same pixel and pin the field at its ceiling.
+      const drops = this.climate.drops;
+      const world = CONFIG.worldSize;
+      const halfWorld = world * 0.5;
+      for (const drop of drops) {
+        let dx = drop.x - brush.x;
+        let dy = drop.y - brush.y;
+        if (dx > halfWorld) dx -= world; else if (dx < -halfWorld) dx += world;
+        if (dy > halfWorld) dy -= world; else if (dy < -halfWorld) dy += world;
+        if (dx * dx + dy * dy < drop.radiusSquared * 0.25) {
+          drop.strength = CONFIG.brushFeedRichness;
+          return;
+        }
+      }
+      if (drops.length >= CONFIG.brushFeedMax) drops.shift();
+      drops.push({
+        x: brush.x,
+        y: brush.y,
+        radiusSquared: brush.radius * brush.radius,
+        strength: CONFIG.brushFeedRichness
+      });
+      this.climate.richnessAge = RICHNESS_REFRESH_SECONDS;
+    }
+  }
+
+  processClumps(dt) {
+    const pool = this.pool;
+    const count = pool.count;
+    const clumpScale = this.settings.clumpability;
+    if (count === 0 || clumpScale === 0) return;
+
+    const species = this.speciesManager;
+    const clump = species.clumpability;
+    const clumpMat = species.clump;
+    const clumpStride = species.stride;
+    const mass = pool.mass;
+    const px = pool.x;
+    const py = pool.y;
+    const pvx = pool.vx;
+    const pvy = pool.vy;
+    const pEnergy = pool.energy;
+    const pAge = pool.age;
+    const pSpecies = pool.species;
+
+    const grid = this.grid;
+    const cols = grid.cols;
+    const rows = grid.rows;
+    const cellStart = grid.cellStart;
+
+    const worldSize = CONFIG.worldSize;
+    const halfWorld = worldSize * 0.5;
+    const maxMass = CONFIG.clumpMaxMass;
+    const interactionRadius = this.settings.interactionRadius;
+    const mergeRadius = interactionRadius * CONFIG.coreRadiusRatio * CONFIG.clumpMergeRadius;
+    const mergeRadiusSq = mergeRadius * mergeRadius;
+    const mergeChance = CONFIG.clumpMergeChance * Math.abs(clumpScale);
+
+    const absorbed = new Uint8Array(count);
+
+    for (let cell = 0; cell < cols * rows; cell++) {
+      const start = cellStart[cell];
+      const end = cellStart[cell + 1];
+
+      for (let i = start; i < end; i++) {
+        if (absorbed[i]) continue;
+        const specI = pSpecies[i];
+        const clumpI = (clump[specI] * 0.5 + clumpMat[specI * clumpStride + specI] * 0.5) * clumpScale;
+        if (clumpI <= 0 || mass[i] >= maxMass) continue;
+
+        for (let j = i + 1; j < end; j++) {
+          if (absorbed[j] || pSpecies[j] !== specI) continue;
+          if (mass[i] + mass[j] > maxMass) continue;
+
+          let dx = px[j] - px[i];
+          let dy = py[j] - py[i];
+          if (dx > halfWorld) dx -= worldSize; else if (dx < -halfWorld) dx += worldSize;
+          if (dy > halfWorld) dy -= worldSize; else if (dy < -halfWorld) dy += worldSize;
+
+          if (dx * dx + dy * dy > mergeRadiusSq) continue;
+          if (random() > mergeChance * dt) continue;
+
+          const totalMass = mass[i] + mass[j];
+          const wj = mass[j] / totalMass;
+          px[i] = wrap(px[i] + dx * wj, worldSize);
+          py[i] = wrap(py[i] + dy * wj, worldSize);
+          pvx[i] = pvx[i] * (1 - wj) + pvx[j] * wj;
+          pvy[i] = pvy[i] * (1 - wj) + pvy[j] * wj;
+          pEnergy[i] += pEnergy[j];
+          pAge[i] = Math.max(pAge[i], pAge[j]);
+          mass[i] = totalMass;
+          pool.link[i] = -1;
+          pool.linkB[i] = -1;
+          pool.linkRest[i] = 0;
+          pool.linkRestB[i] = 0;
+          pool.linkPhase[i] = 0;
+          pool.linkPhaseB[i] = 0;
+          pool.link[j] = -1;
+          pool.linkB[j] = -1;
+          pool.linkRest[j] = 0;
+          pool.linkRestB[j] = 0;
+          pool.linkPhase[j] = 0;
+          pool.linkPhaseB[j] = 0;
+          absorbed[j] = 1;
+
+          if (mass[i] >= maxMass) break;
+        }
+      }
+    }
+
+    for (let i = count - 1; i >= 0; i--) {
+      if (absorbed[i]) pool.remove(i);
+    }
+
+    for (let i = pool.count - 1; i >= 0; i--) {
+      const specI = pSpecies[i];
+      const clumpI = (clump[specI] * 0.5 + clumpMat[specI * clumpStride + specI] * 0.5) * clumpScale;
+      if (clumpI >= 0 || mass[i] <= 1) continue;
+      if (random() > -clumpI * CONFIG.clumpSplitChance * dt) continue;
+
+      const splitEnergy = pEnergy[i] / mass[i];
+      mass[i]--;
+      pEnergy[i] -= splitEnergy;
+      const childIndex = pool.spawn(
+        wrap(px[i] + randomRange(-5, 5), worldSize),
+        wrap(py[i] + randomRange(-5, 5), worldSize),
+        pvx[i] + randomRange(-15, 15),
+        pvy[i] + randomRange(-15, 15),
+        splitEnergy,
+        specI,
+        pool.generation[i]
+      );
+      if (childIndex >= 0) {
+        pool.mass[childIndex] = 1;
+        pool.age[childIndex] = pAge[i];
+        pool.link[i] = -1;
+        pool.linkB[i] = -1;
+        pool.linkRest[i] = 0;
+        pool.linkRestB[i] = 0;
+        pool.linkPhase[i] = 0;
+        pool.linkPhaseB[i] = 0;
+      }
+    }
   }
 
   /**
@@ -224,6 +526,7 @@ export class Simulation {
     const halfWorld = world * 0.5;
     const cellSize = world / cols;
     const hotspots = climate.hotspots;
+    const drops = climate.drops;
 
     for (let row = 0; row < cols; row++) {
       const y = (row + 0.5) * cellSize;
@@ -237,6 +540,14 @@ export class Simulation {
           if (dx > halfWorld) dx -= world; else if (dx < -halfWorld) dx += world;
           if (dy > halfWorld) dy -= world; else if (dy < -halfWorld) dy += world;
           richness += hotspot.strength * Math.exp(-(dx * dx + dy * dy) / hotspot.radiusSquared);
+        }
+        for (let index = 0; index < drops.length; index++) {
+          const drop = drops[index];
+          let dx = x - drop.x;
+          let dy = y - drop.y;
+          if (dx > halfWorld) dx -= world; else if (dx < -halfWorld) dx += world;
+          if (dy > halfWorld) dy -= world; else if (dy < -halfWorld) dy += world;
+          richness += drop.strength * Math.exp(-(dx * dx + dy * dy) / drop.radiusSquared);
         }
         field[row * cols + column] = richness * climate.resourcePulse;
       }
@@ -284,7 +595,9 @@ export class Simulation {
     }
 
     // Average richness is ~1 by construction, so the stock only needs to cover
-    // the nominal bid; local variation is settled against the same stock.
+    // the nominal bid; local variation is settled against the same stock. Niche
+    // overlap needs no correction here because it is zero-sum — average grazing
+    // efficiency is 1 by construction. See the note in physics.js.
     const available = climate.foodStock + CONFIG.foodRegenPerSecond * this.settings.energyGain * dt;
     const requested = totalDemand * dt;
     climate.foodShare = requested > 0 ? Math.min(1, available / requested) : 1;
@@ -345,6 +658,11 @@ export class Simulation {
     }
 
     this.updateClimate(dt);
+    // Cell size is the full interaction radius, which is the widest any species
+    // can reach: `reach` only ever scales it *down* (CONFIG.reachMax is 1). If
+    // that ever stops being true the grid has to be configured against the
+    // largest reach in the registry instead, or long-reach species will start
+    // missing neighbours that sit two cells away.
     this.grid.configure(this.settings.interactionRadius);
     this.grid.rebuild(this.pool);
 
@@ -357,6 +675,8 @@ export class Simulation {
       Math.max(0, climate.foodStock + CONFIG.foodRegenPerSecond * this.settings.energyGain * dt - consumed)
     );
 
+    this.applyBrush(dt);
+    this.processClumps(dt);
     this.updateLifeCycle(dt);
 
     if (this.sampleAccumulator >= CONFIG.statsSampleSeconds) {
@@ -587,11 +907,20 @@ export class Simulation {
         age: encodeTypedArray(pool.age.slice(0, count)),
         maxAge: encodeTypedArray(pool.maxAge.slice(0, count)),
         species: encodeTypedArray(pool.species.slice(0, count)),
-        generation: encodeTypedArray(pool.generation.slice(0, count))
+        generation: encodeTypedArray(pool.generation.slice(0, count)),
+        mass: encodeTypedArray(pool.mass.slice(0, count))
       },
       species: {
         stride: manager.stride,
-        values: encodeTypedArray(manager.values),
+        // One base64 blob per channel, under its own key, so a future channel
+        // is an additive change to the format rather than a re-layout of it.
+        channels: Object.fromEntries(
+          CHANNELS.map((channel) => [channel.key, encodeTypedArray(manager[channel.key])])
+        ),
+        reach: encodeTypedArray(manager.reach),
+        adoptability: encodeTypedArray(manager.adoptability),
+        clumpability: encodeTypedArray(manager.clumpability),
+        connection: encodeTypedArray(manager.connection),
         sampleIndex: manager.sampleIndex,
         rootCount: manager.rootCount,
         cladeCounts: manager.cladeCounts.slice(),
@@ -601,6 +930,7 @@ export class Simulation {
       },
       climate: {
         hotspots: this.climate.hotspots.map((spot) => ({ ...spot })),
+        drops: this.climate.drops.map((drop) => ({ ...drop })),
         foodStock: this.climate.foodStock,
         foodShare: this.climate.foodShare,
         richnessAge: this.climate.richnessAge,
@@ -622,7 +952,7 @@ export class Simulation {
   }
 
   restore(data) {
-    if (!data || data.version !== SAVE_VERSION) {
+    if (!data || (data.version !== SAVE_VERSION && data.version !== 4 && data.version !== 3 && data.version !== 2)) {
       throw new Error(`Unsupported save format (expected version ${SAVE_VERSION}, got ${data && data.version})`);
     }
 
@@ -635,6 +965,7 @@ export class Simulation {
     this.lastSpeciationAt = data.lastSpeciationAt === null ? -Infinity : data.lastSpeciationAt;
     this.lastReseedAt = data.lastReseedAt === null ? -Infinity : data.lastReseedAt;
     Object.assign(this.settings, data.settings);
+    if (this.settings.connection === undefined) this.settings.connection = 1;
 
     const pool = this.pool;
     const count = data.particles.count;
@@ -649,11 +980,42 @@ export class Simulation {
     pool.maxAge.set(decodeTypedArray(data.particles.maxAge, Float32Array));
     pool.species.set(decodeTypedArray(data.particles.species, Int32Array));
     pool.generation.set(decodeTypedArray(data.particles.generation, Int32Array));
+    if (data.particles.mass) {
+      pool.mass.set(decodeTypedArray(data.particles.mass, Uint8Array));
+    } else {
+      pool.mass.fill(1, 0, count);
+    }
+    pool.link.fill(-1, 0, count);
+    pool.linkB.fill(-1, 0, count);
+    pool.linkRest.fill(0, 0, count);
+    pool.linkRestB.fill(0, 0, count);
+    pool.linkPhase.fill(0, 0, count);
+    pool.linkPhaseB.fill(0, 0, count);
     pool.count = count;
 
     const manager = this.speciesManager;
     manager.stride = data.species.stride;
-    manager.values = decodeTypedArray(data.species.values, Float32Array);
+    for (const channel of CHANNELS) {
+      manager[channel.key] = data.species.channels[channel.key]
+        ? decodeTypedArray(data.species.channels[channel.key], Float32Array)
+        : new Float32Array(manager.stride * manager.stride);
+    }
+    manager.reach = decodeTypedArray(data.species.reach, Float32Array);
+    if (data.species.adoptability) {
+      manager.adoptability = decodeTypedArray(data.species.adoptability, Float32Array);
+    } else {
+      manager.adoptability = new Float32Array(manager.stride);
+    }
+    if (data.species.clumpability) {
+      manager.clumpability = decodeTypedArray(data.species.clumpability, Float32Array);
+    } else {
+      manager.clumpability = new Float32Array(manager.stride);
+    }
+    if (data.species.connection) {
+      manager.connection = decodeTypedArray(data.species.connection, Float32Array);
+    } else {
+      manager.connection = new Float32Array(manager.stride);
+    }
     manager.sampleIndex = data.species.sampleIndex;
     manager.rootCount = data.species.rootCount;
     manager.cladeCounts = data.species.cladeCounts.slice();
@@ -666,6 +1028,7 @@ export class Simulation {
 
     this.climate = this.createClimate();
     this.climate.hotspots = data.climate.hotspots.map((spot) => ({ ...spot }));
+    this.climate.drops = (data.climate.drops || []).map((drop) => ({ ...drop }));
     this.climate.foodStock = data.climate.foodStock;
     this.climate.foodShare = data.climate.foodShare;
     this.climate.richnessAge = data.climate.richnessAge;
@@ -682,8 +1045,32 @@ export class Simulation {
     setRandomState(data.rngState);
   }
 
-  randomizeMatrix() {
-    this.speciesManager.randomizeMatrix();
+  randomizeMatrix(channelKey = null) {
+    this.speciesManager.randomizeMatrix(channelKey);
+  }
+
+  shiftMatrix(delta, channelKey = "values") {
+    this.speciesManager.shiftMatrix(delta, channelKey);
+  }
+
+  /**
+   * Drop a small colony wherever the cursor is. Seeds the lineage the user is
+   * currently following if there is one, so "watch this species, then put some
+   * of it over there" is a single gesture; otherwise it picks a living species
+   * at random.
+   */
+  seedAt(x, y, speciesId = null) {
+    const registry = this.speciesManager.species;
+    if (registry.length === 0) return null;
+    const counts = this.censusBySpecies();
+    let target = speciesId !== null && registry[speciesId] ? registry[speciesId] : null;
+    if (!target) {
+      const living = registry.filter((species) => counts[species.id] > 0);
+      const pool = living.length > 0 ? living : registry;
+      target = pool[Math.floor(random() * pool.length)];
+    }
+    this.spawnColony(target.id, wrap(x, CONFIG.worldSize), wrap(y, CONFIG.worldSize), CONFIG.founderColonySize, CONFIG.founderColonyRadius, 0);
+    return target;
   }
 
   /** A new founder with no ancestry, dropped in as a colony. Returns it. */

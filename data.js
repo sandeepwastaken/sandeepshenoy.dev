@@ -27,28 +27,38 @@ window.SITE = {
       href: "/projects/particles",
       thumb: "/images/thumbnails/particle.png",
       accent: "#6d5cff",
-      date: "2025-05-10",
+      date: "2026-07-25",
       tags: ["Emergence", "Simulation"]
     },
     {
-      title: "Estato",
-      blurb: "Real-estate app",
-      role: "iOS / React Native",
-      href: "https://example.com/estato",
-      thumb: "",
+      title: "Rouse SciOly Site",
+      blurb: "Team-tailored site",
+      role: "HTML + CSS + JS",
+      href: "https://rousescioly.github.io/",
+      thumb: "/images/thumbnails/scioly.png",
       accent: "#2b6cff",
-      date: "2025-02-18",
-      tags: ["Mobile", "App"]
+      date: "2025-12-25",
+      tags: ["UI/UX Design", "Modern"]
     },
     {
-      title: "MB Music Academy",
-      blurb: "Marketing site",
-      role: "Design & front-end",
-      href: "https://example.com/mbma",
-      thumb: "",
+      title: "Cud",
+      blurb: "Transformer model built within the restrictions of block-coding",
+      role: "Scratch",
+      href: "https://scratch.mit.edu/projects/1362191743/",
+      thumb: "/images/thumbnails/cud.png",
       accent: "#e7b53a",
-      date: "2024-11-02",
-      tags: ["Web", "Brand"]
+      date: "2026-06-05",
+      tags: ["Limitations", "Block Coding"]
+    },
+    {
+      title: "Vestige",
+      blurb: "Never miss another gaming moment",
+      role: "Swift",
+      href: "https://github.com/sandeepwastaken/vestige",
+      thumb: "/images/thumbnails/vestige.png",
+      accent: "#12303a",
+      date: "2026-07-24",
+      tags: ["Gaming", "Clipping"]
     },
     {
       title: "Generative Series",
@@ -59,7 +69,27 @@ window.SITE = {
       accent: "#12303a",
       date: "2024-08-24",
       tags: ["Creative", "WebGL"]
-    }
+    },
+    {
+      title: "Generative Series",
+      blurb: "Code-driven art",
+      role: "Personal · WebGL",
+      href: "/gallery/",
+      thumb: "",
+      accent: "#12303a",
+      date: "2024-08-24",
+      tags: ["Creative", "WebGL"]
+    },
+    {
+      title: "Generative Series",
+      blurb: "Code-driven art",
+      role: "Personal · WebGL",
+      href: "/gallery/",
+      thumb: "",
+      accent: "#12303a",
+      date: "2024-08-24",
+      tags: ["Creative", "WebGL"]
+    },
   ],
 
   gallery: [

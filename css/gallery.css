@@ -11,6 +11,10 @@ body.gallery-page {
   background: var(--gallery-ink);
   color: var(--gallery-text);
   overflow-x: hidden;
+  /* the whole page IS the scroll track — don't let a pull-at-the-top
+     turn into a page refresh mid-walk */
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .gallery-shell {
@@ -28,7 +32,10 @@ body.gallery-page {
   width: 100%;
   height: 100%;
   display: block;
-  touch-action: none;
+  /* pan-y, NOT none: the canvas covers the viewport, so `none` meant a
+     finger drag reached nothing scrollable and the hall never moved on
+     touch. Vertical panning is the entire interface here. */
+  touch-action: pan-y;
 }
 
 .gallery-shell::after {
@@ -135,9 +142,14 @@ body.gallery-page {
   box-shadow: 0 0 18px rgba(240,177,111,.52);
 }
 
+/* the track the hall is driven by. The tail is one viewport tall in *dvh*
+   so a phone's collapsing address bar can't strand the last bay. */
 .scroll-spacer {
   width: 1px;
-  height: 240000px;
+  height: calc(var(--gallery-track, 240000px) + 100vh);
+}
+@supports (height: 100dvh) {
+  .scroll-spacer { height: calc(var(--gallery-track, 240000px) + 100dvh); }
 }
 
 .gallery-top { z-index: 20; }

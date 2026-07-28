@@ -34,7 +34,7 @@
         <header class="panel-header">
           <div>
             <h1>Particle Life Evolution</h1>
-            <p>Six founding species on an endless torus. Asymmetric forces, energy, reproduction, mutation, extinction.</p>
+            <p>Six founding species on an endless torus. Five asymmetric interaction channels — force, spin, feeding, alignment, chainability — plus energy, reproduction, mutation and extinction.</p>
           </div>
         </header>
 
@@ -54,6 +54,62 @@
         </div>
         <p id="actionStatus" class="action-status" role="status" aria-live="polite"></p>
 
+        <section class="panel-section" aria-label="World tools">
+          <div class="section-title">Tools</div>
+          <p class="section-note">Drag on the world to use a tool. Shift-drag or middle-drag always pans.</p>
+          <div id="toolRow" class="tool-row" role="radiogroup" aria-label="Active tool">
+            <button type="button" class="tool-button is-active" data-tool="pan" role="radio" aria-checked="true" title="Drag to pan the view (1)"><span class="tool-glyph">✥</span>Pan</button>
+            <button type="button" class="tool-button" data-tool="attract" role="radio" aria-checked="false" title="Pull particles toward the cursor (2)"><span class="tool-glyph">◉</span>Attract</button>
+            <button type="button" class="tool-button" data-tool="repel" role="radio" aria-checked="false" title="Push particles away from the cursor (3)"><span class="tool-glyph">◎</span>Repel</button>
+            <button type="button" class="tool-button" data-tool="stir" role="radio" aria-checked="false" title="Swirl particles around the cursor (4)"><span class="tool-glyph">↻</span>Stir</button>
+            <button type="button" class="tool-button" data-tool="feed" role="radio" aria-checked="false" title="Drop a patch of food that fades over time (5)"><span class="tool-glyph">✿</span>Feed</button>
+            <button type="button" class="tool-button" data-tool="seed" role="radio" aria-checked="false" title="Click to drop a colony — the selected species if one is highlighted (6)"><span class="tool-glyph">✦</span>Seed</button>
+            <button type="button" class="tool-button" data-tool="erase" role="radio" aria-checked="false" title="Wipe out everything under the cursor (7)"><span class="tool-glyph">⌫</span>Erase</button>
+            <button type="button" class="tool-button" data-tool="zap" role="radio" aria-checked="false" title="Force chain connections between nearby particles (8)"><span class="tool-glyph">⚡</span>Zap</button>
+          </div>
+          <div class="controls-grid">
+            <label>
+              <span>Brush Size <output id="brushRadiusValue">150</output></span>
+              <input id="brushRadiusControl" type="range" min="40" max="520" value="150" step="10">
+            </label>
+            <label>
+              <span>Brush Strength <output id="brushPowerValue">2600</output></span>
+              <input id="brushPowerControl" type="range" min="200" max="9000" value="2600" step="100">
+            </label>
+          </div>
+        </section>
+
+        <section class="controls-grid" aria-label="Interaction channels">
+          <label>
+            <span>Spin <output id="spinValue">1.00x</output></span>
+            <input id="spinControl" type="range" min="0" max="2.5" value="1" step="0.05">
+          </label>
+          <label>
+            <span>Alignment <output id="alignmentValue">1.00x</output></span>
+            <input id="alignmentControl" type="range" min="0" max="3" value="1" step="0.05">
+          </label>
+          <label>
+            <span>Predation <output id="predationValue">1.00x</output></span>
+            <input id="predationControl" type="range" min="0" max="2.5" value="1" step="0.05">
+          </label>
+          <label>
+            <span>Niche Overlap <output id="nicheOverlapValue">0.50</output></span>
+            <input id="nicheOverlapControl" type="range" min="0" max="0.9" value="0.5" step="0.05">
+          </label>
+          <label>
+            <span>Adoptability <output id="adoptabilityValue">1.00x</output></span>
+            <input id="adoptabilityControl" type="range" min="0" max="2.5" value="1" step="0.05">
+          </label>
+          <label>
+            <span>Clumpability <output id="clumpabilityValue">1.00x</output></span>
+            <input id="clumpabilityControl" type="range" min="0" max="2.5" value="1" step="0.05">
+          </label>
+          <label>
+            <span>Chainability <output id="connectionValue">1.00x</output></span>
+            <input id="connectionControl" type="range" min="0" max="2.5" value="1" step="0.05">
+          </label>
+        </section>
+
         <section class="controls-grid" aria-label="Tunable parameters">
           <label>
             <span>Simulation Speed <output id="speedValue">1.00x</output></span>
@@ -61,11 +117,11 @@
           </label>
           <label>
             <span>Mutation Rate <output id="mutationRateValue">0.05%</output></span>
-            <input id="mutationRateControl" type="range" min="0" max="0.01" value="0.0006" step="0.00005">
+            <input id="mutationRateControl" type="range" min="0" max="0.2" value="0.0006" step="0.00005">
           </label>
           <label>
             <span>Interaction Radius <output id="radiusValue">50</output></span>
-            <input id="radiusControl" type="range" min="30" max="120" value="50" step="2">
+            <input id="radiusControl" type="range" min="30" max="300" value="50" step="2">
           </label>
           <label>
             <span>Food Supply <output id="energyGainValue">1.00</output></span>
@@ -86,6 +142,10 @@
           <label>
             <span>Birth Threshold <output id="birthThresholdValue">150</output></span>
             <input id="birthThresholdControl" type="range" min="80" max="300" value="150" step="5">
+          </label>
+          <label>
+            <span>Temperature <output id="noiseValue">170</output></span>
+            <input id="noiseControl" type="range" min="0" max="420" value="170" step="10">
           </label>
         </section>
 
@@ -119,7 +179,16 @@
 
         <section id="matrixPanel" class="panel-section" aria-label="Interaction matrix">
           <div class="section-title">Interaction Matrix</div>
-          <p id="matrixNote" class="section-note">Each row is how that species feels about the one in each column. Blue attracts, red repels.</p>
+          <div id="channelRow" class="tool-row is-compact" role="radiogroup" aria-label="Matrix channel"></div>
+          <p id="matrixNote" class="section-note">Each row is how that species feels about the one in each column.</p>
+          <div class="button-row">
+            <button id="increaseAttractionButton" type="button" class="shift-button is-attract" title="Shift every value on this channel up by 0.1">
+              <span class="shift-icon" aria-hidden="true">⊕</span> Shift Up
+            </button>
+            <button id="increaseRepelButton" type="button" class="shift-button is-repel" title="Shift every value on this channel down by 0.1">
+              <span class="shift-icon" aria-hidden="true">⊖</span> Shift Down
+            </button>
+          </div>
           <div id="matrixView" class="matrix-view"></div>
         </section>
 
