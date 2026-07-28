@@ -89,6 +89,12 @@
                 document.body.appendChild(s);
             })();
         </script>
-        <script src="canvas.js"></script>
+        <script>
+          (function () {
+            var d = new Date();
+            var v = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+            document.write('<script src="canvas.js?v=' + v + '"><\/script>');
+          })();
+        </script>
     </body>
 </html>

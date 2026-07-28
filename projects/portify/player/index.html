@@ -36,6 +36,12 @@
     </div>
     <span class="song-time song-duration">4:20</span>
 </div>
-<script src="script.js"></script>
+<script>
+  (function () {
+    var d = new Date();
+    var v = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+    document.write('<script src="script.js?v=' + v + '"><\/script>');
+  })();
+</script>
 </body>
 </html>

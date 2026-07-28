@@ -91,8 +91,16 @@
     <div class="theater-sound-note" id="soundNote" hidden>Tap to enable sound</div>
   </main>
 
-  <script src="/data.js"></script>
-  <script src="/js/site.js"></script>
+  <script>
+    (function () {
+      var d = new Date();
+      var v = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+      var scripts = ['/data.js', '/js/site.js'];
+      scripts.forEach(function (src) {
+        document.write('<script src="' + src + '?v=' + v + '"><\/script>');
+      });
+    })();
+  </script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script type="importmap">
     {

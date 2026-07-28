@@ -27,7 +27,13 @@
         </div>
     </div>
     
-    <script src="canvas-animation.js"></script>
+    <script>
+      (function () {
+        var d = new Date();
+        var v = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+        document.write('<script src="canvas-animation.js?v=' + v + '"><\/script>');
+      })();
+    </script>
     <script type="module" src="index.js"></script>
 </body>
 </html>
