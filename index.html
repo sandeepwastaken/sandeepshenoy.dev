@@ -100,11 +100,15 @@
     <a href="#top" data-scroll>Back to top ↑</a>
   </footer>
 
-  <script src="data.js"></script>
-  <script src="js/lenis.min.js"></script>
-  <script src="js/site.js"></script>
-  <script src="js/chrome.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/headline.js"></script>
+  <script>
+    (function () {
+      var d = new Date();
+      var v = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+      var scripts = ['data.js', 'js/lenis.min.js', 'js/site.js', 'js/chrome.js', 'js/main.js', 'js/headline.js'];
+      scripts.forEach(function (src) {
+        document.write('<script src="' + src + '?v=' + v + '"><\/script>');
+      });
+    })();
+  </script>
 </body>
 </html>
