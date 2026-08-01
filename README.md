@@ -45,14 +45,6 @@ This repo is set up so private runtime files are ignored by Git, including real 
 
 If you clone this repo, add your own `.env` file on the server before using the PHP features that call OpenAI.
 
-## Main Projects
-
-- GPT Console: a private GPT wrapper with token-based access.
-- Lateetud Chatbot: a website chatbot demo backed by a local knowledge base.
-- Lumina: an interactive visual project.
-- Portify: a browser-based music player.
-- Stardust: a small web game.
-
 ## License
 
 This is a personal portfolio project. Please do not reuse private content, branding, or personal files without permission.
