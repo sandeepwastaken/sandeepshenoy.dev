@@ -65,11 +65,11 @@ window.SITE = {
       tags: ["Gaming", "Clipping"]
     },
     {
-      title: "Generative Series",
-      blurb: "Code-driven art",
-      role: "Personal · WebGL",
-      href: "/gallery/",
-      thumb: "",
+      title: "Earth",
+      blurb: "Shader-based 3D Globe with realistic lighting",
+      role: "ThreeJS",
+      href: "/projects/earth",
+      thumb: "/images/thumbnails/earth.png",
       accent: "#12303a",
       date: "2024-08-24",
       tags: ["Creative", "WebGL"]
