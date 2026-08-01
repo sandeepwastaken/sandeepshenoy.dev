@@ -71,8 +71,8 @@ window.SITE = {
       href: "/projects/earth",
       thumb: "/images/thumbnails/earth.png",
       accent: "#12303a",
-      date: "2024-08-24",
-      tags: ["Creative", "WebGL"]
+      date: "2026-07-31",
+      tags: ["Realistic", "Simulation"]
     },
     {
       title: "Generative Series",
