@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>tidal wave — progress</title>
+  <meta name="description" content="Every attempt at Tidal Wave, plotted." />
+  <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       Palette: monkeytype-style dark, blue accent
+       ============================================================ */
+    :root {
+      --bg:        #23262a;
+      --sub:       #2c3035;
+      --sub-alt:   #262a2e;
+      --text:      #d1d0c5;
+      --sub-text:  #6f7480;
+      --dim:       #4b5058;
+      --main:      #7fb2e6;     /* the one accent */
+      --main-soft: rgba(127, 178, 230, .18);
+      --error:     #ca4754;
+      --ok:        #6dbf87;
+      --line:      #33383d;
+
+      --radius: 4px;
+      --gutter: 24px;
+
+      /* z-scale */
+      --z-tooltip: 40;
+    }
+
+    /* ============================================================
+       Reset + base
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100dvh;
+    }
+    a { color: var(--main); text-decoration: none; }
+    a:hover { color: var(--text); }
+    button {
+      font: inherit; color: inherit; background: none; border: 0;
+      cursor: pointer; padding: 0;
+    }
+    input[type=range] { accent-color: var(--main); }
+    ::selection { background: var(--main-soft); color: var(--text); }
+
+    /* ============================================================
+       Shell + top bar
+       ============================================================ */
+    .shell {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 32px var(--gutter) 96px;
+    }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 56px;
+      color: var(--sub-text);
+      font-size: 12px;
+    }
+    .topbar a {
+      color: var(--sub-text);
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: color .15s ease;
+    }
+    .topbar a:hover { color: var(--text); }
+    .topbar a svg { width: 12px; height: 12px; }
+    .topbar .status {
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .topbar .status::before {
+      content: "";
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--main);
+    }
+
+    /* ============================================================
+       Header
+       ============================================================ */
+    .head {
+      display: flex; align-items: baseline; gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .head h1 {
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      margin: 0;
+      color: var(--text);
+      text-transform: lowercase;
+    }
+    .head .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius);
+      background: var(--main-soft);
+      color: var(--main);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: lowercase;
+    }
+    .subhead {
+      color: var(--sub-text);
+      font-size: 12px;
+      margin: 0 0 40px;
+    }
+    .subhead span { color: var(--dim); }
+
+    /* ============================================================
+       Stats — flat, mono, no boxes
+       ============================================================ */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px 32px;
+      padding: 24px 0 32px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 32px;
+    }
+    .stat .k {
+      font-size: 11px;
+      color: var(--sub-text);
+      font-weight: 400;
+      margin-bottom: 6px;
+    }
+    .stat .v {
+      font-size: 30px;
+      color: var(--text);
+      font-weight: 500;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+    .stat .v .unit {
+      font-size: 14px;
+      color: var(--sub-text);
+      font-weight: 400;
+      margin-left: 2px;
+    }
+    .stat .n {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--sub-text);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat--pb .v { color: var(--main); }
+
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: repeat(2, 1fr); gap: 20px 32px; }
+    }
+    @media (max-width: 480px) {
+      .stats { grid-template-columns: 1fr; }
+    }
+
+    /* ============================================================
+       Controls row — inline, no card
+       ============================================================ */
+    .controls {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: 24px 32px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+    .control { display: flex; align-items: center; gap: 12px; }
+    .control__k {
+      color: var(--sub-text);
+      font-size: 11px;
+      text-transform: lowercase;
+    }
+    .slider {
+      display: flex; align-items: center; gap: 12px;
+      flex: 1 1 260px; min-width: 240px;
+    }
+    .slider input[type=range] {
+      flex: 1;
+      height: 2px;
+      background: var(--line);
+    }
+    .slider .val {
+      min-width: 46px; text-align: right;
+      color: var(--main);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      font-size: 13px;
+    }
+    .toggles { display: flex; flex-wrap: wrap; gap: 4px; }
+    .toggle {
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--sub-text);
+      background: transparent;
+      border-radius: var(--radius);
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: color .15s, background .15s;
+      text-transform: lowercase;
+    }
+    .toggle:hover { color: var(--text); background: var(--sub-alt); }
+    .toggle .sw {
+      width: 8px; height: 2px;
+      background: currentColor;
+      opacity: .4;
+    }
+    .toggle.on { color: var(--text); background: var(--sub); }
+    .toggle.on .sw { opacity: 1; }
+
+    /* ============================================================
+       Chart
+       ============================================================ */
+    .chart {
+      position: relative;
+      width: 100%;
+      height: 360px;
+      margin-bottom: 12px;
+    }
+    .chart canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      display: block;
+    }
+    .chart__meta {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 11px;
+      color: var(--sub-text);
+      margin-bottom: 12px;
+    }
+    .chart__meta strong { color: var(--text); font-weight: 500; }
+
+    .tt {
+      position: absolute;
+      z-index: var(--z-tooltip);
+      background: var(--sub);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      font-size: 11px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, calc(-100% - 10px));
+      transition: opacity .12s ease;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.4);
+      line-height: 1.5;
+    }
+    .tt.on { opacity: 1; }
+    .tt .pct {
+      color: var(--main);
+      font-weight: 500;
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .tt .r { color: var(--sub-text); font-variant-numeric: tabular-nums; }
+    .tt .r b { color: var(--text); font-weight: 500; }
+
+    /* ============================================================
+       Section blocks (histogram, compare)
+       ============================================================ */
+    .section-title {
+      font-size: 12px;
+      color: var(--sub-text);
+      margin: 0 0 16px;
+      font-weight: 400;
+      text-transform: lowercase;
+    }
+    .section-title span { color: var(--dim); margin-left: 8px; }
+
+    .lower {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 48px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--line);
+    }
+    @media (max-width: 820px) {
+      .lower { grid-template-columns: 1fr; gap: 40px; }
+    }
+
+    .hist { display: flex; flex-direction: column; gap: 6px; }
+    .hbar {
+      display: grid;
+      grid-template-columns: 56px 1fr 72px;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hbar .rng { color: var(--sub-text); }
+    .hbar .bar {
+      height: 6px;
+      background: var(--sub-alt);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .hbar .bar > span {
+      display: block; height: 100%;
+      background: var(--main);
+      opacity: .85;
+    }
+    .hbar .cnt { text-align: right; color: var(--text); }
+    .hbar .cnt small { color: var(--sub-text); margin-left: 6px; }
+
+    .compare { display: flex; flex-direction: column; gap: 20px; }
+    .cmp {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .cmp:last-child { border-bottom: 0; padding-bottom: 0; }
+    .cmp .lbl { color: var(--sub-text); font-size: 12px; }
+    .cmp .lbl small { display: block; color: var(--dim); font-size: 11px; margin-top: 2px; }
+    .cmp .num {
+      font-size: 22px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+    .cmp .num .unit { color: var(--sub-text); font-size: 13px; font-weight: 400; margin-left: 2px; }
+    .cmp .delta {
+      display: inline-block;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+      margin-left: 8px;
+      color: var(--sub-text);
+    }
+    .cmp .delta.up { color: var(--ok); }
+    .cmp .delta.dn { color: var(--error); }
+
+    /* ============================================================
+       States
+       ============================================================ */
+    .loading, .empty {
+      padding: 80px 20px;
+      text-align: center;
+      color: var(--sub-text);
+      font-size: 13px;
+    }
+    .loading .sp {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid var(--dim);
+      border-top-color: var(--main);
+      animation: sp .8s linear infinite;
+      vertical-align: -1px;
+      margin-right: 8px;
+    }
+    @keyframes sp { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0s !important; transition-duration: 0s !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="topbar">
+    <a href="/projects/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      projects
+    </a>
+    <span class="status" id="status">reading attempts</span>
+  </div>
+
+  <div class="head">
+    <h1>tidal wave</h1>
+    <span class="pill">extreme demon</span>
+  </div>
+  <p class="subhead">
+    id 86407629 <span>·</span> by OniLink <span>·</span> verified 2024 <span>·</span> 1:23 length
+  </p>
+
+  <div id="app">
+    <div class="loading"><span class="sp"></span>loading attempts…</div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   Data + math
+   ============================================================ */
+
+const PHYSICS_HZ = 240;   // GD default physics tick
+const LEVEL_LEN_S = 83;   // 1:23 official length
+
+const fmtInt = n => n.toLocaleString("en-US");
+const fmtPct = (n, d = 2) => n.toFixed(d);
+function fmtDur(sec) {
+  sec = Math.round(sec);
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  if (h) return `${h}h ${String(m).padStart(2,"0")}m`;
+  if (m) return `${m}m ${String(s).padStart(2,"0")}s`;
+  return `${s}s`;
+}
+function rollingMean(values, window) {
+  const out = new Array(values.length);
+  let sum = 0;
+  for (let i = 0; i < values.length; i++) {
+    sum += values[i];
+    if (i >= window) sum -= values[i - window];
+    out[i] = sum / Math.min(i + 1, window);
+  }
+  return out;
+}
+function argMax(arr) {
+  let best = -Infinity, idx = -1;
+  for (let i = 0; i < arr.length; i++) if (arr[i] > best) { best = arr[i]; idx = i; }
+  return idx;
+}
+
+/* ============================================================
+   Renderers
+   ============================================================ */
+
+function renderApp(root, data) {
+  root.innerHTML = `
+    <section class="stats" id="stats"></section>
+
+    <div class="controls">
+      <div class="control slider">
+        <span class="control__k">hide below</span>
+        <input type="range" id="minPct" min="0" max="10" step="0.1" value="0" />
+        <span class="val" id="minPctVal">0.0%</span>
+      </div>
+      <div class="control">
+        <span class="control__k">trend</span>
+        <div class="toggles" id="toggles">
+          <button class="toggle"    data-key="m2"   style="--c:#a3c6ea"><span class="sw"></span>2</button>
+          <button class="toggle"    data-key="m10"  style="--c:#7fb2e6"><span class="sw"></span>10</button>
+          <button class="toggle on" data-key="m100" style="--c:#7fb2e6"><span class="sw"></span>100</button>
+          <button class="toggle on" data-key="pb"><span class="sw"></span>pb</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart__meta">
+      <span>every attempt in order · point is where the run ended</span>
+      <span id="chartMeta">—</span>
+    </div>
+    <div class="chart" id="chartWrap">
+      <canvas id="chart"></canvas>
+      <div class="tt" id="tt" role="tooltip"></div>
+    </div>
+
+    <div class="lower">
+      <div>
+        <h2 class="section-title">where attempts end <span id="histMeta"></span></h2>
+        <div class="hist" id="hist"></div>
+      </div>
+
+      <div>
+        <h2 class="section-title">last 100 vs all-time <span>are you actually getting better?</span></h2>
+        <div class="compare" id="compare"></div>
+      </div>
+    </div>
+  `;
+
+  const state = {
+    minPct: 0,
+    show: { pb: true, m2: false, m10: false, m100: true },
+    hover: -1,
+  };
+
+  const status = document.getElementById("status");
+  const when = new Date(data._loadedAt);
+  status.textContent = "synced " + when.toLocaleString(undefined,
+    { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).toLowerCase();
+
+  // ---- derive ----
+  function derive() {
+    const kept = data.attempts.filter(a => a.endPercent >= state.minPct);
+    const y = kept.map(a => a.endPercent);
+    const bestIdx = kept.length ? argMax(y) : -1;
+
+    // running best-so-far — the PB "staircase" that only rises when a new
+    // PB is set at that attempt, flat everywhere else
+    const runningBest = new Array(y.length);
+    let m = -Infinity;
+    for (let i = 0; i < y.length; i++) {
+      if (y[i] > m) m = y[i];
+      runningBest[i] = m;
+    }
+
+    return {
+      kept, y, runningBest,
+      best: bestIdx >= 0 ? y[bestIdx] : 0,
+      bestIdx,
+      bestSerial: bestIdx >= 0 ? kept[bestIdx].serial : 0,
+      avg: kept.length ? y.reduce((a,b)=>a+b,0) / kept.length : 0,
+      m2:   rollingMean(y, 2),
+      m10:  rollingMean(y, 10),
+      m100: rollingMean(y, 100),
+    };
+  }
+
+  // ---- stats ----
+  function renderStats(d) {
+    const all = data.attempts;
+    const totalFrames = all.reduce((a,b) => a + (b.p1Frames||0) + (b.p2Frames||0), 0);
+    const timePlayed = totalFrames / PHYSICS_HZ;
+    const runsPast1 = all.filter(a => a.endPercent >= 1).length;
+
+    document.getElementById("stats").innerHTML = `
+      <div class="stat">
+        <div class="k">attempts</div>
+        <div class="v">${fmtInt(all.length)}</div>
+        <div class="n">${fmtInt(d.kept.length)} shown · ${fmtInt(all.length - d.kept.length)} hidden</div>
+      </div>
+      <div class="stat stat--pb">
+        <div class="k">personal best</div>
+        <div class="v">${fmtPct(d.best)}<span class="unit">%</span></div>
+        <div class="n">attempt #${fmtInt(d.bestSerial)}</div>
+      </div>
+      <div class="stat">
+        <div class="k">avg (shown)</div>
+        <div class="v">${fmtPct(d.avg)}<span class="unit">%</span></div>
+        <div class="n">threshold ${fmtPct(state.minPct,1)}%</div>
+      </div>
+      <div class="stat">
+        <div class="k">runs past 1%</div>
+        <div class="v">${fmtInt(runsPast1)}</div>
+        <div class="n">${((runsPast1/all.length)*100).toFixed(1)}% of attempts</div>
+      </div>
+      <div class="stat">
+        <div class="k">time played</div>
+        <div class="v">${fmtDur(timePlayed)}</div>
+        <div class="n">~${(timePlayed/LEVEL_LEN_S).toFixed(1)} full-level equivalents</div>
+      </div>
+    `;
+  }
+
+  // ---- histogram ----
+  function renderHistogram(d) {
+    const buckets = new Array(10).fill(0);
+    for (const a of d.kept) {
+      buckets[Math.min(9, Math.floor(a.endPercent / 10))]++;
+    }
+    const max = Math.max(...buckets, 1);
+    const total = d.kept.length || 1;
+    document.getElementById("histMeta").textContent = `· ${fmtInt(total)} attempts in 10% buckets`;
+    document.getElementById("hist").innerHTML = buckets.map((c, i) => `
+      <div class="hbar">
+        <div class="rng">${i*10}–${i*10+10}%</div>
+        <div class="bar"><span style="width:${(c/max)*100}%"></span></div>
+        <div class="cnt">${fmtInt(c)}<small>${((c/total)*100).toFixed(c>=total*0.1?0:1)}%</small></div>
+      </div>
+    `).join("");
+  }
+
+  // ---- compare ----
+  function renderCompare() {
+    const all = data.attempts;
+    const last = all.slice(-100);
+    const allAvg  = all.reduce((a,b)=>a+b.endPercent,0) / all.length;
+    const lastAvg = last.reduce((a,b)=>a+b.endPercent,0) / last.length;
+    const lastBest = Math.max(...last.map(a=>a.endPercent));
+    const allBest  = Math.max(...all.map(a=>a.endPercent));
+
+    const chip = v => {
+      if (Math.abs(v) < 0.005) return `<span class="delta">±0.00</span>`;
+      const cls = v > 0 ? "up" : "dn";
+      const sign = v > 0 ? "+" : "";
+      return `<span class="delta ${cls}">${sign}${fmtPct(v)}</span>`;
+    };
+
+    document.getElementById("compare").innerHTML = `
+      <div class="cmp">
+        <div class="lbl">avg endpoint<small>all-time ${fmtPct(allAvg)}%</small></div>
+        <div class="num">${fmtPct(lastAvg)}<span class="unit">%</span>${chip(lastAvg - allAvg)}</div>
+      </div>
+      <div class="cmp">
+        <div class="lbl">best in window<small>all-time pb ${fmtPct(allBest)}%</small></div>
+        <div class="num">${fmtPct(lastBest)}<span class="unit">%</span>${chip(lastBest - allBest)}</div>
+      </div>
+      <div class="cmp">
+        <div class="lbl">runs past 1%<small>window of last 100</small></div>
+        <div class="num">${fmtInt(last.filter(a=>a.endPercent>=1).length)}<span class="unit">/100</span></div>
+      </div>
+    `;
+  }
+
+  // ---- chart ----
+  function setupChart() {
+    const wrap = document.getElementById("chartWrap");
+    const canvas = document.getElementById("chart");
+    const c = canvas.getContext("2d");
+    const tt = document.getElementById("tt");
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    let W = 0, H = 0;
+    let d = derive();
+
+    const PAD = { top: 16, right: 12, bottom: 28, left: 44 };
+
+    function fit() {
+      const rect = wrap.getBoundingClientRect();
+      W = rect.width; H = rect.height;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function xScale(i, n) {
+      if (n <= 1) return PAD.left;
+      return PAD.left + (i / (n - 1)) * (W - PAD.left - PAD.right);
+    }
+    function yScale(pct, maxY) {
+      const t = (pct - state.minPct) / (maxY - state.minPct);
+      return H - PAD.bottom - t * (H - PAD.top - PAD.bottom);
+    }
+
+    function draw() {
+      c.clearRect(0, 0, W, H);
+      const n = d.kept.length;
+
+      if (!n) {
+        c.fillStyle = "#6f7480";
+        c.font = "12px 'JetBrains Mono', ui-monospace, monospace";
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.fillText("nothing above the threshold", W/2, H/2);
+        return;
+      }
+
+      // headroom
+      const maxY = Math.max(d.best * 1.12, state.minPct + 0.5);
+
+      // ---- grid + Y labels
+      c.strokeStyle = "#33383d";
+      c.lineWidth = 1;
+      c.fillStyle = "#6f7480";
+      c.font = "10px 'JetBrains Mono', ui-monospace, monospace";
+      c.textAlign = "right";
+      c.textBaseline = "middle";
+      const yTicks = niceTicks(state.minPct, maxY, 5);
+      for (const t of yTicks) {
+        const y = yScale(t, maxY);
+        c.beginPath();
+        c.moveTo(PAD.left, y);
+        c.lineTo(W - PAD.right, y);
+        c.stroke();
+        c.fillText(t.toFixed(t >= 10 ? 0 : 1) + "%", PAD.left - 8, y);
+      }
+
+      // ---- PB staircase (running best-so-far, drawn under dots)
+      // A step-after path: flat at the current PB, then jumps up on the
+      // exact attempt where a new PB was set. Never a single line spanning
+      // the whole chart unless attempt #1 was already the best.
+      if (state.show.pb && n > 0) {
+        c.strokeStyle = "rgba(127,178,230,.55)";
+        c.lineWidth = 1.2;
+        c.setLineDash([2, 3]);
+        c.beginPath();
+        let prevY = yScale(d.runningBest[0], maxY);
+        c.moveTo(xScale(0, n), prevY);
+        for (let i = 1; i < n; i++) {
+          const x = xScale(i, n);
+          const y = yScale(d.runningBest[i], maxY);
+          // horizontal to this x at previous PB level
+          c.lineTo(x, prevY);
+          // vertical jump if a new PB was set at attempt i
+          if (y !== prevY) c.lineTo(x, y);
+          prevY = y;
+        }
+        c.stroke();
+        c.setLineDash([]);
+      }
+
+      // ---- X labels (align edges inward so ticks don't clip)
+      c.textBaseline = "top";
+      c.fillStyle = "#6f7480";
+      const xTickCount = W > 700 ? 6 : 4;
+      for (let i = 0; i < xTickCount; i++) {
+        const idx = Math.round((i / (xTickCount - 1)) * (n - 1));
+        const x = xScale(idx, n);
+        c.textAlign = i === 0 ? "left" : i === xTickCount - 1 ? "right" : "center";
+        c.fillText("#" + fmtInt(d.kept[idx].serial), x, H - PAD.bottom + 8);
+      }
+
+      // ---- dots
+      const dotR = n > 1500 ? 1.2 : n > 500 ? 1.6 : 2.2;
+      c.fillStyle = "rgba(127,178,230,.55)";
+      for (let i = 0; i < n; i++) {
+        const x = xScale(i, n);
+        const y = yScale(d.kept[i].endPercent, maxY);
+        c.beginPath();
+        c.arc(x, y, dotR, 0, Math.PI * 2);
+        c.fill();
+      }
+
+      // ---- rolling averages
+      const seriesDefs = [
+        { key: "m2",   color: "rgba(163,198,234,.5)",   w: 1,   arr: d.m2 },
+        { key: "m10",  color: "rgba(127,178,230,.7)",   w: 1.2, arr: d.m10 },
+        { key: "m100", color: "#d1d0c5",                w: 1.5, arr: d.m100 },
+      ];
+      for (const s of seriesDefs) {
+        if (!state.show[s.key]) continue;
+        c.beginPath();
+        c.strokeStyle = s.color;
+        c.lineWidth = s.w;
+        c.lineJoin = "round";
+        for (let i = 0; i < n; i++) {
+          const x = xScale(i, n);
+          const y = yScale(s.arr[i], maxY);
+          if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
+        }
+        c.stroke();
+      }
+
+      // ---- hover
+      if (state.hover >= 0 && state.hover < n) {
+        const a = d.kept[state.hover];
+        const x = xScale(state.hover, n);
+        const y = yScale(a.endPercent, maxY);
+        c.strokeStyle = "rgba(209,208,197,.15)";
+        c.lineWidth = 1;
+        c.beginPath();
+        c.moveTo(x, PAD.top); c.lineTo(x, H - PAD.bottom); c.stroke();
+        c.fillStyle = "#d1d0c5";
+        c.beginPath(); c.arc(x, y, 3, 0, Math.PI * 2); c.fill();
+
+        const ttW = tt.offsetWidth;
+        const half = ttW / 2;
+        let left = x;
+        if (left - half < 4) left = half + 4;
+        if (left + half > W - 4) left = W - half - 4;
+        tt.style.left = left + "px";
+        tt.style.top = y + "px";
+        tt.classList.add("on");
+        const secs = ((a.p1Frames + (a.p2Frames || 0)) / PHYSICS_HZ);
+        tt.innerHTML = `
+          <span class="pct">${fmtPct(a.endPercent)}%</span>
+          <div class="r">attempt <b>#${fmtInt(a.serial)}</b></div>
+          <div class="r">lasted <b>~${secs.toFixed(1)}s</b></div>
+          ${a.practice  ? '<div class="r" style="color:var(--ok)">practice</div>' : ""}
+          ${a.completed ? '<div class="r" style="color:var(--ok)">completed</div>' : ""}
+        `;
+      } else {
+        tt.classList.remove("on");
+      }
+    }
+
+    // hover detection
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const n = d.kept.length;
+      if (!n || mx < PAD.left || mx > W - PAD.right) { state.hover = -1; draw(); return; }
+      const t = (mx - PAD.left) / (W - PAD.left - PAD.right);
+      state.hover = Math.max(0, Math.min(n - 1, Math.round(t * (n - 1))));
+      draw();
+    });
+    canvas.addEventListener("mouseleave", () => { state.hover = -1; draw(); });
+
+    const ro = new ResizeObserver(() => { fit(); draw(); });
+    ro.observe(wrap);
+    fit();
+
+    return { refresh() { d = derive(); draw(); } };
+  }
+
+  const chart = setupChart();
+
+  function refreshAll() {
+    const d = derive();
+    renderStats(d);
+    renderHistogram(d);
+    renderCompare();
+    document.getElementById("chartMeta").innerHTML =
+      `<strong>${fmtInt(d.kept.length)}</strong> plotted`;
+    chart.refresh();
+  }
+
+  // wire
+  const slider = document.getElementById("minPct");
+  const val = document.getElementById("minPctVal");
+  slider.addEventListener("input", () => {
+    state.minPct = parseFloat(slider.value);
+    val.textContent = fmtPct(state.minPct, 1) + "%";
+    refreshAll();
+  });
+  document.querySelectorAll(".toggle").forEach(btn => {
+    if (state.show[btn.dataset.key]) btn.classList.add("on");
+    btn.addEventListener("click", () => {
+      const k = btn.dataset.key;
+      state.show[k] = !state.show[k];
+      btn.classList.toggle("on", state.show[k]);
+      chart.refresh();
+    });
+  });
+
+  refreshAll();
+}
+
+/* ============================================================
+   Utilities
+   ============================================================ */
+
+function niceTicks(min, max, target) {
+  const range = max - min;
+  if (range <= 0) return [min];
+  const step = Math.pow(10, Math.floor(Math.log10(range / target)));
+  const norm = range / target / step;
+  const mult = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+  const stepFinal = step * mult;
+  const start = Math.ceil(min / stepFinal) * stepFinal;
+  const out = [];
+  for (let v = start; v <= max + 1e-9; v += stepFinal) out.push(+v.toFixed(6));
+  return out;
+}
+
+/* ============================================================
+   Boot
+   ============================================================ */
+
+(async function boot() {
+  const root = document.getElementById("app");
+  try {
+    const res = await fetch("attempts.json?v=" + Date.now(), { cache: "no-cache" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    data._loadedAt = Date.now();
+    if (!data.attempts || !data.attempts.length) {
+      root.innerHTML = `<div class="empty">no attempts recorded yet. play tidal wave, then re-run <code>parse_apx.py</code>.</div>`;
+      return;
+    }
+    renderApp(root, data);
+  } catch (e) {
+    root.innerHTML = `<div class="empty">couldn't load <code>attempts.json</code>.<br>
+      run <code>python3 parse_apx.py</code> in this folder, then refresh.<br>
+      <small style="color:var(--error);margin-top:8px;display:inline-block">${String(e)}</small>
+    </div>`;
+  }
+})();
+</script>
+
+</body>
+</html>

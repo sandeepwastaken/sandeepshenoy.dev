@@ -35,6 +35,16 @@ window.SITE = {
       tags: ["Emergence", "Simulation"]
     },
     {
+      title: "Tidal Wave Progress",
+      blurb: "Every attempt at an Extreme Demon, plotted",
+      role: "HTML + CSS + JS · Python",
+      href: "/projects/tidalwave",
+      thumb: "",
+      accent: "#7fb2e6",
+      date: "2026-08-09",
+      tags: ["Dashboard", "Geometry Dash"]
+    },
+    {
       title: "Rouse SciOly Site",
       blurb: "Team-tailored site",
       role: "HTML + CSS + JS",
